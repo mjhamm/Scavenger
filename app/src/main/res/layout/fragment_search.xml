@@ -14,7 +14,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        app:cardElevation="8dp">
+        app:cardElevation="12dp">
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/search_searchView"
@@ -22,8 +22,7 @@
             android:layout_height="?android:attr/actionBarSize"
             app:queryHint="Search Ingredients"
             app:iconifiedByDefault="false"
-            app:queryBackground="@android:color/transparent"
-            android:elevation="8dp"/>
+            app:queryBackground="@android:color/transparent"/>
 
     </com.google.android.material.card.MaterialCardView>
 

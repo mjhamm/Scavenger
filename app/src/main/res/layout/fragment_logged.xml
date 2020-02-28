@@ -8,6 +8,7 @@
     tools:context=".AccountLogged">
 
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/account_logged_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         app:layout_constraintStart_toStartOf="parent"
@@ -18,20 +19,74 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Michael Hamm"
+            android:text="@string/michael_hamm_test_user"
             android:layout_gravity="center_vertical"
             android:layout_marginStart="24dp"
             android:textSize="18sp"
             android:textColor="@android:color/black"/>
 
         <ImageButton
+            android:id="@+id/settings_button_logged"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_settings_black_36dp"
             android:background="@android:color/transparent"
             android:layout_gravity="end|center_vertical"
+            android:contentDescription="@string/settings_button_content_descr"
             android:layout_marginEnd="16dp"/>
 
     </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/name_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/account_logged_toolbar"
+        android:text="@string/full_name_text_view"
+        android:labelFor="@id/name_editText"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:fontFamily="@font/roboto_condensed_regular"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="36dp"/>
+
+    <EditText
+        android:id="@+id/name_editText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:importantForAutofill="no"
+        android:inputType="textPersonName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/name_textView"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"/>
+
+    <TextView
+        android:id="@+id/email_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/name_editText"
+        android:text="@string/email_address_text_view"
+        android:labelFor="@id/email_editText"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:fontFamily="@font/roboto_condensed_regular"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"/>
+
+    <EditText
+        android:id="@+id/email_editText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:importantForAutofill="no"
+        android:inputType="textEmailAddress"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/email_textView"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

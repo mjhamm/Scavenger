@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="Display"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreference
+            android:title="Enable Dark Mode"
+            app:iconSpaceReserved="false"/>
+        <SwitchPreference
+            android:title="Use In-App Web Browser"
+            android:summary="Open external links with the Scavenger Browser"
+            app:iconSpaceReserved="false"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Accessibility"
+        app:iconSpaceReserved="false">
+        <SwitchPreference
+            android:title="Match Number of Ingredients"
+            android:summary="Find recipes with only the number of ingredients you search with"
+            app:iconSpaceReserved="false"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Help"
+        app:iconSpaceReserved="false">
+        <Preference
+            android:title="Send Feedback"
+            android:summary="Report technical issues or suggest new features"
+            app:iconSpaceReserved="false"/>
+        <Preference
+            android:title="Help"
+            app:iconSpaceReserved="false"/>
+        <Preference
+            android:title="About"
+            app:iconSpaceReserved="false"/>
+        <Preference
+            android:title="Legal"
+            app:iconSpaceReserved="false"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>
