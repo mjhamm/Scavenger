@@ -35,7 +35,7 @@ public class AccountLogged extends Fragment {
         settingsButton = view.findViewById(R.id.settings_button_logged);
 
         settingsButton.setOnClickListener(v -> {
-            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+            FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
             transaction.replace(R.id.fragment_container, new SettingsFragment());
             transaction.commit();
         });

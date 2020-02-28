@@ -10,6 +10,10 @@ import android.view.MenuItem;
 import android.widget.FrameLayout;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -40,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
                         //Check login token
                         //If logged in, show Account Logged
                         //If not logged in, show Sign In/ Sign Up
-                        fragment = new AccountLogged();
+                        fragment = new AccountNotLogged();
                         loadFragment(fragment);
                         return true;
                 }
