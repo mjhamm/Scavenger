@@ -5,9 +5,9 @@
     <PreferenceCategory android:title="Display"
         app:iconSpaceReserved="false">
 
-        <SwitchPreference
+        <!--<SwitchPreference
             android:title="Enable Dark Mode"
-            app:iconSpaceReserved="false"/>
+            app:iconSpaceReserved="false"/>-->
         <SwitchPreference
             android:title="Use In-App Web Browser"
             android:summary="Open external links with the Scavenger Browser"

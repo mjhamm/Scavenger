@@ -1,14 +1,28 @@
 package com.app.scavenger;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import java.util.ArrayList;
 
 class RecipeItem {
 
+    @Expose
+    @SerializedName("image")
     private String mImageUrl;
+
+    @Expose
+    @SerializedName("label")
     private String mRecipeName;
+
+    @Expose
+    @SerializedName("source")
     private String mSourceName;
+
     private boolean clicked;
+
     private boolean favorited;
+
 
     //Constructor
     public RecipeItem(String imageUrl, String recipeName, String sourceName, boolean clicked, boolean favorited) {

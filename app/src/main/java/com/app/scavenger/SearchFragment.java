@@ -4,27 +4,21 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Random;
-
-import static android.view.View.GONE;
+import io.reactivex.Single;
+import retrofit2.http.GET;
+import retrofit2.http.Query;
 
 public class SearchFragment extends Fragment {
 
@@ -43,6 +37,11 @@ public class SearchFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getContext();
+    }
+
+    public interface ApiService {
+        @GET("/search?q={q}&app_id={app_id}&app_key={app_key}&ingr={ingr}")
+        Single<RecipeItem> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients);
     }
 
     @Override
@@ -87,6 +86,11 @@ public class SearchFragment extends Fragment {
         mSearchRecyclerView.setAdapter(adapter);
 
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
     }
 
     //Gets the input from Searchview and returns it as string

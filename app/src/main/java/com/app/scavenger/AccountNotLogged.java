@@ -1,6 +1,7 @@
 package com.app.scavenger;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -47,11 +48,7 @@ public class AccountNotLogged extends Fragment {
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
 
-        settingsButton.setOnClickListener(v -> {
-            FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, new SettingsFragment());
-            transaction.commit();
-        });
+        settingsButton.setOnClickListener(v -> startActivity(new Intent(mContext, SettingsActivity.class)));
 
         return view;
     }

@@ -3,11 +3,8 @@ package com.app.scavenger;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,11 +31,8 @@ public class AccountLogged extends Fragment {
 
         settingsButton = view.findViewById(R.id.settings_button_logged);
 
-        settingsButton.setOnClickListener(v -> {
-            FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, new SettingsFragment());
-            transaction.commit();
-        });
+        settingsButton.setOnClickListener(v -> startActivity(new Intent(mContext, SettingsActivity.class)));
+
         return view;
     }
 }
