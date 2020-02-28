@@ -26,6 +26,17 @@
 
     </com.google.android.material.card.MaterialCardView>
 
+    <TextView
+        android:id="@+id/startup_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:fontFamily="@font/roboto_condensed_regular"
+        android:textSize="24sp"
+        android:textColor="@android:color/black"
+        android:gravity="center"
+        android:text="Startup Message"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_recyclerView"
         android:layout_width="match_parent"

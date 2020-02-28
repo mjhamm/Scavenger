@@ -152,7 +152,6 @@
         android:id="@+id/signUp_button"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
-        android:layout_marginTop="16dp"
         app:cardBackgroundColor="@color/colorPrimaryDark"
         app:cardCornerRadius="0dp"
         android:clickable="true"
