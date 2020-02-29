@@ -9,6 +9,8 @@
             android:title="Enable Dark Mode"
             app:iconSpaceReserved="false"/>-->
         <SwitchPreference
+            android:key="inAppBrowser"
+            android:defaultValue="true"
             android:title="Use In-App Web Browser"
             android:summary="Open external links with the Scavenger Browser"
             app:iconSpaceReserved="false"/>
@@ -18,6 +20,8 @@
         android:title="Accessibility"
         app:iconSpaceReserved="false">
         <SwitchPreference
+            android:key="match"
+            android:defaultValue="false"
             android:title="Match Number of Ingredients"
             android:summary="Find recipes with only the number of ingredients you search with"
             app:iconSpaceReserved="false"/>
@@ -27,16 +31,20 @@
         android:title="Help"
         app:iconSpaceReserved="false">
         <Preference
+            android:key="feedback"
             android:title="Send Feedback"
             android:summary="Report technical issues or suggest new features"
             app:iconSpaceReserved="false"/>
         <Preference
+            android:key="help"
             android:title="Help"
             app:iconSpaceReserved="false"/>
         <Preference
+            android:key="about"
             android:title="About"
             app:iconSpaceReserved="false"/>
         <Preference
+            android:key="legal"
             android:title="Legal"
             app:iconSpaceReserved="false"/>
     </PreferenceCategory>

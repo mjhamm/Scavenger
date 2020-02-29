@@ -82,15 +82,8 @@ public class SearchFragment extends Fragment {
                 break;
         }
 
-        //recipeItems = new ArrayList<>();
-        //recipeItems = RecipeItem.createContactsList(20);
-
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
-        //mSearchRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
         mSearchRecyclerView.setHasFixedSize(true);
-
-        //adapter = new SearchAdapter(mContext,recipeItems);
-        //mSearchRecyclerView.setAdapter(adapter);
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override

@@ -1,23 +1,37 @@
 package com.app.scavenger;
 
+import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.CompoundButton;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.checkbox.MaterialCheckBox;
 
 import java.util.ArrayList;
@@ -74,7 +88,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         String protein_string = String.format(Locale.getDefault(),"%d", protein_int);
 
         //Setting all items in each recipe item ------------
-        Glide.with(mContext)
+        GlideApp.with(mContext)
                 .load(imageURL)
                 .skipMemoryCache(true)
                 .centerCrop()
@@ -108,6 +122,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         private MaterialCheckBox mFavoriteButton;
         private RecipeItem item;
         private ImageButton more_button;
+        private MaterialCardView mViewRecipe;
+        private String reportReason = null;
         private boolean rotated;
 
         ViewHolder( @NonNull View itemView) {
@@ -125,6 +141,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             mFavoriteButton = itemView.findViewById(R.id.recipe_favorite);
             mRelativeLayout = itemView.findViewById(R.id.ingredients_relativeLayout);
             more_button = itemView.findViewById(R.id.more_button);
+            mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
             itemView.setOnClickListener(this);
 
             // Recipe Image Click Listener
@@ -159,7 +176,20 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 Animation acw = AnimationUtils.loadAnimation(mContext, R.anim.menu_anti_clockwise);
 
                 PopupMenu popupMenu = new PopupMenu(mContext, more_button);
-                popupMenu.setOnMenuItemClickListener(item -> false);
+                popupMenu.setOnMenuItemClickListener(item -> {
+                    switch (item.getItemId()) {
+                        case R.id.menu_copy:
+                            copyRecipe();
+                            return true;
+                        case R.id.menu_share:
+                            shareRecipe();
+                            return true;
+                        case R.id.menu_report:
+                            reportRecipe();
+                            return true;
+                    }
+                    return false;
+                });
                 MenuInflater inflater = popupMenu.getMenuInflater();
                 inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
                 popupMenu.show();
@@ -176,11 +206,105 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     acw.setFillAfter(true);
                 });
             });
+
+            mViewRecipe.setOnClickListener(v -> {
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
+                if (inAppBrowsingOn) {
+                    openURLInChromeCustomTab(mContext, retrieveRecipeUrl());
+                } else {
+                    openInDefaultBrowser(mContext, retrieveRecipeUrl());
+                }
+            });
+
+        }
+
+        private void reportRecipe() {
+            final CharSequence[] listItems = {"Inappropriate Image","Inappropriate Website","Profanity"};
+            AlertDialog.Builder reportDialog = new AlertDialog.Builder(mContext);
+            reportDialog.setTitle("Why are you reporting this?");
+            reportDialog.setSingleChoiceItems(listItems, -1, (dialog, item) -> {
+                switch (item) {
+                    case 0:
+                        reportReason = "Inappropriate Image";
+                        break;
+                    case 1:
+                        reportReason = "Inappropriate Website";
+                        break;
+                    case 2:
+                        reportReason = "Profanity";
+                        break;
+                }
+            });
+            reportDialog.setPositiveButton("Report", (dialog, which) -> Toast.makeText(mContext, "Reported for " + reportReason + ".", Toast.LENGTH_SHORT).show());
+            reportDialog.setNegativeButton("Cancel", (dialog, which) -> {/*Cancelled*/});
+
+            AlertDialog alertDialog = reportDialog.create();
+            reportReason = null;
+            alertDialog.show();
+            Button buttonPositive = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
+            Button buttonNegative = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+        }
+
+        private void copyRecipe() {
+            ClipboardManager clipboardManager = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clipData = ClipData.newPlainText("Copy URL", retrieveRecipeUrl());
+            if (clipboardManager != null) {
+                clipboardManager.setPrimaryClip(clipData);
+            }
+            Toast.makeText(mContext, "URL Copied.", Toast.LENGTH_SHORT).show();
+        }
+
+        private void shareRecipe() {
+            Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+            sharingIntent.setType("text/plain");
+            String shareSub = "Check out this awesome recipe from Scavenger!";
+            String shareBody = retrieveRecipeName() + "\n" + "Made By: " + retrieveRecipeSource() + "\n\n" + retrieveRecipeUrl();
+            sharingIntent.putExtra(Intent.EXTRA_SUBJECT,shareSub);
+            sharingIntent.putExtra(Intent.EXTRA_TEXT,shareBody);
+            mContext.startActivity(Intent.createChooser(sharingIntent, "Share Using:"));
         }
 
         @Override
         public void onClick(View v) {
 
+        }
+
+        private String retrieveRecipeUrl() {
+            return item.getmRecipeURL();
+        }
+
+        private String retrieveRecipeSource() {
+            return item.getmSourceName();
+        }
+
+        private String retrieveRecipeName() {
+            return item.getmRecipeName();
+        }
+    }
+
+    private static void openInDefaultBrowser(Context context, String url) {
+        try {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            context.startActivity(browserIntent);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Log.e("DefaultBrowserError: ", "Activity Error");
+        }
+    }
+
+    private static void openURLInChromeCustomTab(Context context, String url) {
+        try {
+            CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
+            CustomTabsIntent customTabsIntent = builder1.build();
+            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            builder1.setInstantAppsEnabled(true);
+            customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
+            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
+            customTabsIntent.launchUrl(context, Uri.parse(url));
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Log.e("ChromeCustomTabError: ", "Activity Error");
         }
     }
 
@@ -190,3 +314,4 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         return mRecipeItems.size();
     }
 }
+
