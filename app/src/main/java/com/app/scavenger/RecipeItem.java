@@ -2,10 +2,17 @@ package com.app.scavenger;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-
 import java.util.ArrayList;
 
 class RecipeItem {
+
+    @Expose
+    @SerializedName("dietLabels")
+    private ArrayList<String> mRecipeAttributes;
+
+    @Expose
+    @SerializedName("ingredients")
+    private ArrayList<String> mIngredients;
 
     @Expose
     @SerializedName("image")
@@ -19,31 +26,47 @@ class RecipeItem {
     @SerializedName("source")
     private String mSourceName;
 
-    private boolean clicked;
+    @Expose
+    @SerializedName("CHOCDF")
+    private String mCarbs;
 
+    @Expose
+    @SerializedName("FAT")
+    private String mFat;
+
+    @Expose
+    @SerializedName("PROCNT")
+    private String mProtein;
+
+    @Expose
+    @SerializedName("url")
+    private String mRecipeURL;
+
+    @Expose
+    @SerializedName("uri")
+    private String mUniqueURI;
+
+    @Expose
+    @SerializedName("yield")
+    private int mServings;
+
+    @Expose
+    @SerializedName("calories")
+    private int mCalories;
+
+    private boolean clicked;
     private boolean favorited;
 
-
-    //Constructor
-    public RecipeItem(String imageUrl, String recipeName, String sourceName, boolean clicked, boolean favorited) {
-        mImageUrl = imageUrl;
-        mRecipeName = recipeName;
-        mSourceName = sourceName;
-        this.clicked = clicked;
-        this.favorited = favorited;
+    public void setmImageUrl(String mImageUrl) {
+        this.mImageUrl = mImageUrl;
     }
 
-    public static int lastRecipeId = 0;
+    public void setmRecipeName(String mRecipeName) {
+        this.mRecipeName = mRecipeName;
+    }
 
-    public static ArrayList<RecipeItem> createContactsList(int numContacts) {
-        ArrayList<RecipeItem> contacts = new ArrayList<>();
-
-        for (int i = 1; i <= numContacts; i++) {
-            contacts.add(new RecipeItem("Image", "Test Recipe "
-                    + ++lastRecipeId, "Test Recipe Source " + lastRecipeId, false, false));
-        }
-
-        return contacts;
+    public void setmSourceName(String mSourceName) {
+        this.mSourceName = mSourceName;
     }
 
     public String getmImageUrl() {
@@ -72,5 +95,77 @@ class RecipeItem {
 
     void setFavorited(boolean favorited) {
         this.favorited = favorited;
+    }
+
+    public ArrayList<String> getmRecipeAttributes() {
+        return mRecipeAttributes;
+    }
+
+    public void setmRecipeAttributes(ArrayList<String> mRecipeAttributes) {
+        this.mRecipeAttributes = mRecipeAttributes;
+    }
+
+    public ArrayList<String> getmIngredients() {
+        return mIngredients;
+    }
+
+    public void setmIngredients(ArrayList<String> mIngredients) {
+        this.mIngredients = mIngredients;
+    }
+
+    public String getmCarbs() {
+        return mCarbs;
+    }
+
+    public void setmCarbs(String mCarbs) {
+        this.mCarbs = mCarbs;
+    }
+
+    public String getmFat() {
+        return mFat;
+    }
+
+    public void setmFat(String mFat) {
+        this.mFat = mFat;
+    }
+
+    public String getmProtein() {
+        return mProtein;
+    }
+
+    public void setmProtein(String mProtein) {
+        this.mProtein = mProtein;
+    }
+
+    public String getmRecipeURL() {
+        return mRecipeURL;
+    }
+
+    public void setmRecipeURL(String mRecipeURL) {
+        this.mRecipeURL = mRecipeURL;
+    }
+
+    public String getmUniqueURI() {
+        return mUniqueURI;
+    }
+
+    public void setmUniqueURI(String mUniqueURI) {
+        this.mUniqueURI = mUniqueURI;
+    }
+
+    public int getmServings() {
+        return mServings;
+    }
+
+    public void setmServings(int mServings) {
+        this.mServings = mServings;
+    }
+
+    public int getmCalories() {
+        return mCalories;
+    }
+
+    public void setmCalories(int mCalories) {
+        this.mCalories = mCalories;
     }
 }

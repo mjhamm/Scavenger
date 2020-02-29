@@ -55,7 +55,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
         holder.mRelativeLayout.setVisibility(item.isClicked() ? View.VISIBLE : View.GONE);
 
-        holder.mFavoriteButton.setChecked(item.isFavorited() ? true : false);
+        holder.mFavoriteButton.setChecked(item.isFavorited());
 
         String imageURL = item.getmImageUrl();
         TextView name = holder.recipeName;
@@ -64,12 +64,12 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         name.setText(item.getmRecipeName());
         source.setText(item.getmSourceName());
 
-        /*Glide.with(mContext)
+        Glide.with(mContext)
                 .load(imageURL)
                 .skipMemoryCache(true)
                 .centerCrop()
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .into(image);*/
+                .into(image);
 
     }
 
