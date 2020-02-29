@@ -13,7 +13,6 @@
     android:clickable="true">
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/recipeCardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
@@ -33,7 +32,6 @@
             android:foreground="@drawable/image_overlay"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/imageView_constraintLayout"
             android:layout_width="match_parent"
             android:layout_height="280dp">
 
@@ -210,7 +208,6 @@
                             android:layout_marginTop="16dp"/>
 
                         <TextView
-                            android:id="@+id/calories_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             app:layout_constraintBottom_toBottomOf="parent"
@@ -236,7 +233,6 @@
                             android:text="30g"/>
 
                         <TextView
-                            android:id="@+id/carbs_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             app:layout_constraintBottom_toBottomOf="parent"
@@ -262,7 +258,6 @@
                             android:text="20g"/>
 
                         <TextView
-                            android:id="@+id/fat_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             app:layout_constraintBottom_toBottomOf="parent"
@@ -288,7 +283,6 @@
                             android:text="16g"/>
 
                         <TextView
-                            android:id="@+id/protein_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             app:layout_constraintBottom_toBottomOf="parent"
@@ -359,7 +353,6 @@
                 android:textSize="16sp"/>
 
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/viewRecipe_Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"

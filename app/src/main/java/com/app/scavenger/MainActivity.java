@@ -8,21 +8,17 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.FrameLayout;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    final Fragment fragment1 = new SearchFragment();
-    final Fragment fragment2 = new FavoritesFragment();
-    final Fragment fragment3 = new AccountNotLogged();
-    final Fragment fragment4 = new AccountLogged();
-    final FragmentManager fm = getSupportFragmentManager();
-    Fragment active = fragment1;
+    private final Fragment fragment1 = new SearchFragment();
+    private final Fragment fragment2 = new FavoritesFragment();
+    private final Fragment fragment3 = new AccountNotLogged();
+    private final Fragment fragment4 = new AccountLogged();
+    private final FragmentManager fm = getSupportFragmentManager();
+    private Fragment active = fragment1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,31 +34,28 @@ public class MainActivity extends AppCompatActivity {
 
         //loadFragment(new SearchFragment());
 
-        mNavView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Fragment fragment;
-                switch(item.getItemId()) {
-                    case R.id.action_search:
-                        fm.beginTransaction().hide(active).show(fragment1).commit();
-                        active = fragment1;
-                        return true;
-                    case R.id.action_favorites:
-                        fm.beginTransaction().hide(active).show(fragment2).commit();
-                        active = fragment2;
-                        return true;
-                    case R.id.action_account:
-                        fm.beginTransaction().hide(active).show(fragment3).commit();
-                        active = fragment3;
-                        //Check login token
-                        //If logged in, show Account Logged
-                        //If not logged in, show Sign In/ Sign Up
-                        /*fragment = new AccountNotLogged();
-                        loadFragment(fragment);*/
-                        return true;
-                }
-                return false;
+        mNavView.setOnNavigationItemSelectedListener(item -> {
+            Fragment fragment;
+            switch(item.getItemId()) {
+                case R.id.action_search:
+                    fm.beginTransaction().hide(active).show(fragment1).commit();
+                    active = fragment1;
+                    return true;
+                case R.id.action_favorites:
+                    fm.beginTransaction().hide(active).show(fragment2).commit();
+                    active = fragment2;
+                    return true;
+                case R.id.action_account:
+                    fm.beginTransaction().hide(active).show(fragment3).commit();
+                    active = fragment3;
+                    //Check login token
+                    //If logged in, show Account Logged
+                    //If not logged in, show Sign In/ Sign Up
+                    /*fragment = new AccountNotLogged();
+                    loadFragment(fragment);*/
+                    return true;
             }
+            return false;
         });
     }
 

@@ -8,9 +8,9 @@
     <string name="example_recipe_name">Example Recipe Name</string>
     <string name="example_recipe_source">Example Recipe Source</string>
     <string name="recipe_favorite_button_content_descr">Recipe Favorite Button</string>
-    <string name="title_activity_settings">Settings</string>
     <string name="settings_button_content_descr">Settings Button</string>
     <string name="michael_hamm_test_user">Michael Hamm</string>
     <string name="full_name_text_view">Full Name</string>
     <string name="email_address_text_view">Email Address</string>
+    <string name="servings_text">Serves %1$d</string>
 </resources>

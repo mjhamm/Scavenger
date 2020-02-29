@@ -2,8 +2,6 @@ package com.app.scavenger;
 
 import android.os.Bundle;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.preference.PreferenceFragmentCompat;
 
 public class SettingsFragment extends PreferenceFragmentCompat {

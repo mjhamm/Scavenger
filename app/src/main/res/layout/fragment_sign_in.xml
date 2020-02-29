@@ -62,7 +62,6 @@
         android:drawableStart="@drawable/ic_lock_black_16dp"/>
 
     <TextView
-        android:id="@+id/forgot_password"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
@@ -79,7 +78,6 @@
         android:focusable="true"/>
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/signIn_button"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         app:cardBackgroundColor="@color/colorPrimaryDark"

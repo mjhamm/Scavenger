@@ -28,15 +28,15 @@ class RecipeItem {
 
     @Expose
     @SerializedName("CHOCDF")
-    private String mCarbs;
+    private int mCarbs;
 
     @Expose
     @SerializedName("FAT")
-    private String mFat;
+    private int mFat;
 
     @Expose
     @SerializedName("PROCNT")
-    private String mProtein;
+    private int mProtein;
 
     @Expose
     @SerializedName("url")
@@ -113,27 +113,27 @@ class RecipeItem {
         this.mIngredients = mIngredients;
     }
 
-    public String getmCarbs() {
+    public int getmCarbs() {
         return mCarbs;
     }
 
-    public void setmCarbs(String mCarbs) {
+    public void setmCarbs(int mCarbs) {
         this.mCarbs = mCarbs;
     }
 
-    public String getmFat() {
+    public int getmFat() {
         return mFat;
     }
 
-    public void setmFat(String mFat) {
+    public void setmFat(int mFat) {
         this.mFat = mFat;
     }
 
-    public String getmProtein() {
+    public int getmProtein() {
         return mProtein;
     }
 
-    public void setmProtein(String mProtein) {
+    public void setmProtein(int mProtein) {
         this.mProtein = mProtein;
     }
 

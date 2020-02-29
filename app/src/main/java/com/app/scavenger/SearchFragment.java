@@ -9,21 +9,17 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Random;
-import io.reactivex.Single;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -50,7 +46,7 @@ public class SearchFragment extends Fragment {
         mContext = getContext();
     }
 
-    public interface ApiService {
+    interface ApiService {
         @GET("/search?")
         Call<String> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients);
     }
@@ -129,7 +125,7 @@ public class SearchFragment extends Fragment {
             public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
-                        String result = response.body().toString();
+                        String result = response.body();
                         writeRecycler(result);
                         //Log.i("onSuccess", result);
                     } else {
@@ -161,6 +157,47 @@ public class SearchFragment extends Fragment {
                 item.setmSourceName(recipes.getString("source"));
                 item.setmRecipeURL(recipes.getString("url"));
                 item.setmServings(recipes.getInt("yield"));
+                item.setmCalories(recipes.getInt("calories"));
+                item.setmUniqueURI(recipes.getString("uri"));
+
+                ArrayList<String> list_healthLabels = new ArrayList<>();
+
+                JSONArray dietLabelsArray = recipes.getJSONArray("dietLabels");
+                for (int j = 0; j < dietLabelsArray.length(); j++) {
+                    String diets = dietLabelsArray.getString(j);
+                    list_healthLabels.add("\n\u2022 " + diets + "\n");
+                }
+
+                JSONArray healthLabelsArray = recipes.getJSONArray("healthLabels");
+                String labels;
+                for (int k = 0; k < healthLabelsArray.length(); k++) {
+                    if (healthLabelsArray.length() <= 3) {
+                        labels = healthLabelsArray.getString(k);
+                        list_healthLabels.add("\n\u2022 " + labels + "\n");
+                    }
+                }
+                item.setmRecipeAttributes(list_healthLabels);
+
+                //Ingredients
+                JSONArray ingredientsArray = recipes.getJSONArray("ingredients");
+                ArrayList<String> list_ingredients = new ArrayList<>();
+                for (int m = 0; m < ingredientsArray.length(); m++) {
+                    JSONObject ing = ingredientsArray.getJSONObject(m);
+                    String total_ing = ing.getString("text");
+                    list_ingredients.add("\n\u2022 " + total_ing + "\n");
+                    item.setmIngredients(list_ingredients);
+                }
+
+                JSONObject totalNutrients = recipes.getJSONObject("totalNutrients");
+                //Carbs
+                JSONObject carbs = totalNutrients.getJSONObject("CHOCDF");
+                item.setmCarbs(carbs.getInt("quantity"));
+                //Fat
+                JSONObject fat = totalNutrients.getJSONObject("FAT");
+                item.setmFat(fat.getInt("quantity"));
+                //Protein
+                JSONObject protein = totalNutrients.getJSONObject("PROCNT");
+                item.setmProtein(protein.getInt("quantity"));
 
                 recipeItemArrayList.add(item);
             }

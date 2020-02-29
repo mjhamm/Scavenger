@@ -1,18 +1,12 @@
 package com.app.scavenger;
 
 import android.content.Context;
-import android.media.Image;
-import android.text.Layout;
-import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -26,9 +20,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.material.checkbox.MaterialCheckBox;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Locale;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
@@ -53,17 +46,34 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     public void onBindViewHolder(@NonNull SearchAdapter.ViewHolder holder, int position) {
         RecipeItem item = mRecipeItems.get(position);
 
+        // Data from the recipe api
+        String imageURL = item.getmImageUrl();
+        int servings_int = item.getmServings();
+        int calories_int = item.getmCalories();
+        int carbs_int = item.getmCarbs();
+        int fat_int = item.getmFat();
+        int protein_int  = item.getmProtein();
+
         holder.mRelativeLayout.setVisibility(item.isClicked() ? View.VISIBLE : View.GONE);
 
         holder.mFavoriteButton.setChecked(item.isFavorited());
 
-        String imageURL = item.getmImageUrl();
         TextView name = holder.recipeName;
         TextView source = holder.recipeSource;
         ImageView image = holder.recipeImage;
-        name.setText(item.getmRecipeName());
-        source.setText(item.getmSourceName());
+        TextView servings = holder.recipeServings;
+        TextView calories = holder.recipeCalories;
+        TextView carbs = holder.recipeCarbs;
+        TextView fat = holder.recipeFat;
+        TextView protein = holder.recipeProtein;
 
+        String servings_string = String.format(mContext.getString(R.string.servings_text),servings_int);
+        String calories_string = String.format(Locale.getDefault(), "%d", calories_int);
+        String carbs_string = String.format(Locale.getDefault(),"%d", carbs_int);
+        String fat_string = String.format(Locale.getDefault(),"%d", fat_int);
+        String protein_string = String.format(Locale.getDefault(),"%d", protein_int);
+
+        //Setting all items in each recipe item ------------
         Glide.with(mContext)
                 .load(imageURL)
                 .skipMemoryCache(true)
@@ -71,6 +81,13 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(image);
 
+        name.setText(item.getmRecipeName());
+        source.setText(item.getmSourceName());
+        servings.setText(servings_string);
+        calories.setText(calories_string);
+        carbs.setText(carbs_string);
+        fat.setText(fat_string);
+        protein.setText(protein_string);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -79,6 +96,13 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
         private TextView recipeName;
         private TextView recipeSource;
+        private TextView recipeServings;
+        private TextView recipeCalories;
+        private TextView recipeIngredients;
+        private TextView recipeCarbs;
+        private TextView recipeFat;
+        private TextView recipeProtein;
+        private TextView recipeAttributes;
         private ImageView recipeImage;
         private RelativeLayout mRelativeLayout;
         private MaterialCheckBox mFavoriteButton;
@@ -91,68 +115,66 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             recipeName = itemView.findViewById(R.id.recipe_name);
             recipeSource = itemView.findViewById(R.id.recipe_source);
             recipeImage = itemView.findViewById(R.id.recipe_image);
+            recipeServings = itemView.findViewById(R.id.servings_total);
+            recipeCalories = itemView.findViewById(R.id.calories_amount);
+            recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
+            recipeCarbs = itemView.findViewById(R.id.carbs_amount);
+            recipeFat = itemView.findViewById(R.id.fat_amount);
+            recipeProtein = itemView.findViewById(R.id.protein_amount);
+            recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
             mFavoriteButton = itemView.findViewById(R.id.recipe_favorite);
             mRelativeLayout = itemView.findViewById(R.id.ingredients_relativeLayout);
             more_button = itemView.findViewById(R.id.more_button);
             itemView.setOnClickListener(this);
 
             // Recipe Image Click Listener
-            recipeImage.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int position = getAdapterPosition();
-                    // Adapter Position
-                    // Gets the item at the position
-                    item = mRecipeItems.get(position);
-                    // Checks if the item is clicked
-                    // Sets the layout visible/gone
-                    if (item.isClicked()) {
-                        mRelativeLayout.setVisibility(View.GONE);
-                        item.setClicked(false);
-                    } else {
-                        mRelativeLayout.setVisibility(View.VISIBLE);
-                        item.setClicked(true);
-                    }
+            recipeImage.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                // Adapter Position
+                // Gets the item at the position
+                item = mRecipeItems.get(position);
+                // Checks if the item is clicked
+                // Sets the layout visible/gone
+                if (item.isClicked()) {
+                    mRelativeLayout.setVisibility(View.GONE);
+                    item.setClicked(false);
+                } else {
+                    mRelativeLayout.setVisibility(View.VISIBLE);
+                    item.setClicked(true);
                 }
             });
 
-            mFavoriteButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    item = mRecipeItems.get(getAdapterPosition());
+            mFavoriteButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                item = mRecipeItems.get(getAdapterPosition());
 
-                    if (item.isFavorited()) {
-                        item.setFavorited(false);
-                    } else {
-                        item.setFavorited(true);
-                    }
+                if (item.isFavorited()) {
+                    item.setFavorited(false);
+                } else {
+                    item.setFavorited(true);
                 }
             });
 
-            more_button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Animation cw = AnimationUtils.loadAnimation(mContext, R.anim.menu_clockwise);
-                    Animation acw = AnimationUtils.loadAnimation(mContext, R.anim.menu_anti_clockwise);
+            more_button.setOnClickListener(v -> {
+                Animation cw = AnimationUtils.loadAnimation(mContext, R.anim.menu_clockwise);
+                Animation acw = AnimationUtils.loadAnimation(mContext, R.anim.menu_anti_clockwise);
 
-                    PopupMenu popupMenu = new PopupMenu(mContext, more_button);
-                    popupMenu.setOnMenuItemClickListener(item -> false);
-                    MenuInflater inflater = popupMenu.getMenuInflater();
-                    inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
-                    popupMenu.show();
+                PopupMenu popupMenu = new PopupMenu(mContext, more_button);
+                popupMenu.setOnMenuItemClickListener(item -> false);
+                MenuInflater inflater = popupMenu.getMenuInflater();
+                inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
+                popupMenu.show();
 
-                    if (!rotated) {
-                        more_button.startAnimation(cw);
-                        rotated = true;
-                        cw.setFillAfter(true);
-                    }
-
-                    popupMenu.setOnDismissListener(dismiss -> {
-                        more_button.startAnimation(acw);
-                        rotated = false;
-                        acw.setFillAfter(true);
-                    });
+                if (!rotated) {
+                    more_button.startAnimation(cw);
+                    rotated = true;
+                    cw.setFillAfter(true);
                 }
+
+                popupMenu.setOnDismissListener(dismiss -> {
+                    more_button.startAnimation(acw);
+                    rotated = false;
+                    acw.setFillAfter(true);
+                });
             });
         }
 

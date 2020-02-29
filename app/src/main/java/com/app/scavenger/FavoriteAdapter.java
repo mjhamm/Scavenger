@@ -46,7 +46,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
         holder.mRelativeLayout.setVisibility(item.isClicked() ? View.VISIBLE : View.GONE);
 
-        holder.mFavoriteButton.setChecked(item.isFavorited() ? true : false);
+        holder.mFavoriteButton.setChecked(item.isFavorited());
 
         String imageURL = item.getmImageUrl();
         TextView name = holder.recipeName;
@@ -88,62 +88,53 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
             itemView.setOnClickListener(this);
 
             // Recipe Image Click Listener
-            recipeImage.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int position = getAdapterPosition();
-                    // Adapter Position
-                    // Gets the item at the position
-                    item = mRecipeItems.get(position);
-                    // Checks if the item is clicked
-                    // Sets the layout visible/gone
-                    if (item.isClicked()) {
-                        mRelativeLayout.setVisibility(View.GONE);
-                        item.setClicked(false);
-                    } else {
-                        mRelativeLayout.setVisibility(View.VISIBLE);
-                        item.setClicked(true);
-                    }
+            recipeImage.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                // Adapter Position
+                // Gets the item at the position
+                item = mRecipeItems.get(position);
+                // Checks if the item is clicked
+                // Sets the layout visible/gone
+                if (item.isClicked()) {
+                    mRelativeLayout.setVisibility(View.GONE);
+                    item.setClicked(false);
+                } else {
+                    mRelativeLayout.setVisibility(View.VISIBLE);
+                    item.setClicked(true);
                 }
             });
 
-            mFavoriteButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    item = mRecipeItems.get(getAdapterPosition());
+            mFavoriteButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                item = mRecipeItems.get(getAdapterPosition());
 
-                    if (item.isFavorited()) {
-                        item.setFavorited(false);
-                    } else {
-                        item.setFavorited(true);
-                    }
+                if (item.isFavorited()) {
+                    item.setFavorited(false);
+                } else {
+                    item.setFavorited(true);
                 }
             });
 
-            more_button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Animation cw = AnimationUtils.loadAnimation(mContext, R.anim.menu_clockwise);
-                    Animation acw = AnimationUtils.loadAnimation(mContext, R.anim.menu_anti_clockwise);
+            more_button.setOnClickListener(v -> {
+                Animation cw = AnimationUtils.loadAnimation(mContext, R.anim.menu_clockwise);
+                Animation acw = AnimationUtils.loadAnimation(mContext, R.anim.menu_anti_clockwise);
 
-                    PopupMenu popupMenu = new PopupMenu(mContext, more_button);
-                    popupMenu.setOnMenuItemClickListener(item -> false);
-                    MenuInflater inflater = popupMenu.getMenuInflater();
-                    inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
-                    popupMenu.show();
+                PopupMenu popupMenu = new PopupMenu(mContext, more_button);
+                popupMenu.setOnMenuItemClickListener(item -> false);
+                MenuInflater inflater = popupMenu.getMenuInflater();
+                inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
+                popupMenu.show();
 
-                    if (!rotated) {
-                        more_button.startAnimation(cw);
-                        rotated = true;
-                        cw.setFillAfter(true);
-                    }
-
-                    popupMenu.setOnDismissListener(dismiss -> {
-                        more_button.startAnimation(acw);
-                        rotated = false;
-                        acw.setFillAfter(true);
-                    });
+                if (!rotated) {
+                    more_button.startAnimation(cw);
+                    rotated = true;
+                    cw.setFillAfter(true);
                 }
+
+                popupMenu.setOnDismissListener(dismiss -> {
+                    more_button.startAnimation(acw);
+                    rotated = false;
+                    acw.setFillAfter(true);
+                });
             });
         }
 
