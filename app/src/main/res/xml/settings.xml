@@ -23,7 +23,7 @@
             android:key="match"
             android:defaultValue="false"
             android:title="Match Number of Ingredients"
-            android:summary="Find recipes with only the number of ingredients you search with"
+            android:summary="Find recipes with only the number of ingredients you search with or less"
             app:iconSpaceReserved="false"/>
     </PreferenceCategory>
 

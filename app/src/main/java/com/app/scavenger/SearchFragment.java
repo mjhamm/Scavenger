@@ -1,12 +1,14 @@
 package com.app.scavenger;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
@@ -35,6 +37,8 @@ public class SearchFragment extends Fragment {
     private Context mContext;
     private SearchView mSearchView;
     private TextView startup_message;
+    private TextView match_textView;
+    private SharedPreferences sharedPreferences;
 
     public SearchFragment() {
         // Required empty public constructor
@@ -57,7 +61,10 @@ public class SearchFragment extends Fragment {
 
         startup_message = view.findViewById(R.id.startup_message);
         mSearchView = view.findViewById(R.id.search_searchView);
+        match_textView = view.findViewById(R.id.matchIngr_textView);
         mSearchView.setMaxWidth(Integer.MAX_VALUE);
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         Random random_start_number = new Random();
 
@@ -105,13 +112,42 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (sharedPreferences.getBoolean("match", true)) {
+            match_textView.setVisibility(View.VISIBLE);
+        } else {
+            match_textView.setVisibility(View.GONE);
+        }
+    }
+
+    private int checkNumIngredients() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        int numIngr = 100;
+        String[] ingredientsArray;
+        boolean matchIngr = sharedPreferences.getBoolean("match", false);
+
+        if (matchIngr) {
+            if (mSearchView.getQuery().toString().contains(",")) {
+                ingredientsArray = mSearchView.getQuery().toString().split(",");
+                numIngr = ingredientsArray.length;
+            } else {
+                ingredientsArray = mSearchView.getQuery().toString().split(" ");
+                numIngr = ingredientsArray.length;
+            }
+        }
+        Toast.makeText(mContext, "# Ingredients: " + numIngr, Toast.LENGTH_SHORT).show();
+        return numIngr;
+    }
+
     private void getIngredients() {
         Retrofit retrofit = NetworkClient.getRetrofitClient();
 
         ApiService apiService = retrofit.create(ApiService.class);
 
 
-        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), "bd790cc2", "56fdf6a5593ad5199e8040a29b9fbfd6", 100);
+        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), "bd790cc2", "56fdf6a5593ad5199e8040a29b9fbfd6", checkNumIngredients());
 
         call.enqueue(new Callback<String>() {
             @Override

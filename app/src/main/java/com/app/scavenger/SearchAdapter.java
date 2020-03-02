@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -33,6 +34,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.checkbox.MaterialCheckBox;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -67,6 +71,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         int carbs_int = item.getmCarbs();
         int fat_int = item.getmFat();
         int protein_int  = item.getmProtein();
+        ArrayList<String> ingredients_list = item.getmIngredients();
+        ArrayList<String> attributes_list = item.getmRecipeAttributes();
 
         holder.mRelativeLayout.setVisibility(item.isClicked() ? View.VISIBLE : View.GONE);
 
@@ -80,6 +86,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         TextView carbs = holder.recipeCarbs;
         TextView fat = holder.recipeFat;
         TextView protein = holder.recipeProtein;
+        TextView ingredients = holder.recipeIngredients;
+        TextView attributes = holder.recipeAttributes;
 
         String servings_string = String.format(mContext.getString(R.string.servings_text),servings_int);
         String calories_string = String.format(Locale.getDefault(), "%d", calories_int);
@@ -102,6 +110,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         carbs.setText(carbs_string);
         fat.setText(fat_string);
         protein.setText(protein_string);
+        ingredients.setText(TextUtils.join("", ingredients_list));
+        attributes.setText(TextUtils.join("", attributes_list));
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -118,6 +128,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         private TextView recipeProtein;
         private TextView recipeAttributes;
         private ImageView recipeImage;
+        private MaterialCardView mNutritionCard;
         private RelativeLayout mRelativeLayout;
         private MaterialCheckBox mFavoriteButton;
         private RecipeItem item;
@@ -137,6 +148,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             recipeCarbs = itemView.findViewById(R.id.carbs_amount);
             recipeFat = itemView.findViewById(R.id.fat_amount);
             recipeProtein = itemView.findViewById(R.id.protein_amount);
+            mNutritionCard = itemView.findViewById(R.id.facts_cardView);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
             mFavoriteButton = itemView.findViewById(R.id.recipe_favorite);
             mRelativeLayout = itemView.findViewById(R.id.ingredients_relativeLayout);
@@ -205,6 +217,22 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     rotated = false;
                     acw.setFillAfter(true);
                 });
+            });
+
+            mNutritionCard.setOnClickListener(v -> {
+                new MaterialAlertDialogBuilder(mContext)
+                        .setTitle("Some Information")
+                        .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
+                                "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
+                                "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
+                                "as well as the number of servings the amount of ingredients can make.")
+                        .setPositiveButton("Got It!", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        }).create()
+                .show();
             });
 
             mViewRecipe.setOnClickListener(v -> {
