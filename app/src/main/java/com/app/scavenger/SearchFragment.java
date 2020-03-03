@@ -17,6 +17,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.facebook.shimmer.ShimmerFrameLayout;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,6 +42,9 @@ public class SearchFragment extends Fragment {
     private TextView startup_message;
     private TextView match_textView;
     private SharedPreferences sharedPreferences;
+    private ShimmerFrameLayout shimmer;
+    private int fromIngr = 0;
+    private int toIngr = 10;
 
     public SearchFragment() {
         // Required empty public constructor
@@ -52,7 +58,7 @@ public class SearchFragment extends Fragment {
 
     interface ApiService {
         @GET("/search?")
-        Call<String> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients);
+        Call<String> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients, @Query("from") int fromIngr, @Query("to") int toIngr);
     }
 
     @Override
@@ -63,6 +69,7 @@ public class SearchFragment extends Fragment {
         mSearchView = view.findViewById(R.id.search_searchView);
         match_textView = view.findViewById(R.id.matchIngr_textView);
         mSearchView.setMaxWidth(Integer.MAX_VALUE);
+        shimmer = view.findViewById(R.id.search_shimmerLayout);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
 
@@ -141,12 +148,15 @@ public class SearchFragment extends Fragment {
     }
 
     private void getIngredients() {
+        startup_message.setVisibility(View.GONE);
+        shimmer.setVisibility(View.VISIBLE);
+        shimmer.startShimmer();
         Retrofit retrofit = NetworkClient.getRetrofitClient();
 
         ApiService apiService = retrofit.create(ApiService.class);
 
 
-        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), "bd790cc2", "56fdf6a5593ad5199e8040a29b9fbfd6", checkNumIngredients());
+        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), "bd790cc2", "56fdf6a5593ad5199e8040a29b9fbfd6", checkNumIngredients(), fromIngr, toIngr);
 
         call.enqueue(new Callback<String>() {
             @Override
@@ -229,13 +239,20 @@ public class SearchFragment extends Fragment {
 
                 recipeItemArrayList.add(item);
             }
-            startup_message.setVisibility(View.GONE);
-            adapter = new SearchAdapter(mContext, recipeItemArrayList);
+            adapter = new SearchAdapter(mContext, recipeItemArrayList, mSearchRecyclerView);
             mSearchRecyclerView.setAdapter(adapter);
             mSearchRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
+
+            if (recipeItemArrayList.isEmpty()) {
+                startup_message.setVisibility(View.VISIBLE);
+                startup_message.setText("We Couldn't Find Any Recipes :(\n" +
+                        "Sorry About That!");
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        shimmer.stopShimmer();
+        shimmer.setVisibility(View.GONE);
     }
 
     @Override

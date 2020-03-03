@@ -2,6 +2,7 @@ package com.app.scavenger;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -35,6 +36,33 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        help.setOnPreferenceClickListener(v -> {
+            openHelp();
+            return false;
+        });
+
+        about.setOnPreferenceClickListener(v -> {
+            openAbout();
+            return false;
+        });
+
+        legal.setOnPreferenceClickListener(v -> {
+            openLegal();
+            return false;
+        });
+    }
+
+    private void openHelp() {
+        startActivity(new Intent(mContext, Help.class));
+    }
+
+    private void openAbout() {
+        startActivity(new Intent(mContext, About.class));
+    }
+
+    private void openLegal() {
+        startActivity(new Intent(mContext, Legal.class));
     }
 
 
@@ -46,12 +74,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                         .setTitle("Just a Quick Thing")
                         .setMessage("In order to get the best results with Match Ingredients, separate your ingredients with a comma (',')")
                         .setCancelable(false)
-                        .setPositiveButton("Got It!", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        }).create()
+                        .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
                         .show();
             }
         }

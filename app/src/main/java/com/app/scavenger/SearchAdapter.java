@@ -19,36 +19,34 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Locale;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
+    private final int VIEW_ITEM = 1;
+    private final int VIEW_PROG = 0;
     private ArrayList<RecipeItem> mRecipeItems;
     private Context mContext;
     private LayoutInflater mInflater;
-    ItemInformationListener callback;
 
-    SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems) {
+    SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems, RecyclerView recyclerView) {
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
@@ -58,15 +56,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     @Override
     public SearchAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.card_item, parent, false);
-        return new ViewHolder(view);
-    }
-
-    public interface ItemInformationListener {
-        void addItemData(int position, String image, String name, String source, boolean clicked, boolean favorite, int serves, int cal, int carb, int fat, int protein, ArrayList<String> ingr, ArrayList<String> attr, String url);
-    }
-
-    public void setOnItemInformationListener(ItemInformationListener callback) {
-        this.callback = callback;
+        ViewHolder viewHolder = new ViewHolder(view);
+        return viewHolder;
     }
 
     @Override
@@ -92,8 +83,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             holder.mFavoriteButton.setTag(position);
             holder.mFavoriteButton.setChecked(false);
         }
-
-        holder.mFavoriteButton.setTag(position);
 
         TextView name = holder.recipeName;
         TextView source = holder.recipeSource;
@@ -195,15 +184,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 buttonView.getTag();
 
                 item.setFavorited(isChecked);
-
-                /*if (item.isFavorited()) {
-                    buttonView.setChecked(false);
-                    item.setFavorited(false);
-                } else {
-                    item.setFavorited(true);
-                    buttonView.setChecked(true);
-                    Log.e(TAG, "ITEM: " + item.getmRecipeName());
-                }*/
             });
 
             more_button.setOnClickListener(v -> {
@@ -272,29 +252,28 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
         private void reportRecipe() {
             final CharSequence[] listItems = {"Inappropriate Image","Inappropriate Website","Profanity"};
-            AlertDialog.Builder reportDialog = new AlertDialog.Builder(mContext);
-            reportDialog.setTitle("Why are you reporting this?");
-            reportDialog.setSingleChoiceItems(listItems, -1, (dialog, item) -> {
-                switch (item) {
-                    case 0:
-                        reportReason = "Inappropriate Image";
-                        break;
-                    case 1:
-                        reportReason = "Inappropriate Website";
-                        break;
-                    case 2:
-                        reportReason = "Profanity";
-                        break;
-                }
-            });
-            reportDialog.setPositiveButton("Report", (dialog, which) -> Toast.makeText(mContext, "Reported for " + reportReason + ".", Toast.LENGTH_SHORT).show());
-            reportDialog.setNegativeButton("Cancel", (dialog, which) -> {/*Cancelled*/});
-
-            AlertDialog alertDialog = reportDialog.create();
-            reportReason = null;
-            alertDialog.show();
-            Button buttonPositive = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-            Button buttonNegative = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+            new MaterialAlertDialogBuilder(mContext)
+                    .setTitle("Why are you reporting this?")
+                    .setSingleChoiceItems(listItems, -1, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case 0:
+                                    reportReason = "Inappropriate Image";
+                                    break;
+                                case 1:
+                                    reportReason = "Inappropriate Website";
+                                    break;
+                                case 2:
+                                    reportReason = "Profanity";
+                                    break;
+                            }
+                        }
+                    })
+                    .setPositiveButton("Report",(dialog, which) -> Toast.makeText(mContext, "Reported for " + reportReason + ". Thank you.", Toast.LENGTH_SHORT).show())
+                    .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
+                    .create()
+                    .show();
         }
 
         private void copyRecipe() {
@@ -363,6 +342,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     @Override
     public int getItemCount() {
         return mRecipeItems.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return mRecipeItems.get(position) != null ? VIEW_ITEM : VIEW_PROG;
     }
 }
 

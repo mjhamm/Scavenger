@@ -35,9 +35,6 @@ public class MainActivity extends AppCompatActivity {
 
         BottomNavigationView mNavView = findViewById(R.id.bottom_nav_view);
 
-        favoriteAdapter = new FavoriteAdapter(getApplicationContext(), recipeItems);
-        searchAdapter = new SearchAdapter(getApplicationContext(), recipeItems);
-
         mNavView.setOnNavigationItemSelectedListener(item -> {
             switch(item.getItemId()) {
                 case R.id.action_search:
