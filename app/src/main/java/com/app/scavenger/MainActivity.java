@@ -7,6 +7,8 @@ import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
 
     private final Fragment fragment1 = new SearchFragment();
@@ -15,11 +17,16 @@ public class MainActivity extends AppCompatActivity {
     private final Fragment fragment4 = new AccountLogged();
     private final FragmentManager fm = getSupportFragmentManager();
     private Fragment active = fragment1;
+    private FavoriteAdapter favoriteAdapter;
+    private SearchAdapter searchAdapter;
+    private ArrayList<RecipeItem> recipeItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        recipeItems = new ArrayList<>();
 
         fm.beginTransaction().add(R.id.fragment_container, fragment4, "4").hide(fragment4).commit();
         fm.beginTransaction().add(R.id.fragment_container, fragment3, "3").hide(fragment3).commit();
@@ -28,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
 
         BottomNavigationView mNavView = findViewById(R.id.bottom_nav_view);
 
+        favoriteAdapter = new FavoriteAdapter(getApplicationContext(), recipeItems);
+        searchAdapter = new SearchAdapter(getApplicationContext(), recipeItems);
 
         mNavView.setOnNavigationItemSelectedListener(item -> {
             switch(item.getItemId()) {
@@ -50,4 +59,6 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
     }
+
+
 }

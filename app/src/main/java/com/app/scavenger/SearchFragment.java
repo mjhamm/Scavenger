@@ -137,7 +137,6 @@ public class SearchFragment extends Fragment {
                 numIngr = ingredientsArray.length;
             }
         }
-        Toast.makeText(mContext, "# Ingredients: " + numIngr, Toast.LENGTH_SHORT).show();
         return numIngr;
     }
 

@@ -46,6 +46,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     private ArrayList<RecipeItem> mRecipeItems;
     private Context mContext;
     private LayoutInflater mInflater;
+    ItemInformationListener callback;
 
     SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems) {
         this.mContext = context;
@@ -58,6 +59,14 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     public SearchAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.card_item, parent, false);
         return new ViewHolder(view);
+    }
+
+    public interface ItemInformationListener {
+        void addItemData(int position, String image, String name, String source, boolean clicked, boolean favorite, int serves, int cal, int carb, int fat, int protein, ArrayList<String> ingr, ArrayList<String> attr, String url);
+    }
+
+    public void setOnItemInformationListener(ItemInformationListener callback) {
+        this.callback = callback;
     }
 
     @Override
@@ -76,7 +85,15 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
         holder.mRelativeLayout.setVisibility(item.isClicked() ? View.VISIBLE : View.GONE);
 
-        holder.mFavoriteButton.setChecked(item.isFavorited());
+        if (item.isFavorited()) {
+            holder.mFavoriteButton.setTag(position);
+            holder.mFavoriteButton.setChecked(true);
+        } else {
+            holder.mFavoriteButton.setTag(position);
+            holder.mFavoriteButton.setChecked(false);
+        }
+
+        holder.mFavoriteButton.setTag(position);
 
         TextView name = holder.recipeName;
         TextView source = holder.recipeSource;
@@ -175,12 +192,18 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
             mFavoriteButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 item = mRecipeItems.get(getAdapterPosition());
+                buttonView.getTag();
 
-                if (item.isFavorited()) {
+                item.setFavorited(isChecked);
+
+                /*if (item.isFavorited()) {
+                    buttonView.setChecked(false);
                     item.setFavorited(false);
                 } else {
                     item.setFavorited(true);
-                }
+                    buttonView.setChecked(true);
+                    Log.e(TAG, "ITEM: " + item.getmRecipeName());
+                }*/
             });
 
             more_button.setOnClickListener(v -> {
@@ -221,7 +244,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
             mNutritionCard.setOnClickListener(v -> {
                 new MaterialAlertDialogBuilder(mContext)
-                        .setTitle("Some Information")
+                        .setTitle("Some Information about Our Data")
                         .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
                                 "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
                                 "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
