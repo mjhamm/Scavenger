@@ -122,7 +122,7 @@ public class SearchFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (sharedPreferences.getBoolean("match", true)) {
+        if (sharedPreferences.getBoolean("match",true)) {
             match_textView.setVisibility(View.VISIBLE);
         } else {
             match_textView.setVisibility(View.GONE);

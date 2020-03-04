@@ -13,4 +13,7 @@
     <string name="full_name_text_view">Full Name</string>
     <string name="email_address_text_view">Email Address</string>
     <string name="servings_text">Serves %1$d</string>
+
+    <string name="facebook_app_id">505719136936823</string>
+    <string name="fb_login_protocol_scheme">fb505719136936823</string>
 </resources>

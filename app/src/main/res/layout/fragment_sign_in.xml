@@ -62,6 +62,7 @@
         android:drawableStart="@drawable/ic_lock_black_16dp"/>
 
     <TextView
+        android:id="@+id/forgot_signIn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
@@ -76,6 +77,47 @@
         android:textSize="14sp"
         android:clickable="true"
         android:focusable="true"/>
+
+    <TextView
+        android:id="@+id/signIn_or"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="OR"
+        android:fontFamily="@font/roboto_condensed_regular"
+        android:textColor="@android:color/black"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/forgot_signIn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/google_signIn"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:background="@mipmap/btn_google_signin_light_normal_xxxhdpi"
+            android:fontFamily="@font/roboto_medium"
+            android:text="Sign In with Google"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/signIn_or"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/facebook_signIn"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="Sign In with Facebook"
+        app:layout_constraintTop_toBottomOf="@id/google_signIn"
+        app:layout_constraintStart_toStartOf="@id/google_signIn"
+        app:layout_constraintEnd_toEndOf="@id/google_signIn"
+        android:drawablePadding="8dp"
+        android:elevation="12dp"
+        android:padding="8dp"
+        android:drawableStart="@drawable/f_logo_blue_24"
+        android:background="@color/com_facebook_blue"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="16dp"/>
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
