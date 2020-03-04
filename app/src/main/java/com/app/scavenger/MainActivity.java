@@ -46,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
                     active = fragment2;
                     return true;
                 case R.id.action_account:
-                    fm.beginTransaction().hide(active).show(fragment3).commit();
-                    active = fragment3;
+                    fm.beginTransaction().hide(active).show(fragment4).commit();
+                    active = fragment4;
                     //Check login token
                     //If logged in, show Account Logged
                     //If not logged in, show Sign In/ Sign Up

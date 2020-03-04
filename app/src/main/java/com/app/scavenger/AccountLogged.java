@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -18,7 +19,7 @@ public class AccountLogged extends Fragment {
     Context mContext;
     ImageButton settingsButton;
     MaterialCardView mLogoutButton;
-    MaterialCardView mDeleteAccountButton;
+    TextView mName, mEmail, mAccountName;
 
     public AccountLogged() {
         // Required empty public constructor
@@ -36,16 +37,18 @@ public class AccountLogged extends Fragment {
 
         settingsButton = view.findViewById(R.id.settings_button_logged);
         mLogoutButton = view.findViewById(R.id.logout_button);
-        mDeleteAccountButton = view.findViewById(R.id.delete_account);
+        mName = view.findViewById(R.id.name_mainText);
+        mEmail = view.findViewById(R.id.email_mainText);
+        mAccountName = view.findViewById(R.id.account_name);
+
+        mAccountName.setOnClickListener(v -> {
+            startActivity(new Intent(mContext, AccountInfo.class));
+        });
 
         settingsButton.setOnClickListener(v -> startActivity(new Intent(mContext, SettingsActivity.class)));
 
         mLogoutButton.setOnClickListener(v -> {
             logoutDialog();
-        });
-
-        mDeleteAccountButton.setOnClickListener(v -> {
-            deleteAccountFirst();
         });
 
         return view;
@@ -66,32 +69,5 @@ public class AccountLogged extends Fragment {
                 .show();
     }
 
-    private void deleteAccountFirst() {
-        new MaterialAlertDialogBuilder(mContext)
-                .setTitle("Are you sure you want to delete your account?")
-                .setCancelable(false)
-                .setPositiveButton("I'm Sure!", (dialog, which) -> {
-                    deleteAccountSecond();
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> {
-                    dialog.cancel();
-                })
-                .create()
-                .show();
-    }
 
-    private void deleteAccountSecond() {
-        new MaterialAlertDialogBuilder(mContext)
-                .setTitle("Just making sure. Do you really want to delete your account?")
-                .setCancelable(false)
-                .setPositiveButton("Yep! Delete it!", (dialog, which) -> {
-                    //DELETE ACCOUNT
-                    dialog.dismiss();
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> {
-                    dialog.cancel();
-                })
-                .create()
-                .show();
-    }
 }

@@ -16,4 +16,5 @@
 
     <string name="facebook_app_id">505719136936823</string>
     <string name="fb_login_protocol_scheme">fb505719136936823</string>
+    <string name="back_button">Back Button</string>
 </resources>

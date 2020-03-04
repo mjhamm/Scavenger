@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".AccountLogged">
+    tools:context=".AccountInfo">
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/account_logged_toolbar"
+        android:id="@+id/account_info_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         app:layout_constraintStart_toStartOf="parent"
@@ -16,86 +15,82 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:cardElevation="12dp">
 
-        <TextView
-            android:id="@+id/account_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/michael_hamm_test_user"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="24dp"
-            android:textSize="18sp"
-            android:textColor="@android:color/black"/>
-
         <ImageButton
-            android:id="@+id/settings_button_logged"
+            android:id="@+id/account_info_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_settings_black_36dp"
-            android:background="@android:color/transparent"
-            android:layout_gravity="end|center_vertical"
-            android:contentDescription="@string/settings_button_content_descr"
-            android:layout_marginEnd="16dp"/>
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:padding="4dp"
+            android:src="@drawable/ic_arrow_back_black_36dp"
+            android:contentDescription="@string/back_button"
+            android:background="@android:color/transparent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Account Information"
+            android:layout_gravity="center"
+            android:textSize="20sp"
+            android:textColor="@android:color/black"
+            android:fontFamily="@font/roboto_condensed_regular"/>
 
     </com.google.android.material.card.MaterialCardView>
 
     <TextView
-        android:id="@+id/name_textView"
+        android:id="@+id/name_info_textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/account_logged_toolbar"
+        app:layout_constraintTop_toBottomOf="@id/account_info_toolbar"
         android:text="@string/full_name_text_view"
+        android:labelFor="@id/name_info_editText"
         android:textSize="16sp"
         android:textColor="@android:color/black"
         android:fontFamily="@font/roboto_condensed_regular"
         android:layout_marginStart="24dp"
         android:layout_marginTop="36dp"/>
 
-    <TextView
-        android:id="@+id/name_mainText"
+    <EditText
+        android:id="@+id/name_info_editText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:importantForAutofill="no"
+        android:inputType="textPersonName"
         app:layout_constraintStart_toStartOf="parent"
-        android:text="Michael Hamm"
-        android:fontFamily="@font/roboto_condensed_regular"
-        android:textSize="18sp"
-        android:textColor="@android:color/black"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/name_textView"
-        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/name_info_textView"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
 
     <TextView
-        android:id="@+id/email_textView"
+        android:id="@+id/email_info_textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/name_mainText"
+        app:layout_constraintTop_toBottomOf="@id/name_info_editText"
         android:text="@string/email_address_text_view"
+        android:labelFor="@id/email_editText"
         android:textSize="16sp"
         android:textColor="@android:color/black"
         android:fontFamily="@font/roboto_condensed_regular"
         android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"/>
 
-    <TextView
-        android:id="@+id/email_mainText"
+    <EditText
+        android:id="@+id/email_info_editText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="mjhamm@bu.edu"
-        android:fontFamily="@font/roboto_condensed_regular"
-        android:textSize="18sp"
-        android:textColor="@android:color/black"
+        android:importantForAutofill="no"
+        android:inputType="textEmailAddress"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/email_textView"
-        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/email_info_textView"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/logout_button"
+        android:id="@+id/updateInfo_button"
         android:layout_width="match_parent"
         android:layout_height="36dp"
         app:cardBackgroundColor="@color/colorPrimaryDark"
@@ -107,14 +102,40 @@
         android:layout_marginEnd="36dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/email_mainText">
+        app:layout_constraintTop_toBottomOf="@id/email_info_editText">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:fontFamily="@font/roboto_condensed_regular"
-            android:text="Log Out"
+            android:text="Update Info"
+            android:textColor="@android:color/white"
+            android:textSize="20sp" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/delete_account"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        app:cardBackgroundColor="@color/colorPrimaryDark"
+        app:cardCornerRadius="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginTop="56dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginEnd="36dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/updateInfo_button">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:fontFamily="@font/roboto_condensed_regular"
+            android:text="Delete Account"
             android:textColor="@android:color/white"
             android:textSize="20sp" />
 
