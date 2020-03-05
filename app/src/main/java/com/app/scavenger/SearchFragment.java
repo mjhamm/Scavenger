@@ -17,9 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.facebook.shimmer.ShimmerFrameLayout;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,6 +54,11 @@ public class SearchFragment extends Fragment {
         mContext = getContext();
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
     interface ApiService {
         @GET("/search?")
         Call<String> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients, @Query("from") int fromIngr, @Query("to") int toIngr);
@@ -72,6 +75,12 @@ public class SearchFragment extends Fragment {
         shimmer = view.findViewById(R.id.search_shimmerLayout);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+
+        if (sharedPreferences.getBoolean("match",false)) {
+            match_textView.setVisibility(View.GONE);
+        } else {
+            match_textView.setVisibility(View.VISIBLE);
+        }
 
         Random random_start_number = new Random();
 

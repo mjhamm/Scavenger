@@ -1,34 +1,77 @@
 package com.app.scavenger;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import android.os.Bundle;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
+
+    private static final String TAG = "LOG: ";
     private final Fragment fragment1 = new SearchFragment();
     private final Fragment fragment2 = new FavoritesFragment();
-    private final Fragment fragment3 = new AccountNotLogged();
-    private final Fragment fragment4 = new AccountLogged();
+    private Fragment fragment3 = null;
     private final FragmentManager fm = getSupportFragmentManager();
     private Fragment active = fragment1;
     private FavoriteAdapter favoriteAdapter;
     private SearchAdapter searchAdapter;
     private ArrayList<RecipeItem> recipeItems;
+    private GoogleSignInClient googleSignInClient;
+    private GoogleApiClient googleApiClient;
+    private String name = null;
+    private String email = null;
+    private boolean logged = false;
+    private GoogleSignInAccount account;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        account = GoogleSignIn.getLastSignedInAccount(this);
+
+        if (account != null) {
+            logged = true;
+            name = account.getDisplayName();
+            email = account.getEmail();
+        }
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this,this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
+
         recipeItems = new ArrayList<>();
 
-        fm.beginTransaction().add(R.id.fragment_container, fragment4, "4").hide(fragment4).commit();
+        fragment3 = Account.newInstance(name, email, logged);
+        Log.e(TAG, "Logged: " + logged + " NAME: " + name);
+
         fm.beginTransaction().add(R.id.fragment_container, fragment3, "3").hide(fragment3).commit();
         fm.beginTransaction().add(R.id.fragment_container, fragment2, "2").hide(fragment2).commit();
         fm.beginTransaction().add(R.id.fragment_container, fragment1, "1").commit();
@@ -46,11 +89,8 @@ public class MainActivity extends AppCompatActivity {
                     active = fragment2;
                     return true;
                 case R.id.action_account:
-                    fm.beginTransaction().hide(active).show(fragment4).commit();
-                    active = fragment4;
-                    //Check login token
-                    //If logged in, show Account Logged
-                    //If not logged in, show Sign In/ Sign Up
+                    fm.beginTransaction().hide(active).show(fragment3).commit();
+                    active = fragment3;
                     return true;
             }
             return false;
@@ -58,4 +98,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+    }
 }
