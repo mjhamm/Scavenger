@@ -25,8 +25,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
 
     private static final String TAG = "LOG: ";
-    private final Fragment fragment1 = new SearchFragment();
-    private final Fragment fragment2 = new FavoritesFragment();
+    private Fragment fragment1 = new SearchFragment();
+    private Fragment fragment2 = new FavoritesFragment();
     private Fragment fragment3 = null;
     private final FragmentManager fm = getSupportFragmentManager();
     private Fragment active = fragment1;
@@ -69,6 +69,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         recipeItems = new ArrayList<>();
 
+        //fragment1 = SearchFragment.newInstance();
+        //fragment2 = FavoritesFragment.newInstance();
         fragment3 = Account.newInstance(name, email, logged);
 
         fm.beginTransaction().add(R.id.fragment_container, fragment3, "3").hide(fragment3).commit();

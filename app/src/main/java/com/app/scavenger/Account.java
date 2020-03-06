@@ -40,8 +40,8 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     private TabLayout tabLayout;
     private GoogleSignInAccount account;
     private GoogleSignInClient mGoogleSignInClient;
-    String mNameText = null;
-    String mEmailText = null;
+    private String mNameText = null;
+    private String mEmailText = null;
     private boolean isLogged = false;
     private RelativeLayout mAccountRL;
 
@@ -81,6 +81,7 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         mAccountName = view.findViewById(R.id.account_name);
         mAccountRL = view.findViewById(R.id.account_relativeLayout);
 
+
         //GOOGLE INFORMATION -------------------------------------------------------
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -107,7 +108,10 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         tabLayout.setupWithViewPager(viewPager);
 
         mAccountName.setOnClickListener(v -> {
-            startActivity(new Intent(mContext, AccountInfo.class));
+            Intent intent = new Intent(mContext, AccountInfo.class);
+            intent.putExtra("name", mNameText);
+            intent.putExtra("email", mEmailText);
+            startActivity(intent);
         });
 
         settingsButton.setOnClickListener(v -> startActivity(new Intent(mContext, SettingsActivity.class)));
@@ -132,6 +136,11 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     @Override
     public void onStart() {
         super.onStart();
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
     }
 
     private void hideForLogin() {
@@ -177,11 +186,11 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
 
     private void signOut() {
         mGoogleSignInClient.signOut()
-                .addOnCompleteListener(getActivity(), new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        showForLogin();
-                    }
+                .addOnCompleteListener(getActivity(), task -> {
+                    isLogged = false;
+                    showForLogin();
+                    mNameText = null;
+                    mEmailText = null;
                 });
     }
 

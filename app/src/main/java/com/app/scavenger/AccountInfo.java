@@ -3,6 +3,7 @@ package com.app.scavenger;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.Image;
 import android.os.Bundle;
 import android.widget.EditText;
@@ -17,6 +18,8 @@ public class AccountInfo extends AppCompatActivity {
     MaterialCardView mDeleteAccountButton, mUpdateInfoButton;
     EditText mName_editText, mEmail_editText;
     ImageButton mBackButton;
+    String name = null;
+    String email = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +40,13 @@ public class AccountInfo extends AppCompatActivity {
         mBackButton.setOnClickListener(v -> {
             finish();
         });
+
+        Intent intent = getIntent();
+        name = intent.getStringExtra("name");
+        email = intent.getStringExtra("email");
+
+        mName_editText.setText(name);
+        mEmail_editText.setText(email);
     }
 
     private void deleteAccountFirst() {

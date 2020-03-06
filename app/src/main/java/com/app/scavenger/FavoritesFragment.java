@@ -28,6 +28,11 @@ public class FavoritesFragment extends Fragment {
         // Required empty public constructor
     }
 
+    public static FavoritesFragment newInstance() {
+        FavoritesFragment favoritesFragment = new FavoritesFragment();
+        return favoritesFragment;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

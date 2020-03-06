@@ -3,18 +3,14 @@ package com.app.scavenger;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -30,8 +26,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     private static final String TAG = "LOG: ";
 
     private Context mContext;
-    private AppCompatButton mGoogleSignIn;
-    private GoogleSignInClient mGooleSignInClient;
+    private GoogleSignInClient mGoogleSignInClient;
     private String mName = null;
     private String mEmail = null;
     private boolean isLogged = false;
@@ -53,7 +48,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
-        mGooleSignInClient = GoogleSignIn.getClient(mContext, gso);
+        mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
     }
 
     @Override
@@ -61,11 +56,9 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_sign_in, container, false);
 
-        mGoogleSignIn = view.findViewById(R.id.google_signIn);
+        AppCompatButton mGoogleSignIn = view.findViewById(R.id.google_signIn);
 
-        mGoogleSignIn.setOnClickListener(v -> {
-            googleSignIn();
-        });
+        mGoogleSignIn.setOnClickListener(v -> googleSignIn());
 
         return view;
     }
@@ -86,7 +79,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     }
 
     private void googleSignIn() {
-        Intent signInIntent = mGooleSignInClient.getSignInIntent();
+        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
