@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         recipeItems = new ArrayList<>();
 
         fragment3 = Account.newInstance(name, email, logged);
-        Log.e(TAG, "Logged: " + logged + " NAME: " + name);
 
         fm.beginTransaction().add(R.id.fragment_container, fragment3, "3").hide(fragment3).commit();
         fm.beginTransaction().add(R.id.fragment_container, fragment2, "2").hide(fragment2).commit();

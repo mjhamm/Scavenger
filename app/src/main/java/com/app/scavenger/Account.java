@@ -129,6 +129,11 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         }
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
     private void hideForLogin() {
         viewPager.setVisibility(GONE);
         tabLayout.setVisibility(GONE);
@@ -181,9 +186,9 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     }
 
     @Override
-    public void messageFromChildToParent(boolean isLogged, String name, String email) {
-        this.isLogged = isLogged;
+    public void messageFromChildToParent(String name, String email, boolean isLogged) {
         this.mNameText = name;
-        this.mNameText = email;
+        this.mEmailText = email;
+        this.isLogged = isLogged;
     }
 }

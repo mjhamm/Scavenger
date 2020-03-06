@@ -32,7 +32,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     private Context mContext;
     private AppCompatButton mGoogleSignIn;
     private GoogleSignInClient mGooleSignInClient;
-    private GoogleApiClient mGoogleApiClient;
     private String mName = null;
     private String mEmail = null;
     private boolean isLogged = false;
@@ -100,9 +99,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
                 mEmail = account.getEmail();
                 isLogged = true;
             }
-
-            Log.e(TAG, "Name: " + mName + " Email: " + mEmail + " Logged: " + isLogged);
-            mParentListener.messageFromChildToParent(isLogged, mName, mEmail);
+            mParentListener.messageFromChildToParent(mName, mEmail,isLogged);
             //Sign in successful
         } catch (ApiException e) {
             Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
@@ -110,7 +107,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     }
 
     public interface OnChildFragmentInteractionListener {
-        void messageFromChildToParent(boolean isLogged, String name, String email);
+        void messageFromChildToParent(String name, String email, boolean isLogged);
     }
 
     @Override
