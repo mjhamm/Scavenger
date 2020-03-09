@@ -15,12 +15,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.Task;
 
-public class SignInFragment extends Fragment implements GoogleApiClient.OnConnectionFailedListener {
+public class SignInFragment extends Fragment {
 
     private static final int RC_SIGN_IN = 101;
     private static final String TAG = "LOG: ";
@@ -71,11 +69,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
         }
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
     private void googleSignIn() {

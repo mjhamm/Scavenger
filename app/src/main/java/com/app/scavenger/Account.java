@@ -30,7 +30,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import static android.view.View.GONE;
 
-public class Account extends Fragment implements SignInFragment.OnChildFragmentInteractionListener {
+public class Account extends Fragment implements SignInFragment.OnChildFragmentInteractionListener, SignUpFragment.OnSignUpFragmentInteractionListener {
 
     private Context mContext;
     private ImageButton settingsButton;
@@ -106,13 +106,6 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
 
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
-
-        mAccountName.setOnClickListener(v -> {
-            Intent intent = new Intent(mContext, AccountInfo.class);
-            intent.putExtra("name", mNameText);
-            intent.putExtra("email", mEmailText);
-            startActivity(intent);
-        });
 
         settingsButton.setOnClickListener(v -> startActivity(new Intent(mContext, SettingsActivity.class)));
 
@@ -196,6 +189,13 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
 
     @Override
     public void messageFromChildToParent(String name, String email, boolean isLogged) {
+        this.mNameText = name;
+        this.mEmailText = email;
+        this.isLogged = isLogged;
+    }
+
+    @Override
+    public void messageFromSignUpToParent(String name, String email, boolean isLogged) {
         this.mNameText = name;
         this.mEmailText = email;
         this.isLogged = isLogged;

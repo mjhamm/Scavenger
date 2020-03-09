@@ -81,15 +81,14 @@
                 app:layout_constraintEnd_toStartOf="@id/recipe_favorite"
                 app:layout_constraintStart_toStartOf="parent" />
 
-            <com.google.android.material.checkbox.MaterialCheckBox
+            <ImageButton
                 android:id="@+id/recipe_favorite"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:button="@null"
-                android:background="@drawable/favorite_icon_light"
+                android:src="@drawable/favorite_icon_light"
+                android:background="@android:color/transparent"
                 android:scaleX=".65"
                 android:scaleY=".7"
-                android:checked="false"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:contentDescription="@string/recipe_favorite_button_content_descr"

@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,13 +33,35 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
+
+    // Firestore Labels ----------------------------------------------------------
+    private static final String ITEM_NAME = "name";
+    private static final String ITEM_SOURCE = "source";
+    private static final String ITEM_IMAGE = "image";
+    private static final String ITEM_URL = "url";
+    private static final String ITEM_YIELD = "servings";
+    private static final String ITEM_CAL = "calories";
+    private static final String ITEM_CARB = "carbs";
+    private static final String ITEM_FAT = "fat";
+    private static final String ITEM_PROTEIN = "protein";
+    private static final String ITEM_ATT = "attributes";
+    private static final String ITEM_INGR = "ingredients";
+    //-----------------------------------------------------------------------------
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private final int VIEW_ITEM = 1;
     private final int VIEW_PROG = 0;
@@ -76,12 +99,20 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
         holder.mRelativeLayout.setVisibility(item.isClicked() ? View.VISIBLE : View.GONE);
 
-        if (item.isFavorited()) {
+        /*if (item.isFavorited()) {
             holder.mFavoriteButton.setTag(position);
             holder.mFavoriteButton.setChecked(true);
         } else {
             holder.mFavoriteButton.setTag(position);
             holder.mFavoriteButton.setChecked(false);
+        }*/
+
+        if (item.isFavorited()) {
+            holder.favorite_button.setTag(position);
+            holder.favorite_button.setImageResource(R.mipmap.heart_icon_filled);
+        } else {
+            holder.favorite_button.setTag(position);
+            holder.favorite_button.setImageResource(R.mipmap.heart_icon_outline_white);
         }
 
         TextView name = holder.recipeName;
@@ -120,6 +151,37 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         attributes.setText(TextUtils.join("", attributes_list));
     }
 
+    private void saveDataToFirebase(String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
+        Map<String, Object> item = new HashMap<>();
+
+        item.put(ITEM_NAME, name);
+        item.put(ITEM_SOURCE, source);
+        item.put(ITEM_IMAGE, image);
+        item.put(ITEM_URL, url);
+        item.put(ITEM_YIELD, servings);
+        item.put(ITEM_CAL, calories);
+        item.put(ITEM_CARB, carbs);
+        item.put(ITEM_FAT, fat);
+        item.put(ITEM_PROTEIN, protein);
+        item.put(ITEM_ATT, attributes);
+        item.put(ITEM_INGR, ingredients);
+
+        db.collection("Favorites").document().set(item)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(mContext, "Item Saved", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(mContext, "Error", Toast.LENGTH_SHORT).show();
+                        Log.d("LOG: ", e.toString());
+                    }
+                });
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public static final String TAG = "LOG: ";
@@ -136,12 +198,12 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         private ImageView recipeImage;
         private MaterialCardView mNutritionCard;
         private RelativeLayout mRelativeLayout;
-        private MaterialCheckBox mFavoriteButton;
         private RecipeItem item;
-        private ImageButton more_button;
+        private ImageButton more_button, favorite_button;
         private MaterialCardView mViewRecipe;
         private String reportReason = null;
         private boolean rotated;
+        private long mLastClickTime = 0;
 
         ViewHolder( @NonNull View itemView) {
             super(itemView);
@@ -156,7 +218,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             recipeProtein = itemView.findViewById(R.id.protein_amount);
             mNutritionCard = itemView.findViewById(R.id.facts_cardView);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
-            mFavoriteButton = itemView.findViewById(R.id.recipe_favorite);
+            favorite_button = itemView.findViewById(R.id.recipe_favorite);
             mRelativeLayout = itemView.findViewById(R.id.ingredients_relativeLayout);
             more_button = itemView.findViewById(R.id.more_button);
             mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
@@ -179,11 +241,22 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 }
             });
 
-            mFavoriteButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            favorite_button.setOnClickListener(v -> {
                 item = mRecipeItems.get(getAdapterPosition());
-                buttonView.getTag();
-
-                item.setFavorited(isChecked);
+                v.getTag();
+                if (SystemClock.elapsedRealtime() - mLastClickTime < 1500) {
+                    return;
+                }
+                mLastClickTime = SystemClock.elapsedRealtime();
+                if (item.isFavorited()) {
+                    favorite_button.setImageResource(R.mipmap.heart_icon_outline_white);
+                    item.setFavorited(false);
+                } else {
+                    favorite_button.setImageResource(R.mipmap.heart_icon_filled);
+                    item.setFavorited(true);
+                    saveDataToFirebase(item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),
+                            item.getmCalories(), item.getmCarbs(), item.getmFat(), item.getmProtein(), item.getmRecipeAttributes(), item.getmIngredients());
+                }
             });
 
             more_button.setOnClickListener(v -> {

@@ -28,9 +28,9 @@ public class AccountInfo extends AppCompatActivity {
         mContext = this;
 
         mDeleteAccountButton = findViewById(R.id.delete_account);
-        mUpdateInfoButton = findViewById(R.id.updateInfo_button);
+       /* mUpdateInfoButton = findViewById(R.id.updateInfo_button);
         mName_editText = findViewById(R.id.name_info_editText);
-        mEmail_editText = findViewById(R.id.email_info_editText);
+        mEmail_editText = findViewById(R.id.email_info_editText);*/
         mBackButton = findViewById(R.id.account_info_back);
 
         mDeleteAccountButton.setOnClickListener(v -> {
@@ -45,8 +45,8 @@ public class AccountInfo extends AppCompatActivity {
         name = intent.getStringExtra("name");
         email = intent.getStringExtra("email");
 
-        mName_editText.setText(name);
-        mEmail_editText.setText(email);
+        /*mName_editText.setText(name);
+        mEmail_editText.setText(email);*/
     }
 
     private void deleteAccountFirst() {

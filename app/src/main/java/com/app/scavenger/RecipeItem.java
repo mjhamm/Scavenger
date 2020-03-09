@@ -6,6 +6,9 @@ import java.util.ArrayList;
 
 class RecipeItem {
 
+    //Empty Constructor
+    public RecipeItem() {}
+
     @Expose
     @SerializedName("dietLabels")
     private ArrayList<String> mRecipeAttributes;
