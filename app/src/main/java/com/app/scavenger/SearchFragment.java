@@ -41,6 +41,8 @@ public class SearchFragment extends Fragment {
     private TextView match_textView;
     private SharedPreferences sharedPreferences;
     private ShimmerFrameLayout shimmer;
+    private String userId = null;
+    private boolean logged = false;
     private int fromIngr = 0;
     private int toIngr = 10;
 
@@ -48,8 +50,12 @@ public class SearchFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static SearchFragment newInstance() {
+    public static SearchFragment newInstance(String userId, boolean logged) {
         SearchFragment searchFragment = new SearchFragment();
+        Bundle args = new Bundle();
+        args.putString("userId", userId);
+        args.putBoolean("logged", logged);
+        searchFragment.setArguments(args);
         return searchFragment;
     }
 
@@ -57,6 +63,10 @@ public class SearchFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getContext();
+        if (getArguments() != null) {
+            userId = getArguments().getString("userId");
+            logged = getArguments().getBoolean("logged");
+        }
     }
 
     @Override
@@ -253,7 +263,7 @@ public class SearchFragment extends Fragment {
 
                 recipeItemArrayList.add(item);
             }
-            adapter = new SearchAdapter(mContext, recipeItemArrayList);
+            adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
             mSearchRecyclerView.setAdapter(adapter);
             mSearchRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
 

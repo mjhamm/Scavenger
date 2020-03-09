@@ -17,6 +17,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class SignInFragment extends Fragment {
 
@@ -25,10 +28,13 @@ public class SignInFragment extends Fragment {
 
     private Context mContext;
     private GoogleSignInClient mGoogleSignInClient;
+    private String mUserId = null;
     private String mName = null;
     private String mEmail = null;
     private boolean isLogged = false;
     private OnChildFragmentInteractionListener mParentListener;
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public SignInFragment() {
         // Required empty public constructor
@@ -81,11 +87,13 @@ public class SignInFragment extends Fragment {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
             if (account != null) {
+                mUserId = account.getId();
                 mName = account.getDisplayName();
                 mEmail = account.getEmail();
                 isLogged = true;
             }
-            mParentListener.messageFromChildToParent(mName, mEmail,isLogged);
+            DocumentReference signInRef = db.collection("Users").document(mUserId);
+            mParentListener.messageFromChildToParent(mUserId, mName, mEmail,isLogged);
             //Sign in successful
         } catch (ApiException e) {
             Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
@@ -93,7 +101,7 @@ public class SignInFragment extends Fragment {
     }
 
     public interface OnChildFragmentInteractionListener {
-        void messageFromChildToParent(String name, String email, boolean isLogged);
+        void messageFromChildToParent(String userId, String name, String email, boolean isLogged);
     }
 
     @Override
@@ -105,5 +113,9 @@ public class SignInFragment extends Fragment {
         } else {
             throw new RuntimeException("The parent fragment must implement OnChildFragmentInteractionListener");
         }
+    }
+
+    public void sendDataToFirestore() {
+
     }
 }

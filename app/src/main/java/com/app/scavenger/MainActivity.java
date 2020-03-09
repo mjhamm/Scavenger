@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private ArrayList<RecipeItem> recipeItems;
     private GoogleSignInClient googleSignInClient;
     private GoogleApiClient googleApiClient;
+    private String userId = null;
     private String name = null;
     private String email = null;
     private boolean logged = false;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         if (account != null) {
             logged = true;
+            userId = account.getId();
             name = account.getDisplayName();
             email = account.getEmail();
         }
@@ -69,9 +71,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         recipeItems = new ArrayList<>();
 
-        fragment1 = SearchFragment.newInstance();
-        fragment2 = FavoritesFragment.newInstance();
-        fragment3 = Account.newInstance(name, email, logged);
+        fragment1 = SearchFragment.newInstance(userId, logged);
+        fragment2 = FavoritesFragment.newInstance(userId, logged);
+        fragment3 = Account.newInstance(userId, name, email, logged);
         active = fragment1;
 
         fm.beginTransaction().add(R.id.fragment_container, fragment3, "3").hide(fragment3).commit();

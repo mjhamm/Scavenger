@@ -38,6 +38,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -62,14 +63,19 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     //-----------------------------------------------------------------------------
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private String mUserId = null;
+    private boolean logged = false;
+    private CollectionReference favoritesRef = db.collection("Users").document("ngYS08UwsqU9zC8EirA8").collection("Favorites");
     private ArrayList<RecipeItem> mRecipeItems;
     private Context mContext;
     private LayoutInflater mInflater;
 
-    SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems) {
+    SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId, boolean logged) {
+        this.mUserId = userId;
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
+        this.logged = logged;
     }
 
     @NonNull
@@ -155,7 +161,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         item.put(ITEM_ATT, attributes);
         item.put(ITEM_INGR, ingredients);
 
-        db.collection("Favorites").document().set(item)
+        //db.collection("Favorites").document().set(item)
+        favoritesRef.document().set(item)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -237,14 +244,28 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     return;
                 }
                 mLastClickTime = SystemClock.elapsedRealtime();
-                if (item.isFavorited()) {
-                    favorite_button.setImageResource(R.mipmap.heart_icon_outline_white);
-                    item.setFavorited(false);
+                if (logged) {
+                    if (item.isFavorited()) {
+                        favorite_button.setImageResource(R.mipmap.heart_icon_outline_white);
+                        item.setFavorited(false);
+                    } else {
+                        favorite_button.setImageResource(R.mipmap.heart_icon_filled);
+                        item.setFavorited(true);
+                        saveDataToFirebase(item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),
+                                item.getmCalories(), item.getmCarbs(), item.getmFat(), item.getmProtein(), item.getmRecipeAttributes(), item.getmIngredients());
+                    }
                 } else {
-                    favorite_button.setImageResource(R.mipmap.heart_icon_filled);
-                    item.setFavorited(true);
-                    saveDataToFirebase(item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),
-                            item.getmCalories(), item.getmCarbs(), item.getmFat(), item.getmProtein(), item.getmRecipeAttributes(), item.getmIngredients());
+                    new MaterialAlertDialogBuilder(mContext)
+                            .setTitle("You need to be Signed In.")
+                            .setMessage("You must sign up or sign in, in order to Favorite recipes.")
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                }
+                            })
+                            .create()
+                            .show();
                 }
             });
 

@@ -40,14 +40,16 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     private TabLayout tabLayout;
     private GoogleSignInAccount account;
     private GoogleSignInClient mGoogleSignInClient;
+    private String mUserId = null;
     private String mNameText = null;
     private String mEmailText = null;
     private boolean isLogged = false;
     private RelativeLayout mAccountRL;
 
-    public static Account newInstance(String name, String email, boolean logged) {
+    public static Account newInstance(String userId, String name, String email, boolean logged) {
         Account account = new Account();
         Bundle args = new Bundle();
+        args.putString("userId", userId);
         args.putString("name", name);
         args.putString("email", email);
         args.putBoolean("logged", logged);
@@ -92,6 +94,7 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         //--------------------------------------------------------------------------
 
         try {
+            mUserId = getArguments().getString("userId");
             mNameText = getArguments().getString("name");
             mEmailText = getArguments().getString("email");
             isLogged = getArguments().getBoolean("logged");
@@ -188,7 +191,8 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     }
 
     @Override
-    public void messageFromChildToParent(String name, String email, boolean isLogged) {
+    public void messageFromChildToParent(String userId, String name, String email, boolean isLogged) {
+        this.mUserId = userId;
         this.mNameText = name;
         this.mEmailText = email;
         this.isLogged = isLogged;

@@ -59,20 +59,21 @@ public class FavoritesFragment extends Fragment {
     private TextView favorite_message;
     private ArrayList<RecipeItem> recipeItemList = new ArrayList<>();
     private MaterialButton retryConButton;
-    private String UserId = "";
+    private String userId = null;
+    private boolean logged = false;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-    //private CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(UserId).collection(USER_FAVORITES);
-
-    private CollectionReference collectionReference = db.collection("Favorites");
 
     public FavoritesFragment() {
         // Required empty public constructor
     }
 
-    public static FavoritesFragment newInstance() {
+    public static FavoritesFragment newInstance(String userId, boolean logged) {
         FavoritesFragment favoritesFragment = new FavoritesFragment();
+        Bundle args = new Bundle();
+        args.putString("userId", userId);
+        args.putBoolean("logged", logged);
+        favoritesFragment.setArguments(args);
         return favoritesFragment;
     }
 
@@ -80,6 +81,10 @@ public class FavoritesFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getContext();
+        if (getArguments() != null) {
+            userId = getArguments().getString("userId");
+            logged = getArguments().getBoolean("logged");
+        }
     }
 
     @Override
@@ -88,6 +93,9 @@ public class FavoritesFragment extends Fragment {
         if (!checkConnection()) {
             favorite_message.setVisibility(View.VISIBLE);
             favorite_message.setText("You Don't Have an Internet Connection. In order to see your favorites you must be connected to the internet");
+        } else if(!logged) {
+            favorite_message.setVisibility(View.VISIBLE);
+            favorite_message.setText("You are not logged in. Sign In or Sign Up to save and view your favorites.");
         }
     }
 
@@ -100,9 +108,8 @@ public class FavoritesFragment extends Fragment {
         retryConButton = view.findViewById(R.id.fav_retry_con_button);
         mFavoriteSearch.setMaxWidth(Integer.MAX_VALUE);
 
-        favorite_message.setVisibility(View.GONE);
-
         mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
+        Log.e("Log: ", "USERID: " + userId);
 
         if (!checkConnection()) {
             favorite_message.setVisibility(View.VISIBLE);
@@ -114,53 +121,11 @@ public class FavoritesFragment extends Fragment {
                 ft.detach(this).attach(this).commit();
             });
         } else {
-
-            collectionReference.get()
-                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                        @Override
-                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                                RecipeItem item = new RecipeItem();
-                                String name = documentSnapshot.getString(ITEM_NAME);
-                                String source = documentSnapshot.getString(ITEM_SOURCE);
-                                String image = documentSnapshot.getString(ITEM_IMAGE);
-                                String url = documentSnapshot.getString(ITEM_URL);
-                                int serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
-                                int cals = documentSnapshot.getLong(ITEM_CAL).intValue();
-                                int carb = documentSnapshot.getLong(ITEM_CARB).intValue();
-                                int fat = documentSnapshot.getLong(ITEM_FAT).intValue();
-                                int protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
-                                ArrayList<String> att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
-                                ArrayList<String> ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
-
-                                item.setmRecipeName(name);
-                                item.setmSourceName(source);
-                                item.setmImageUrl(image);
-                                item.setmRecipeURL(url);
-                                item.setmServings(serves);
-                                item.setmCalories(cals);
-                                item.setmCarbs(carb);
-                                item.setmFat(fat);
-                                item.setmProtein(protein);
-                                item.setmRecipeAttributes(att);
-                                item.setmIngredients(ingr);
-
-                                Log.e("LOG: ", "ITEM NAME: " + item.getmRecipeName());
-
-                                recipeItemList.add(item);
-                            }
-
-                            if (!recipeItemList.isEmpty()) {
-                                favorite_message.setVisibility(View.GONE);
-                            } else {
-                                favorite_message.setText("You Don't Have Any Favorites :(");
-                            }
-
-                            adapter = new FavoriteAdapter(mContext, recipeItemList);
-                            mFavoriteRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
-                            mFavoriteRecyclerView.setAdapter(adapter);
-                        }
-                    });
+            if (logged) {
+                getFavorites();
+            } else {
+                favorite_message.setText("You are not logged in. Sign In or Sign Up to save and view your favorites.");
+            }
 
         /*itemRef.get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -212,6 +177,56 @@ public class FavoritesFragment extends Fragment {
         }
 
         return view;
+    }
+
+    public void getFavorites() {
+        CollectionReference favoritesRef = db.collection("Users").document("ngYS08UwsqU9zC8EirA8").collection("Favorites");
+        favoritesRef.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            RecipeItem item = new RecipeItem();
+                            String name = documentSnapshot.getString(ITEM_NAME);
+                            String source = documentSnapshot.getString(ITEM_SOURCE);
+                            String image = documentSnapshot.getString(ITEM_IMAGE);
+                            String url = documentSnapshot.getString(ITEM_URL);
+                            int serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
+                            int cals = documentSnapshot.getLong(ITEM_CAL).intValue();
+                            int carb = documentSnapshot.getLong(ITEM_CARB).intValue();
+                            int fat = documentSnapshot.getLong(ITEM_FAT).intValue();
+                            int protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
+                            ArrayList<String> att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
+                            ArrayList<String> ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
+
+                            item.setmRecipeName(name);
+                            item.setmSourceName(source);
+                            item.setmImageUrl(image);
+                            item.setmRecipeURL(url);
+                            item.setmServings(serves);
+                            item.setmCalories(cals);
+                            item.setmCarbs(carb);
+                            item.setmFat(fat);
+                            item.setmProtein(protein);
+                            item.setmRecipeAttributes(att);
+                            item.setmIngredients(ingr);
+
+                            Log.e("LOG: ", "ITEM NAME: " + item.getmRecipeName());
+
+                            recipeItemList.add(item);
+                        }
+
+                        if (!recipeItemList.isEmpty()) {
+                            favorite_message.setVisibility(View.GONE);
+                        } else {
+                            favorite_message.setText("You Don't Have Any Favorites :(");
+                        }
+
+                        adapter = new FavoriteAdapter(mContext, recipeItemList);
+                        mFavoriteRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
+                        mFavoriteRecyclerView.setAdapter(adapter);
+                    }
+                });
     }
 
     //boolean that returns true if you are connected to internet and false if not
