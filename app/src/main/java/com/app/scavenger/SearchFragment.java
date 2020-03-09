@@ -253,7 +253,7 @@ public class SearchFragment extends Fragment {
 
                 recipeItemArrayList.add(item);
             }
-            adapter = new SearchAdapter(mContext, recipeItemArrayList, mSearchRecyclerView);
+            adapter = new SearchAdapter(mContext, recipeItemArrayList);
             mSearchRecyclerView.setAdapter(adapter);
             mSearchRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
 

@@ -62,14 +62,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     //-----------------------------------------------------------------------------
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-    private final int VIEW_ITEM = 1;
-    private final int VIEW_PROG = 0;
     private ArrayList<RecipeItem> mRecipeItems;
     private Context mContext;
     private LayoutInflater mInflater;
 
-    SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems, RecyclerView recyclerView) {
+    SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems) {
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
@@ -98,14 +95,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         ArrayList<String> attributes_list = item.getmRecipeAttributes();
 
         holder.mRelativeLayout.setVisibility(item.isClicked() ? View.VISIBLE : View.GONE);
-
-        /*if (item.isFavorited()) {
-            holder.mFavoriteButton.setTag(position);
-            holder.mFavoriteButton.setChecked(true);
-        } else {
-            holder.mFavoriteButton.setTag(position);
-            holder.mFavoriteButton.setChecked(false);
-        }*/
 
         if (item.isFavorited()) {
             holder.favorite_button.setTag(position);
@@ -311,6 +300,22 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 .show();
             });
 
+            recipeServings.setOnClickListener(v -> {
+                new MaterialAlertDialogBuilder(mContext)
+                        .setTitle("Some Information about Our Data")
+                        .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
+                                "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
+                                "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
+                                "as well as the number of servings the amount of ingredients can make.")
+                        .setPositiveButton("Got It!", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        }).create()
+                        .show();
+            });
+
             mViewRecipe.setOnClickListener(v -> {
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
                 boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
@@ -415,11 +420,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     @Override
     public int getItemCount() {
         return mRecipeItems.size();
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return mRecipeItems.get(position) != null ? VIEW_ITEM : VIEW_PROG;
     }
 }
 

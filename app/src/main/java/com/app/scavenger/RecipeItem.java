@@ -1,5 +1,6 @@
 package com.app.scavenger;
 
+import com.google.firebase.firestore.Exclude;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ class RecipeItem {
 
     //Empty Constructor
     public RecipeItem() {}
+
+    private String itemId;
 
     @Expose
     @SerializedName("dietLabels")
@@ -59,6 +62,15 @@ class RecipeItem {
 
     private boolean clicked;
     private boolean favorited;
+
+    @Exclude
+    public String getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(String itemId) {
+        this.itemId = itemId;
+    }
 
     public void setmImageUrl(String mImageUrl) {
         this.mImageUrl = mImageUrl;
