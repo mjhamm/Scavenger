@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -20,6 +22,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignInFragment extends Fragment {
 
@@ -92,7 +97,7 @@ public class SignInFragment extends Fragment {
                 mEmail = account.getEmail();
                 isLogged = true;
             }
-            DocumentReference signInRef = db.collection("Users").document(mUserId);
+            sendDataToFirestore(mUserId, mName, mEmail);
             mParentListener.messageFromChildToParent(mUserId, mName, mEmail,isLogged);
             //Sign in successful
         } catch (ApiException e) {
@@ -115,7 +120,20 @@ public class SignInFragment extends Fragment {
         }
     }
 
-    public void sendDataToFirestore() {
-
+    public void sendDataToFirestore(String userId, String name, String email) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", userId);
+        data.put("name", name);
+        data.put("email", email);
+        db.collection("Users").whereEqualTo("userId", userId).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (task.getResult().getDocuments().size() == 0) {
+                            db.collection("Users").document(userId).set(data);
+                        } else {
+                            Toast.makeText(mContext, "User Exists. Sign In.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
     }
 }

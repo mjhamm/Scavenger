@@ -180,7 +180,7 @@ public class FavoritesFragment extends Fragment {
     }
 
     public void getFavorites() {
-        CollectionReference favoritesRef = db.collection("Users").document("ngYS08UwsqU9zC8EirA8").collection("Favorites");
+        CollectionReference favoritesRef = db.collection("Users").document(userId).collection("Favorites");
         favoritesRef.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override

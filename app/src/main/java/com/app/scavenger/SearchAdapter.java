@@ -65,7 +65,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String mUserId = null;
     private boolean logged = false;
-    private CollectionReference favoritesRef = db.collection("Users").document("ngYS08UwsqU9zC8EirA8").collection("Favorites");
+    /*private CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");*/
     private ArrayList<RecipeItem> mRecipeItems;
     private Context mContext;
     private LayoutInflater mInflater;
@@ -148,6 +148,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
     private void saveDataToFirebase(String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
         Map<String, Object> item = new HashMap<>();
+        CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");
 
         item.put(ITEM_NAME, name);
         item.put(ITEM_SOURCE, source);
