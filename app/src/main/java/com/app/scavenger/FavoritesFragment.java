@@ -82,25 +82,17 @@ public class FavoritesFragment extends Fragment {
     public void onResume() {
         super.onResume();
         getData(userId, logged);
-        if (checkConnection() && logged) {
-            getFavorites();
+        if (!checkConnection()) {
+            favorite_message.setVisibility(View.VISIBLE);
+            favorite_message.setText(R.string.no_internet_connection);
+            retryConButton.setVisibility(View.VISIBLE);
+            recipeItemList.clear();
         } else {
-
-            if (!checkConnection()) {
+            if (!logged) {
                 favorite_message.setVisibility(View.VISIBLE);
-                favorite_message.setText(R.string.no_internet_connection);
-                retryConButton.setVisibility(View.VISIBLE);
+                retryConButton.setVisibility(View.GONE);
+                favorite_message.setText(R.string.not_signed_in);
                 recipeItemList.clear();
-                if (logged) {
-                    getFavorites();
-                }
-            } else {
-                if (!logged) {
-                    favorite_message.setVisibility(View.VISIBLE);
-                    retryConButton.setVisibility(View.GONE);
-                    favorite_message.setText(R.string.not_signed_in);
-                    recipeItemList.clear();
-                }
             }
         }
     }
@@ -120,34 +112,41 @@ public class FavoritesFragment extends Fragment {
         mFavoriteSearch.setMaxWidth(Integer.MAX_VALUE);
 
         mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
-
+        getData(userId, logged);
         if (!checkConnection()) {
             favorite_message.setVisibility(View.VISIBLE);
             favorite_message.setText(R.string.no_internet_connection);
             retryConButton.setVisibility(View.VISIBLE);
 
             retryConButton.setOnClickListener(v -> {
-                try {
-                    FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-                    ft.detach(this).attach(this).commit();
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                    Log.d(TAG, e.toString());
-                }
+                retryConnectionInfo();
             });
         } else {
-            if (logged) {
-                getFavorites();
-            } else {
+            if (!logged) {
                 favorite_message.setText(R.string.not_signed_in);
+            } else {
+                getFavorites();
             }
         }
 
         return view;
     }
 
-    public void getFavorites() {
+    private void retryConnectionInfo() {
+        try {
+            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+            ft.detach(this).attach(this).commit();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            Log.d(TAG, e.toString());
+        }
+    }
+
+    private void getFavorites() {
         recipeItemList.clear();
+        if (adapter != null) {
+            adapter.clearList();
+        }
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
         favoritesRef.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -178,6 +177,7 @@ public class FavoritesFragment extends Fragment {
                         item.setmIngredients(ingr);
 
                         recipeItemList.add(item);
+                        Log.d(TAG, "recipeList: " + recipeItemList.size());
                     }
 
                     if (!recipeItemList.isEmpty()) {

@@ -24,6 +24,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
@@ -34,7 +35,7 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
 
     private Context mContext;
     private ImageButton settingsButton;
-    private MaterialCardView mLogoutButton;
+    private MaterialButton mLogoutButton;
     private TextView mName, mEmail, mAccountName, mTextSignInUp;
     private ViewPager viewPager;
     private TabLayout tabLayout;
@@ -98,19 +99,7 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
 
         //--------------------------------------------------------------------------
 
-        try {
-            mUserId = getArguments().getString("userId");
-            mNameText = getArguments().getString("name");
-            mEmailText = getArguments().getString("email");
-            isLogged = getArguments().getBoolean("logged");
-            if (isLogged) {
-                hideForLogin();
-            } else {
-                showForLogin();
-            }
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
+        getDataFromSignIn();
 
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
@@ -167,6 +156,22 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         mTextSignInUp.setVisibility(View.VISIBLE);
         mAccountRL.setVisibility(GONE);
         mAccountName.setVisibility(GONE);
+    }
+
+    private void getDataFromSignIn() {
+        try {
+            mUserId = getArguments().getString("userId");
+            mNameText = getArguments().getString("name");
+            mEmailText = getArguments().getString("email");
+            isLogged = getArguments().getBoolean("logged");
+            if (isLogged) {
+                hideForLogin();
+            } else {
+                showForLogin();
+            }
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
     }
 
     private void setupViewPager(ViewPager viewPager) {

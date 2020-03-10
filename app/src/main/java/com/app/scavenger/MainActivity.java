@@ -4,6 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.preference.PreferenceManager;
+
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import com.google.android.gms.auth.api.Auth;
@@ -24,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private Fragment fragment2 = null;
     private Fragment fragment3 = null;
     private final FragmentManager fm = getSupportFragmentManager();
+    private SharedPreferences mSharedPreferences;
     private Fragment active = null;
     private String userId = null;
     private String name = null;
@@ -41,6 +45,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         setContentView(R.layout.activity_main);
 
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (account != null) {
             logged = true;
@@ -95,8 +101,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     @Override
     public void getLoginData(String userId, boolean logged) {
+        SearchFragment searchFragment = (SearchFragment) fm.findFragmentByTag("1");
         FavoritesFragment favoritesFragment = (FavoritesFragment) fm.findFragmentByTag("2");
         try {
+            if (searchFragment != null) {
+                searchFragment.getData(userId, logged);
+                fm.beginTransaction().detach(fragment1).attach(fragment1).commit();
+            }
             if (favoritesFragment != null) {
                 favoritesFragment.getData(userId, logged);
                 fm.beginTransaction().detach(fragment2).attach(fragment2).commit();

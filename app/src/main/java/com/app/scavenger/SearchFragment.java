@@ -8,6 +8,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -32,6 +33,8 @@ import retrofit2.http.Query;
 
 public class SearchFragment extends Fragment {
 
+    private static final String TAG = "LOG: ";
+
     private RecyclerView mSearchRecyclerView;
     private ArrayList<RecipeItem> recipeItems;
     private SearchAdapter adapter;
@@ -43,6 +46,7 @@ public class SearchFragment extends Fragment {
     private ShimmerFrameLayout shimmer;
     private String userId = null;
     private boolean logged = false;
+    private boolean matchOn = false;
     private int fromIngr = 0;
     private int toIngr = 10;
 
@@ -50,7 +54,7 @@ public class SearchFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static SearchFragment newInstance(String userId, boolean logged) {
+    static SearchFragment newInstance(String userId, boolean logged) {
         SearchFragment searchFragment = new SearchFragment();
         Bundle args = new Bundle();
         args.putString("userId", userId);
@@ -69,11 +73,6 @@ public class SearchFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
     interface ApiService {
         @GET("/search?")
         Call<String> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients, @Query("from") int fromIngr, @Query("to") int toIngr);
@@ -90,11 +89,14 @@ public class SearchFragment extends Fragment {
         shimmer = view.findViewById(R.id.search_shimmerLayout);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        matchOn = sharedPreferences.getBoolean("match", false);
 
-        if (sharedPreferences.getBoolean("match",false)) {
-            match_textView.setVisibility(View.GONE);
-        } else {
+
+
+        if (matchOn) {
             match_textView.setVisibility(View.VISIBLE);
+        } else {
+            match_textView.setVisibility(View.GONE);
         }
 
         Random random_start_number = new Random();
@@ -143,10 +145,16 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
+    void getData(String userId, boolean logged) {
+        this.userId = userId;
+        this.logged = logged;
+    }
+
     @Override
     public void onResume() {
         super.onResume();
-        if (sharedPreferences.getBoolean("match",true)) {
+        Log.d(TAG, "matchOn: " + matchOn);
+        if (matchOn) {
             match_textView.setVisibility(View.VISIBLE);
         } else {
             match_textView.setVisibility(View.GONE);

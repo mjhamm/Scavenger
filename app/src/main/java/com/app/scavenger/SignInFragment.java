@@ -110,7 +110,7 @@ public class SignInFragment extends Fragment {
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-
+            Log.d("LOG: ", "id: " + account.getId() + " name: " + account.getDisplayName() + " email: " + account.getEmail());
             if (account != null) {
                 mUserId = account.getId();
                 mName = account.getDisplayName();
