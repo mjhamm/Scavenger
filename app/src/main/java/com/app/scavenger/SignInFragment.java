@@ -1,7 +1,10 @@
 package com.app.scavenger;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +22,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -67,7 +71,23 @@ public class SignInFragment extends Fragment {
 
         AppCompatButton mGoogleSignIn = view.findViewById(R.id.google_signIn);
 
-        mGoogleSignIn.setOnClickListener(v -> googleSignIn());
+        mGoogleSignIn.setOnClickListener(v -> {
+            if (!checkConnection()) {
+                new MaterialAlertDialogBuilder(mContext)
+                        .setTitle("No Internet Connection")
+                        .setMessage("You don't have an internet connection. Please reconnect and try to Sign In again.")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .create()
+                        .show();
+            } else {
+                googleSignIn();
+            }
+        });
 
         return view;
     }
@@ -130,10 +150,15 @@ public class SignInFragment extends Fragment {
                     if (task.isSuccessful()) {
                         if (task.getResult().getDocuments().size() == 0) {
                             db.collection("Users").document(userId).set(data);
-                        } else {
-                            Toast.makeText(mContext, "User Exists. Sign In.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
+    }
+
+    //boolean that returns true if you are connected to internet and false if not
+    private boolean checkConnection() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnected();
     }
 }

@@ -9,14 +9,14 @@ import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class AccountInfo extends AppCompatActivity {
 
     Context mContext;
-    MaterialCardView mDeleteAccountButton, mUpdateInfoButton;
-    EditText mName_editText, mEmail_editText;
+    MaterialButton mDeleteAccountButton;
     ImageButton mBackButton;
     String name = null;
     String email = null;
@@ -28,9 +28,6 @@ public class AccountInfo extends AppCompatActivity {
         mContext = this;
 
         mDeleteAccountButton = findViewById(R.id.delete_account);
-       /* mUpdateInfoButton = findViewById(R.id.updateInfo_button);
-        mName_editText = findViewById(R.id.name_info_editText);
-        mEmail_editText = findViewById(R.id.email_info_editText);*/
         mBackButton = findViewById(R.id.account_info_back);
 
         mDeleteAccountButton.setOnClickListener(v -> {
@@ -44,9 +41,6 @@ public class AccountInfo extends AppCompatActivity {
         Intent intent = getIntent();
         name = intent.getStringExtra("name");
         email = intent.getStringExtra("email");
-
-        /*mName_editText.setText(name);
-        mEmail_editText.setText(email);*/
     }
 
     private void deleteAccountFirst() {

@@ -365,6 +365,12 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         return activeNetwork != null && activeNetwork.isConnected();
     }
 
+    public void clearList() {
+        if (mRecipeItems == null) return;
+        mRecipeItems.clear();
+        notifyDataSetChanged();
+    }
+
     // Returns the total count of items in the list
     @Override
     public int getItemCount() {

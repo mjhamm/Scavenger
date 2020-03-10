@@ -162,12 +162,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         item.put(ITEM_ATT, attributes);
         item.put(ITEM_INGR, ingredients);
 
-        //db.collection("Favorites").document().set(item)
         favoritesRef.document().set(item)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(mContext, "Item Saved", Toast.LENGTH_SHORT).show();
+                        Log.d("LOG: ", "Item saved to Firestore");
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

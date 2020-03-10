@@ -1,15 +1,11 @@
 package com.app.scavenger;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -18,10 +14,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, Account.SendDataToMain {
 
 
     private static final String TAG = "LOG: ";
@@ -30,16 +25,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private Fragment fragment3 = null;
     private final FragmentManager fm = getSupportFragmentManager();
     private Fragment active = null;
-    private FavoriteAdapter favoriteAdapter;
-    private SearchAdapter searchAdapter;
-    private ArrayList<RecipeItem> recipeItems;
-    private GoogleSignInClient googleSignInClient;
-    private GoogleApiClient googleApiClient;
     private String userId = null;
     private String name = null;
     private String email = null;
     private boolean logged = false;
-    private GoogleSignInAccount account;
 
     @Override
     protected void onStart() {
@@ -51,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        account = GoogleSignIn.getLastSignedInAccount(this);
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
 
         if (account != null) {
             logged = true;
@@ -63,13 +52,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this,this)
+        GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-        googleSignInClient = GoogleSignIn.getClient(this, gso);
+        GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        recipeItems = new ArrayList<>();
+        ArrayList<RecipeItem> recipeItems = new ArrayList<>();
 
         fragment1 = SearchFragment.newInstance(userId, logged);
         fragment2 = FavoritesFragment.newInstance(userId, logged);
@@ -101,15 +90,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         });
     }
 
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {}
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
+    public void getLoginData(String userId, boolean logged) {
+        FavoritesFragment favoritesFragment = (FavoritesFragment) fm.findFragmentByTag("2");
+        try {
+            if (favoritesFragment != null) {
+                favoritesFragment.getData(userId, logged);
+                fm.beginTransaction().detach(fragment2).attach(fragment2).commit();
+            }
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            Log.d(TAG, e.toString());
+        }
     }
 }

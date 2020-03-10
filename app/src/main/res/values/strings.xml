@@ -17,4 +17,15 @@
     <string name="facebook_app_id">505719136936823</string>
     <string name="fb_login_protocol_scheme">fb505719136936823</string>
     <string name="back_button">Back Button</string>
+    <string name="terms_signin"><![CDATA[By Signing In, you agree to Scavenger\'s Terms & Conditions and Privacy Policy.]]></string>
+    <string name="sign_in_button">Sign In</string>
+    <string name="sign_in_with_facebook">Sign In with Facebook</string>
+    <string name="sign_in_with_google">Sign In with Google</string>
+    <string name="signin_or">OR</string>
+    <string name="forgot_your_password">Forgot your Password?</string>
+    <string name="password_signin">Password</string>
+    <string name="email_address_signin">Email Address</string>
+    <string name="no_internet_connection">You Don\'t Have an Internet Connection. In order to see your favorites you must be connected to the internet.</string>
+    <string name="not_signed_in">You are not Signed in. Sign In or Sign Up to save and view your favorites.</string>
+    <string name="no_favorites">You Don\'t Have Any Favorites. Go Out There and Find Something Amazing!</string>
 </resources>

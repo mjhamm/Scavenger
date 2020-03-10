@@ -20,7 +20,7 @@
             android:id="@+id/search_searchView"
             android:layout_width="match_parent"
             android:layout_height="?android:attr/actionBarSize"
-            app:queryHint="Search Ingredients"
+            app:queryHint="Search Ingredients or Recipes"
             app:iconifiedByDefault="false"
             app:queryBackground="@android:color/transparent"/>
 

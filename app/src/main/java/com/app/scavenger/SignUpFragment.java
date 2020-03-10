@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -20,6 +21,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class SignUpFragment extends Fragment {
@@ -30,9 +35,12 @@ public class SignUpFragment extends Fragment {
     private Context mContext;
     private GoogleSignInClient mGoogleSignUpClient;
     private OnSignUpFragmentInteractionListener mListener;
+    private String mUserId = null;
     private String mName = null;
     private String mEmail = null;
     private boolean isLogged = false;
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public SignUpFragment() {
         // Required empty public constructor
@@ -73,11 +81,13 @@ public class SignUpFragment extends Fragment {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
             if (account != null) {
+                mUserId = account.getId();
                 mName = account.getDisplayName();
                 mEmail = account.getEmail();
                 isLogged = true;
             }
-            mListener.messageFromSignUpToParent(mName, mEmail,isLogged);
+            sendDataToFirestore(mUserId, mName, mEmail);
+            mListener.messageFromSignUpToParent(mUserId, mName, mEmail,isLogged);
             //Sign in successful
         } catch (ApiException e) {
             Log.w(TAG, "signUpResult:failed code=" + e.getStatusCode());
@@ -85,7 +95,7 @@ public class SignUpFragment extends Fragment {
     }
 
     public interface OnSignUpFragmentInteractionListener {
-        void messageFromSignUpToParent(String name, String email, boolean isLogged);
+        void messageFromSignUpToParent(String userId, String name, String email, boolean isLogged);
     }
 
     @Override
@@ -107,5 +117,20 @@ public class SignUpFragment extends Fragment {
         } else {
             throw new RuntimeException("The parent fragment must implement OnSignUpFragmentInteractionListener");
         }
+    }
+
+    public void sendDataToFirestore(String userId, String name, String email) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", userId);
+        data.put("name", name);
+        data.put("email", email);
+        db.collection("Users").whereEqualTo("userId", userId).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (task.getResult().getDocuments().size() == 0) {
+                            db.collection("Users").document(userId).set(data);
+                        }
+                    }
+                });
     }
 }

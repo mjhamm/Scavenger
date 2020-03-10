@@ -45,6 +45,7 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     private String mEmailText = null;
     private boolean isLogged = false;
     private RelativeLayout mAccountRL;
+    private SendDataToMain sendDataToMain;
 
     public static Account newInstance(String userId, String name, String email, boolean logged) {
         Account account = new Account();
@@ -55,6 +56,10 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         args.putBoolean("logged", logged);
         account.setArguments(args);
         return account;
+    }
+
+    public interface SendDataToMain {
+        void getLoginData(String userId, boolean logged);
     }
 
     @Override
@@ -127,6 +132,7 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         } else {
             showForLogin();
         }
+        sendDataToMain.getLoginData(mUserId, isLogged);
     }
 
     @Override
@@ -137,6 +143,11 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
+        if (getActivity() instanceof SendDataToMain) {
+            sendDataToMain = (SendDataToMain) getActivity();
+        } else {
+            throw new RuntimeException("The parent fragment must implement SendDataToMain");
+        }
     }
 
     private void hideForLogin() {
@@ -187,6 +198,7 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
                     showForLogin();
                     mNameText = null;
                     mEmailText = null;
+                    sendDataToMain.getLoginData(mUserId, isLogged);
                 });
     }
 
@@ -199,7 +211,8 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     }
 
     @Override
-    public void messageFromSignUpToParent(String name, String email, boolean isLogged) {
+    public void messageFromSignUpToParent(String userId, String name, String email, boolean isLogged) {
+        this.mUserId = userId;
         this.mNameText = name;
         this.mEmailText = email;
         this.isLogged = isLogged;
