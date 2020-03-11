@@ -366,9 +366,9 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     }
 
     public void clearList() {
-        if (mRecipeItems == null) return;
+        int size = mRecipeItems.size();
         mRecipeItems.clear();
-        notifyDataSetChanged();
+        notifyItemRangeRemoved(0, size);
     }
 
     // Returns the total count of items in the list

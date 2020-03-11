@@ -43,7 +43,6 @@ public class FavoritesFragment extends Fragment {
     //-----------------------------------------------------------------------------
 
     private RecyclerView mFavoriteRecyclerView;
-    private ArrayList<RecipeItem> favoriteItems;
     private FavoriteAdapter adapter;
     private Context mContext;
     private SearchView mFavoriteSearch;
@@ -111,6 +110,8 @@ public class FavoritesFragment extends Fragment {
         retryConButton = view.findViewById(R.id.fav_retry_con_button);
         mFavoriteSearch.setMaxWidth(Integer.MAX_VALUE);
 
+        adapter = new FavoriteAdapter(mContext, recipeItemList);
+
         mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
         getData(userId, logged);
         if (!checkConnection()) {
@@ -143,7 +144,9 @@ public class FavoritesFragment extends Fragment {
     }
 
     private void getFavorites() {
+        Log.d(TAG, "Initial Recipe List Size: " + recipeItemList.size());
         recipeItemList.clear();
+        Log.d(TAG, "Recipe List After Clear: " + recipeItemList.size());
         if (adapter != null) {
             adapter.clearList();
         }
@@ -177,7 +180,7 @@ public class FavoritesFragment extends Fragment {
                         item.setmIngredients(ingr);
 
                         recipeItemList.add(item);
-                        Log.d(TAG, "recipeList: " + recipeItemList.size());
+                        Log.d(TAG, "Recipe List Per Item: " + recipeItemList.size());
                     }
 
                     if (!recipeItemList.isEmpty()) {
@@ -185,11 +188,12 @@ public class FavoritesFragment extends Fragment {
                     } else {
                         favorite_message.setText(R.string.no_favorites);
                     }
+                    Log.d(TAG, "Final Recipe List Count: " + recipeItemList.size());
 
-                    adapter = new FavoriteAdapter(mContext, recipeItemList);
-                    mFavoriteRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
-                    mFavoriteRecyclerView.setAdapter(adapter);
                 });
+        adapter = new FavoriteAdapter(mContext, recipeItemList);
+        mFavoriteRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
+        mFavoriteRecyclerView.setAdapter(adapter);
     }
 
     //boolean that returns true if you are connected to internet and false if not

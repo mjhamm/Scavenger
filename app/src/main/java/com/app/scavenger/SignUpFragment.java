@@ -21,6 +21,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -35,6 +36,7 @@ public class SignUpFragment extends Fragment {
     private Context mContext;
     private GoogleSignInClient mGoogleSignUpClient;
     private OnSignUpFragmentInteractionListener mListener;
+    private MaterialButton signUpButton;
     private String mUserId = null;
     private String mName = null;
     private String mEmail = null;
@@ -63,6 +65,7 @@ public class SignUpFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_sign_up, container, false);
 
         AppCompatButton mGoogleSignUp = view.findViewById(R.id.google_signUp);
+        signUpButton = view.findViewById(R.id.signUp_button);
 
         mGoogleSignUp.setOnClickListener(v -> {
             googleSignUp();

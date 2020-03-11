@@ -2,10 +2,13 @@ package com.app.scavenger;
 
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.ImageButton;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
+import androidx.preference.PreferenceFragmentCompat;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -13,6 +16,12 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+        ImageButton backButton = findViewById(R.id.settings_back);
+
+        backButton.setOnClickListener(v -> {
+            finish();
+        });
     }
 
     @Override
