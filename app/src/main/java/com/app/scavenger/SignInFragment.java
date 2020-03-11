@@ -16,11 +16,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.CollectionReference;
@@ -30,7 +33,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SignInFragment extends Fragment {
+public class SignInFragment extends Fragment implements GoogleApiClient.OnConnectionFailedListener {
 
     private static final int RC_SIGN_IN = 101;
     private static final String TAG = "LOG: ";
@@ -41,6 +44,7 @@ public class SignInFragment extends Fragment {
     private String mName = null;
     private String mEmail = null;
     private boolean isLogged = false;
+    private GoogleApiClient googleApiClient;
     private OnChildFragmentInteractionListener mParentListener;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -59,7 +63,14 @@ public class SignInFragment extends Fragment {
         super.onCreate(savedInstanceState);
         mContext = getContext();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestProfile()
                 .requestEmail()
+                .requestIdToken("565312817175-cipp792csradj5qukdb836j8e9tuq7gr.apps.googleusercontent.com")
+                .build();
+        googleApiClient = new GoogleApiClient.Builder(mContext)
+                .enableAutoManage(getActivity(), this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .addApi(Auth.CREDENTIALS_API)
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
     }
@@ -103,14 +114,14 @@ public class SignInFragment extends Fragment {
     }
 
     private void googleSignIn() {
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient)/*mGoogleSignInClient.getSignInIntent()*/;
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            Log.d("LOG: ", "id: " + account.getId() + " name: " + account.getDisplayName() + " email: " + account.getEmail());
+            //Log.d("LOG: ", "id: " + account.getId() + " name: " + account.getDisplayName() + " email: " + account.getEmail());
             if (account != null) {
                 mUserId = account.getId();
                 mName = account.getDisplayName();
@@ -123,6 +134,11 @@ public class SignInFragment extends Fragment {
         } catch (ApiException e) {
             Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
         }
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 
     public interface OnChildFragmentInteractionListener {

@@ -38,7 +38,7 @@
         android:textSize="24sp"
         android:textColor="@android:color/black"
         android:gravity="center"
-        android:text="Favorite Message"/>
+        android:text="This Is Where Your Favorites Go!"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/fav_retry_con_button"

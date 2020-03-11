@@ -15,10 +15,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
 
 public class FavoritesFragment extends Fragment {
@@ -129,7 +133,6 @@ public class FavoritesFragment extends Fragment {
                 getFavorites();
             }
         }
-
         return view;
     }
 
@@ -147,49 +150,54 @@ public class FavoritesFragment extends Fragment {
         Log.d(TAG, "Initial Recipe List Size: " + recipeItemList.size());
         recipeItemList.clear();
         Log.d(TAG, "Recipe List After Clear: " + recipeItemList.size());
+        Log.d(TAG, "Adapter Size: " + adapter.getItemCount());
         if (adapter != null) {
             adapter.clearList();
         }
+        Log.d(TAG, "Adapter Size After Clear: " + adapter.getItemCount());
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
         favoritesRef.get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                        RecipeItem item = new RecipeItem();
-                        String name = documentSnapshot.getString(ITEM_NAME);
-                        String source = documentSnapshot.getString(ITEM_SOURCE);
-                        String image = documentSnapshot.getString(ITEM_IMAGE);
-                        String url = documentSnapshot.getString(ITEM_URL);
-                        int serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
-                        int cals = documentSnapshot.getLong(ITEM_CAL).intValue();
-                        int carb = documentSnapshot.getLong(ITEM_CARB).intValue();
-                        int fat = documentSnapshot.getLong(ITEM_FAT).intValue();
-                        int protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
-                        ArrayList<String> att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
-                        ArrayList<String> ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (queryDocumentSnapshots.isEmpty()) {
+                            favorite_message.setText(R.string.no_favorites);
+                        } else {
+                            favorite_message.setVisibility(View.GONE);
+                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                RecipeItem item = new RecipeItem();
+                                String name = documentSnapshot.getString(ITEM_NAME);
+                                String source = documentSnapshot.getString(ITEM_SOURCE);
+                                String image = documentSnapshot.getString(ITEM_IMAGE);
+                                String url = documentSnapshot.getString(ITEM_URL);
+                                int serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
+                                int cals = documentSnapshot.getLong(ITEM_CAL).intValue();
+                                int carb = documentSnapshot.getLong(ITEM_CARB).intValue();
+                                int fat = documentSnapshot.getLong(ITEM_FAT).intValue();
+                                int protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
+                                ArrayList<String> att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
+                                ArrayList<String> ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
 
-                        item.setmRecipeName(name);
-                        item.setmSourceName(source);
-                        item.setmImageUrl(image);
-                        item.setmRecipeURL(url);
-                        item.setmServings(serves);
-                        item.setmCalories(cals);
-                        item.setmCarbs(carb);
-                        item.setmFat(fat);
-                        item.setmProtein(protein);
-                        item.setmRecipeAttributes(att);
-                        item.setmIngredients(ingr);
+                                item.setmRecipeName(name);
+                                item.setmSourceName(source);
+                                item.setmImageUrl(image);
+                                item.setmRecipeURL(url);
+                                item.setmServings(serves);
+                                item.setmCalories(cals);
+                                item.setmCarbs(carb);
+                                item.setmFat(fat);
+                                item.setmProtein(protein);
+                                item.setmRecipeAttributes(att);
+                                item.setmIngredients(ingr);
 
-                        recipeItemList.add(item);
-                        Log.d(TAG, "Recipe List Per Item: " + recipeItemList.size());
+                                if (!recipeItemList.contains(item)) {
+                                    recipeItemList.add(item);
+                                }
+                            }
+                        }
+                        Log.d(TAG, "Final Recipe List Count: " + recipeItemList.size());
+
                     }
-
-                    if (!recipeItemList.isEmpty()) {
-                        favorite_message.setVisibility(View.GONE);
-                    } else {
-                        favorite_message.setText(R.string.no_favorites);
-                    }
-                    Log.d(TAG, "Final Recipe List Count: " + recipeItemList.size());
-
                 });
         adapter = new FavoriteAdapter(mContext, recipeItemList);
         mFavoriteRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
