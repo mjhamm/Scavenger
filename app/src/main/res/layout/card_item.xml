@@ -8,6 +8,7 @@
     android:paddingBottom="18dp"
     android:clipChildren="false"
     android:clipToPadding="false"
+    android:animateLayoutChanges="true"
     android:focusableInTouchMode="true"
     android:focusable="true"
     android:clickable="true">
@@ -121,7 +122,8 @@
             android:id="@+id/ingredients_relativeLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="visible">
+            android:visibility="visible"
+            android:animateLayoutChanges="true">
 
             <TextView
                 android:id="@+id/nutritionFacts_main_title"

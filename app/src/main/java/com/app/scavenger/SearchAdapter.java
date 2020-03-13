@@ -17,6 +17,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.OvershootInterpolator;
+import android.view.animation.ScaleAnimation;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -46,9 +48,14 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import animations.Animations;
+
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
+    public static final String TAG = "LOG: ";
+
     // Firestore Labels ----------------------------------------------------------
+    private static final String ITEM_ID = "itemId";
     private static final String ITEM_NAME = "name";
     private static final String ITEM_SOURCE = "source";
     private static final String ITEM_IMAGE = "image";
@@ -65,6 +72,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String mUserId = null;
     private boolean logged = false;
+    private boolean expanded = false;
     /*private CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");*/
     private ArrayList<RecipeItem> mRecipeItems;
     private Context mContext;
@@ -82,8 +90,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     @Override
     public SearchAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.card_item, parent, false);
-        ViewHolder viewHolder = new ViewHolder(view);
-        return viewHolder;
+        return new ViewHolder(view);
     }
 
     @Override
@@ -100,7 +107,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         ArrayList<String> ingredients_list = item.getmIngredients();
         ArrayList<String> attributes_list = item.getmRecipeAttributes();
 
-        holder.mRelativeLayout.setVisibility(item.isClicked() ? View.VISIBLE : View.GONE);
+        if (item.isClicked()) {
+            holder.mRelativeLayout.setVisibility(View.VISIBLE);
+        } else {
+            holder.mRelativeLayout.setVisibility(View.GONE);
+        }
 
         if (item.isFavorited()) {
             holder.favorite_button.setTag(position);
@@ -146,10 +157,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         attributes.setText(TextUtils.join("", attributes_list));
     }
 
-    private void saveDataToFirebase(String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
+    private void saveDataToFirebase(String itemId, String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
         Map<String, Object> item = new HashMap<>();
         CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");
 
+        item.put(ITEM_ID, itemId);
         item.put(ITEM_NAME, name);
         item.put(ITEM_SOURCE, source);
         item.put(ITEM_IMAGE, image);
@@ -162,7 +174,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         item.put(ITEM_ATT, attributes);
         item.put(ITEM_INGR, ingredients);
 
-        favoritesRef.document().set(item)
+        favoritesRef.document(itemId).set(item)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -178,9 +190,26 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 });
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    private void removeDataFromFirebase(RecipeItem recipeItem, String itemId) {
+        CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");
 
-        public static final String TAG = "LOG: ";
+        favoritesRef.document(recipeItem.getItemId())
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "Successfully removed favorite");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(TAG, "Failed to remove favorite" + e.toString());
+                    }
+                });
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView recipeName;
         private TextView recipeSource;
@@ -229,14 +258,22 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 // Checks if the item is clicked
                 // Sets the layout visible/gone
                 if (item.isClicked()) {
-                    mRelativeLayout.setVisibility(View.GONE);
+                    //Animations.collapse(mRelativeLayout);
+
                     item.setClicked(false);
+                    mRelativeLayout.setVisibility(View.GONE);
                 } else {
+                    //Animations.expand(mRelativeLayout);
                     mRelativeLayout.setVisibility(View.VISIBLE);
                     item.setClicked(true);
                 }
             });
 
+            //Creates animation for Love button - Animation to grow and shrink heart when clicked - light
+            Animation scaleAnimation_Favorite = new ScaleAnimation(0, 1, 0, 1, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+            scaleAnimation_Favorite.setDuration(500);
+            OvershootInterpolator overshootInterpolator_Favorite = new OvershootInterpolator(4);
+            scaleAnimation_Favorite.setInterpolator(overshootInterpolator_Favorite);
             favorite_button.setOnClickListener(v -> {
                 item = mRecipeItems.get(getAdapterPosition());
                 v.getTag();
@@ -245,14 +282,24 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 }
                 mLastClickTime = SystemClock.elapsedRealtime();
                 if (logged) {
+                    v.startAnimation(scaleAnimation_Favorite);
                     if (item.isFavorited()) {
                         favorite_button.setImageResource(R.mipmap.heart_icon_outline_white);
                         item.setFavorited(false);
+                        try {
+                            removeDataFromFirebase(item, item.getItemId());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     } else {
                         favorite_button.setImageResource(R.mipmap.heart_icon_filled);
                         item.setFavorited(true);
-                        saveDataToFirebase(item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),
-                                item.getmCalories(), item.getmCarbs(), item.getmFat(), item.getmProtein(), item.getmRecipeAttributes(), item.getmIngredients());
+                        try {
+                            saveDataToFirebase(item.getItemId(), item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),
+                                    item.getmCalories(), item.getmCarbs(), item.getmFat(), item.getmProtein(), item.getmRecipeAttributes(), item.getmIngredients());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 } else {
                     new MaterialAlertDialogBuilder(mContext)

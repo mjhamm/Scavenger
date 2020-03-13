@@ -25,7 +25,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
-public class FavoritesFragment extends Fragment {
+public class FavoritesFragment extends Fragment implements FavoriteAdapter.RefreshFavorites {
 
     private static final String TAG = "LOG: ";
 
@@ -113,11 +113,11 @@ public class FavoritesFragment extends Fragment {
         mFavoriteSearch = view.findViewById(R.id.favorites_searchView);
         retryConButton = view.findViewById(R.id.fav_retry_con_button);
         mFavoriteSearch.setMaxWidth(Integer.MAX_VALUE);
-
-        adapter = new FavoriteAdapter(mContext, recipeItemList);
-
         mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
+
         getData(userId, logged);
+        adapter = new FavoriteAdapter(mContext, recipeItemList,userId, this);
+
         if (!checkConnection()) {
             favorite_message.setVisibility(View.VISIBLE);
             favorite_message.setText(R.string.no_internet_connection);
@@ -147,14 +147,10 @@ public class FavoritesFragment extends Fragment {
     }
 
     private void getFavorites() {
-        Log.d(TAG, "Initial Recipe List Size: " + recipeItemList.size());
         recipeItemList.clear();
-        Log.d(TAG, "Recipe List After Clear: " + recipeItemList.size());
-        Log.d(TAG, "Adapter Size: " + adapter.getItemCount());
         if (adapter != null) {
             adapter.clearList();
         }
-        Log.d(TAG, "Adapter Size After Clear: " + adapter.getItemCount());
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
         favoritesRef.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -195,11 +191,9 @@ public class FavoritesFragment extends Fragment {
                                 }
                             }
                         }
-                        Log.d(TAG, "Final Recipe List Count: " + recipeItemList.size());
-
                     }
                 });
-        adapter = new FavoriteAdapter(mContext, recipeItemList);
+        adapter = new FavoriteAdapter(mContext, recipeItemList, userId, this);
         mFavoriteRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
         mFavoriteRecyclerView.setAdapter(adapter);
     }
@@ -209,5 +203,12 @@ public class FavoritesFragment extends Fragment {
         ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected();
+    }
+
+    @Override
+    public void refresh(boolean isRefresh) {
+        if (isRefresh) {
+            getFavorites();
+        }
     }
 }

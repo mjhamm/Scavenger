@@ -31,7 +31,11 @@ import com.google.android.material.tabs.TabLayout;
 
 import static android.view.View.GONE;
 
+// Activity that houses the information about when a user signs in or signs up inside of Scavenger
+
 public class Account extends Fragment implements SignInFragment.OnChildFragmentInteractionListener, SignUpFragment.OnSignUpFragmentInteractionListener {
+
+    private static final String TAG = "LOG: ";
 
     private Context mContext;
     private ImageButton settingsButton;
@@ -48,7 +52,8 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     private RelativeLayout mAccountRL;
     private SendDataToMain sendDataToMain;
 
-    public static Account newInstance(String userId, String name, String email, boolean logged) {
+    // Creates a new instance of the Account Fragment and passes arguments to the fragment when it is initialized
+    static Account newInstance(String userId, String name, String email, boolean logged) {
         Account account = new Account();
         Bundle args = new Bundle();
         args.putString("userId", userId);
@@ -59,6 +64,7 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         return account;
     }
 
+    // Interface that sends login data from the Account Activity to Parent Activity (Main)
     public interface SendDataToMain {
         void getLoginData(String userId, boolean logged);
     }
@@ -68,6 +74,7 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         super.onCreate(savedInstanceState);
         mContext = getContext();
 
+        // Checks to see if a user has logged in with Google prior to this session
         try {
             account = GoogleSignIn.getLastSignedInAccount(mContext);
         } catch (NullPointerException e) {
@@ -89,30 +96,49 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         mAccountName = view.findViewById(R.id.account_name);
         mAccountRL = view.findViewById(R.id.account_relativeLayout);
 
-
         //GOOGLE INFORMATION -------------------------------------------------------
-
+        // Requests the information from Google
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.clientId_web_googleSignIn))
+                .requestProfile()
                 .requestEmail()
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
 
         //--------------------------------------------------------------------------
 
+        // Checks information sent to Account from Sign In / Sign Up Activities
+        // If user is logged in, show information related to signed in user
+        // If user is not logged in, show information to allow user to sign in / sign up
         getDataFromSignIn();
 
+        // Setup view pager with sign in / sign up fragments
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
 
+        // Settings button that opens up Preferences Fragment
         settingsButton.setOnClickListener(v -> startActivity(new Intent(mContext, SettingsActivity.class)));
 
+        // Click listener on Account Name TextView that opens to show account information
+        mAccountName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, AccountInfo.class);
+                intent.putExtra("userId", mUserId);
+                startActivity(intent);
+            }
+        });
+
+        // Log Out button that is shown when user is logged in
         mLogoutButton.setOnClickListener(v -> {
+            // Prompts the user to determine if they really wanted to logout
             logoutDialog();
         });
 
         return view;
     }
 
+    // On Resume will check to see if the user is logged in and will hide / show the corresponding information
     @Override
     public void onResume() {
         super.onResume();
@@ -121,6 +147,7 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         } else {
             showForLogin();
         }
+        // Sends the information to the Parent Activity (Main)
         sendDataToMain.getLoginData(mUserId, isLogged);
     }
 
@@ -160,10 +187,12 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
 
     private void getDataFromSignIn() {
         try {
-            mUserId = getArguments().getString("userId");
-            mNameText = getArguments().getString("name");
-            mEmailText = getArguments().getString("email");
-            isLogged = getArguments().getBoolean("logged");
+            if (getArguments() != null) {
+                mUserId = getArguments().getString("userId");
+                mNameText = getArguments().getString("name");
+                mEmailText = getArguments().getString("email");
+                isLogged = getArguments().getBoolean("logged");
+            }
             if (isLogged) {
                 hideForLogin();
             } else {
@@ -200,9 +229,9 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         mGoogleSignInClient.signOut()
                 .addOnCompleteListener(getActivity(), task -> {
                     isLogged = false;
-                    showForLogin();
                     mNameText = null;
                     mEmailText = null;
+                    showForLogin();
                     sendDataToMain.getLoginData(mUserId, isLogged);
                 });
     }

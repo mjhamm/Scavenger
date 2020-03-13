@@ -28,15 +28,6 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="Account"
-        app:iconSpaceReserved="false">
-        <Preference
-            android:key="account"
-            android:title="Account Information"
-            app:iconSpaceReserved="false"/>
-    </PreferenceCategory>
-
-    <PreferenceCategory
         android:title="Help"
         app:iconSpaceReserved="false">
         <Preference

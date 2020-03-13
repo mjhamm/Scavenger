@@ -65,7 +65,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestProfile()
                 .requestEmail()
-                .requestIdToken("565312817175-cipp792csradj5qukdb836j8e9tuq7gr.apps.googleusercontent.com")
+                .requestIdToken(getString(R.string.clientId_web_googleSignIn))
                 .build();
         googleApiClient = new GoogleApiClient.Builder(mContext)
                 .enableAutoManage(getActivity(), this)
@@ -121,7 +121,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            //Log.d("LOG: ", "id: " + account.getId() + " name: " + account.getDisplayName() + " email: " + account.getEmail());
             if (account != null) {
                 mUserId = account.getId();
                 mName = account.getDisplayName();

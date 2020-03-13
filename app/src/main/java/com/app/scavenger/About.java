@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageButton;
 
+// About activity that lists information about Scavenger
+
 public class About extends AppCompatActivity {
 
     @Override
@@ -14,6 +16,7 @@ public class About extends AppCompatActivity {
 
         ImageButton backButton = findViewById(R.id.about_back);
 
+        // Back Arrow button to close the activity
         backButton.setOnClickListener(v -> {
             finish();
         });

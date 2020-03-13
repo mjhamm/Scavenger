@@ -15,14 +15,13 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private Context mContext;
-    private Preference account, feedback, help, about, legal;
+    private Preference feedback, help, about, legal;
     private SwitchPreference matchIngr;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.settings);
         mContext = getContext();
-        account = findPreference("account");
         feedback = findPreference("feedback");
         help = findPreference("help");
         about = findPreference("about");
@@ -43,11 +42,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        account.setOnPreferenceClickListener(v -> {
-            openAccountInfo();
-            return false;
-        });
 
         help.setOnPreferenceClickListener(v -> {
             openHelp();
@@ -76,11 +70,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     private void openLegal() {
         startActivity(new Intent(mContext, Legal.class));
     }
-
-    private void openAccountInfo() {
-        startActivity(new Intent(mContext, AccountInfo.class));
-    }
-
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {

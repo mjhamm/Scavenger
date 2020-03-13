@@ -1,8 +1,13 @@
 package com.app.scavenger;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.firebase.firestore.Exclude;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 
 class RecipeItem {
@@ -47,10 +52,6 @@ class RecipeItem {
     @Expose
     @SerializedName("url")
     private String mRecipeURL;
-
-    @Expose
-    @SerializedName("uri")
-    private String mUniqueURI;
 
     @Expose
     @SerializedName("yield")
@@ -158,14 +159,6 @@ class RecipeItem {
 
     public void setmRecipeURL(String mRecipeURL) {
         this.mRecipeURL = mRecipeURL;
-    }
-
-    public String getmUniqueURI() {
-        return mUniqueURI;
-    }
-
-    public void setmUniqueURI(String mUniqueURI) {
-        this.mUniqueURI = mUniqueURI;
     }
 
     public int getmServings() {

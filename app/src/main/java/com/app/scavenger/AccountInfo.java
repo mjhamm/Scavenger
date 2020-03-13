@@ -1,25 +1,22 @@
 package com.app.scavenger;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
-import android.widget.EditText;
+import android.util.Log;
 import android.widget.ImageButton;
-
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class AccountInfo extends AppCompatActivity {
 
-    Context mContext;
-    MaterialButton mDeleteAccountButton;
-    ImageButton mBackButton;
-    String name = null;
-    String email = null;
+    private static final String TAG = "LOG: ";
+
+    private Context mContext;
+    private String mUserId = null;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,8 +24,8 @@ public class AccountInfo extends AppCompatActivity {
         setContentView(R.layout.activity_account_info);
         mContext = this;
 
-        mDeleteAccountButton = findViewById(R.id.delete_account);
-        mBackButton = findViewById(R.id.account_info_back);
+        MaterialButton mDeleteAccountButton = findViewById(R.id.delete_account);
+        ImageButton mBackButton = findViewById(R.id.account_info_back);
 
         mDeleteAccountButton.setOnClickListener(v -> {
             deleteAccountFirst();
@@ -39,8 +36,17 @@ public class AccountInfo extends AppCompatActivity {
         });
 
         Intent intent = getIntent();
-        name = intent.getStringExtra("name");
-        email = intent.getStringExtra("email");
+        mUserId = intent.getStringExtra("userId");
+    }
+
+    private void deleteAccountFromFirebase() {
+        db.collection("Users").document(mUserId)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "Successfully removed account from Firebase");
+                    finish();
+                })
+                .addOnFailureListener(e -> Log.d(TAG, "Failure to delete account from Firebase " + e.toString()));
     }
 
     private void deleteAccountFirst() {
@@ -65,7 +71,7 @@ public class AccountInfo extends AppCompatActivity {
                 .setCancelable(false)
                 .setPositiveButton("Yep! Delete it!", (dialog, which) -> {
                     //DELETE ACCOUNT
-                    dialog.dismiss();
+                    deleteAccountFromFirebase();
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> {
                     dialog.cancel();

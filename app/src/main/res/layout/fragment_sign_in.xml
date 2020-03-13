@@ -88,9 +88,9 @@
         android:text="SIGN IN"
         app:icon="@drawable/ic_mail_outline_white_24dp"
         app:iconGravity="textStart"
-        android:layout_marginTop="16dp"
-        android:fontFamily="@font/roboto_condensed_regular"
-        android:textSize="18sp"/>
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/roboto_medium"
+        android:textSize="16sp"/>
 
     <TextView
         android:id="@+id/signIn_or"
@@ -103,7 +103,7 @@
         app:layout_constraintTop_toBottomOf="@id/signIn_Button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="8dp"/>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/google_signIn"
@@ -112,7 +112,7 @@
         android:background="@mipmap/btn_google_signin_light_normal_xxxhdpi"
         android:fontFamily="@font/roboto_medium"
         android:text="@string/sign_in_with_google"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/signIn_or"/>
@@ -131,7 +131,7 @@
         android:drawableStart="@drawable/f_logo_blue_24"
         android:background="@color/com_facebook_blue"
         android:textColor="@android:color/white"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="8dp"/>
 
     <TextView
         android:id="@+id/accept_terms_signin"
@@ -143,7 +143,7 @@
         android:textColor="@android:color/black"
         android:textSize="14sp"
         android:fontFamily="@font/roboto_condensed_regular"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
         android:text="@string/terms_signin"/>

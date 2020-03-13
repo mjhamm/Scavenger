@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
@@ -12,16 +14,23 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.shimmer.ShimmerFrameLayout;
+import com.google.android.material.internal.ParcelableSparseArray;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 import retrofit2.Call;
@@ -49,6 +58,9 @@ public class SearchFragment extends Fragment {
     private boolean matchOn = false;
     private int fromIngr = 0;
     private int toIngr = 10;
+    private LinearLayoutManager mLayoutManager;
+    private ArrayList<RecipeItem> recipeItemArrayList;
+    private String queryString = null;
 
     public SearchFragment() {
         // Required empty public constructor
@@ -90,8 +102,9 @@ public class SearchFragment extends Fragment {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         matchOn = sharedPreferences.getBoolean("match", false);
+        recipeItemArrayList = new ArrayList<>();
 
-
+        mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
 
         if (matchOn) {
             match_textView.setVisibility(View.VISIBLE);
@@ -138,6 +151,7 @@ public class SearchFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
+
                 return false;
             }
         });
@@ -151,13 +165,37 @@ public class SearchFragment extends Fragment {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG, "matchOn: " + matchOn);
         if (matchOn) {
             match_textView.setVisibility(View.VISIBLE);
         } else {
             match_textView.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("query", queryString);
+        outState.putString("userId", userId);
+        outState.putBoolean("logged", logged);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            queryString = savedInstanceState.getString("query");
+            userId = savedInstanceState.getString("userId");
+            logged = savedInstanceState.getBoolean("logged");
+            mSearchView.setQuery(queryString, false);
         }
     }
 
@@ -180,6 +218,8 @@ public class SearchFragment extends Fragment {
     }
 
     private void getIngredients() {
+        // Clears the array list holding recipe items. Remove this to add load on more
+        //recipeItemArrayList.clear();
         startup_message.setVisibility(View.GONE);
         shimmer.setVisibility(View.VISIBLE);
         shimmer.startShimmer();
@@ -189,7 +229,7 @@ public class SearchFragment extends Fragment {
 
 
         Call<String> call = apiService.getRecipeData(getIngredientsSearch(), "bd790cc2", "56fdf6a5593ad5199e8040a29b9fbfd6", checkNumIngredients(), fromIngr, toIngr);
-
+        queryString = getIngredientsSearch();
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
@@ -211,10 +251,13 @@ public class SearchFragment extends Fragment {
         });
     }
 
+    private String randomItemId(RecipeItem item) {
+        return item.getmRecipeName() + item.getmSourceName() + item.getmCalories();
+    }
+
     private void writeRecycler(String response) {
         try {
             JSONObject obj = new JSONObject(response);
-            ArrayList<RecipeItem> recipeItemArrayList = new ArrayList<>();
             JSONArray dataArray = obj.getJSONArray("hits");
 
             for (int i = 0; i < dataArray.length(); i++) {
@@ -228,7 +271,6 @@ public class SearchFragment extends Fragment {
                 item.setmRecipeURL(recipes.getString("url"));
                 item.setmServings(recipes.getInt("yield"));
                 item.setmCalories(recipes.getInt("calories"));
-                item.setmUniqueURI(recipes.getString("uri"));
 
                 ArrayList<String> list_healthLabels = new ArrayList<>();
 
@@ -269,11 +311,13 @@ public class SearchFragment extends Fragment {
                 JSONObject protein = totalNutrients.getJSONObject("PROCNT");
                 item.setmProtein(protein.getInt("quantity"));
 
+                item.setItemId(randomItemId(item));
+
                 recipeItemArrayList.add(item);
             }
             adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
             mSearchRecyclerView.setAdapter(adapter);
-            mSearchRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
+            mSearchRecyclerView.setLayoutManager(mLayoutManager);
 
             if (recipeItemArrayList.isEmpty()) {
                 startup_message.setVisibility(View.VISIBLE);
@@ -285,11 +329,6 @@ public class SearchFragment extends Fragment {
         }
         shimmer.stopShimmer();
         shimmer.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
     }
 
     //Gets the input from Searchview and returns it as string

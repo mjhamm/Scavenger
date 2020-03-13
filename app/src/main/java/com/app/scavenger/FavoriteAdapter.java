@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,31 +18,31 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.util.ArrayList;
 import java.util.Locale;
 
 public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHolder> {
+
+    private static final String TAG = "LOG: ";
 
     // Firestore Labels ----------------------------------------------------------
     private static final String ITEM_NAME = "name";
@@ -64,11 +63,20 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     private ArrayList<RecipeItem> mRecipeItems;
     private Context mContext;
     private LayoutInflater mInflater;
+    private String mUserId = null;
+    private boolean refresh = false;
+    private RefreshFavorites refreshFavorites;
 
-    FavoriteAdapter(Context context, ArrayList<RecipeItem> recipeItems) {
+    FavoriteAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId, RefreshFavorites mListener) {
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
+        this.mUserId = userId;
+        refreshFavorites = mListener;
+    }
+
+    public interface RefreshFavorites {
+        void refresh(boolean isRefresh);
     }
 
     @NonNull
@@ -146,7 +154,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         private ImageView recipeImage;
         private MaterialCardView mNutritionCard;
         private RelativeLayout mRelativeLayout;
-        private RecipeItem item;
+        private RecipeItem recipeItem;
         private ImageButton more_button, favorite_button;
         private MaterialCardView mViewRecipe;
         private String reportReason = null;
@@ -177,19 +185,21 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                 int position = getAdapterPosition();
                 // Adapter Position
                 // Gets the item at the position
-                item = mRecipeItems.get(position);
+                recipeItem = mRecipeItems.get(position);
                 // Checks if the item is clicked
                 // Sets the layout visible/gone
-                if (item.isClicked()) {
+                if (recipeItem.isClicked()) {
                     mRelativeLayout.setVisibility(View.GONE);
-                    item.setClicked(false);
+                    recipeItem.setClicked(false);
                 } else {
                     mRelativeLayout.setVisibility(View.VISIBLE);
-                    item.setClicked(true);
+                    recipeItem.setClicked(true);
                 }
             });
 
             more_button.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                recipeItem = mRecipeItems.get(position);
                 Animation cw = AnimationUtils.loadAnimation(mContext, R.anim.menu_clockwise);
                 Animation acw = AnimationUtils.loadAnimation(mContext, R.anim.menu_anti_clockwise);
 
@@ -206,7 +216,8 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                             reportRecipe();
                             return true;
                         case R.id.fav_menu_remove:
-                            Toast.makeText(mContext, "Remove", Toast.LENGTH_SHORT).show();
+                            removeDataFromFirebase(recipeItem);
+                            refreshFavorites.refresh(true);
                     }
                     return false;
                 });
@@ -316,21 +327,44 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         }
 
         private String retrieveRecipeUrl() {
-            return item.getmRecipeURL();
+            return recipeItem.getmRecipeURL();
         }
 
         private String retrieveRecipeSource() {
-            return item.getmSourceName();
+            return recipeItem.getmSourceName();
         }
 
         private String retrieveRecipeName() {
-            return item.getmRecipeName();
+            return recipeItem.getmRecipeName();
         }
 
         @Override
         public void onClick(View v) {
 
         }
+    }
+
+
+
+    private void removeDataFromFirebase(RecipeItem recipeItem) {
+        String itemId = recipeItem.getmRecipeName() + recipeItem.getmSourceName() + recipeItem.getmCalories();
+        CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");
+
+        favoritesRef.document(itemId)
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "Successfully removed favorite");
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(TAG, "Failed to remove favorite" + e.toString());
+                    }
+                });
     }
 
     private static void openInDefaultBrowser(Context context, String url) {

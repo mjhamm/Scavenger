@@ -145,7 +145,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
-            android:layout_marginTop="12sp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="24dp"
             android:fontFamily="@font/roboto_condensed_regular"
             android:text="By Signing Up You Agree to Scavenger's Terms &amp; Conditions and Privacy Policy"
@@ -164,7 +164,7 @@
             app:icon="@drawable/ic_mail_outline_white_24dp"
             android:textSize="16sp"
             app:iconGravity="textStart"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="@id/google_signUp"
             app:layout_constraintEnd_toEndOf="@id/google_signUp"
             app:layout_constraintTop_toBottomOf="@id/signUpTerms"/>
@@ -180,13 +180,13 @@
             app:layout_constraintTop_toBottomOf="@id/signUp_button"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp"/>
+            android:layout_marginTop="8dp"/>
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/google_signUp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:elevation="8dp"
             android:background="@mipmap/btn_google_signin_light_normal_xxxhdpi"
             android:fontFamily="@font/roboto_medium"
@@ -210,7 +210,7 @@
             android:drawableStart="@drawable/f_logo_blue_24"
             android:background="@color/com_facebook_blue"
             android:textColor="@android:color/white"
-            android:layout_marginTop="16dp"/>
+            android:layout_marginTop="8dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -54,6 +54,7 @@ public class SignUpFragment extends Fragment {
 
         mContext = getContext();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.clientId_web_googleSignIn))
                 .requestProfile()
                 .requestEmail()
                 .build();

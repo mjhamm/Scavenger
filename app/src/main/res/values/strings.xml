@@ -29,4 +29,10 @@
     <string name="no_internet_connection">You Don\'t Have an Internet Connection. In order to see your favorites you must be connected to the internet.</string>
     <string name="not_signed_in">You are not Signed in. Sign In or Sign Up to save and view your favorites.</string>
     <string name="no_favorites">You Don\'t Have Any Favorites. Go Out There and Find Something Amazing!</string>
+    <string name="sign_out_button">Sign Out</string>
+    <string name="test_email">testEmail@test.com</string>
+    <string name="test_user">Test User</string>
+    <string name="sign_in_sign_up_header">Sign In / Sign Up</string>
+
+    <string name="clientId_web_googleSignIn">565312817175-cipp792csradj5qukdb836j8e9tuq7gr.apps.googleusercontent.com</string>
 </resources>
