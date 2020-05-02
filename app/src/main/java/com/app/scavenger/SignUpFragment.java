@@ -67,7 +67,7 @@ public class SignUpFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_sign_up, container, false);
 
         AppCompatButton mGoogleSignUp = view.findViewById(R.id.google_signUp);
-        signUpButton = view.findViewById(R.id.signUp_button);
+        signUpButton = view.findViewById(R.id.signUp_Button);
 
         mGoogleSignUp.setOnClickListener(v -> {
             googleSignUp();
@@ -124,7 +124,7 @@ public class SignUpFragment extends Fragment {
         }
     }
 
-    public void sendDataToFirestore(String userId, String name, String email) {
+    private void sendDataToFirestore(String userId, String name, String email) {
         Map<String, Object> data = new HashMap<>();
         data.put("userId", userId);
         data.put("name", name);

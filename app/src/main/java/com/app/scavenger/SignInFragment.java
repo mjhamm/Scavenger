@@ -10,10 +10,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -33,7 +36,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SignInFragment extends Fragment implements GoogleApiClient.OnConnectionFailedListener {
+public class SignInFragment extends Fragment {
 
     private static final int RC_SIGN_IN = 101;
     private static final String TAG = "LOG: ";
@@ -44,9 +47,8 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     private String mName = null;
     private String mEmail = null;
     private boolean isLogged = false;
-    private GoogleApiClient googleApiClient;
+    private TextView signUpText;
     private OnChildFragmentInteractionListener mParentListener;
-
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public SignInFragment() {
@@ -67,11 +69,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
                 .requestEmail()
                 .requestIdToken(getString(R.string.clientId_web_googleSignIn))
                 .build();
-        googleApiClient = new GoogleApiClient.Builder(mContext)
-                .enableAutoManage(getActivity(), this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .addApi(Auth.CREDENTIALS_API)
-                .build();
         mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
     }
 
@@ -81,6 +78,15 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         View view = inflater.inflate(R.layout.fragment_sign_in, container, false);
 
         AppCompatButton mGoogleSignIn = view.findViewById(R.id.google_signIn);
+        signUpText = view.findViewById(R.id.signUp_text);
+
+        signUpText.setOnClickListener(v -> {
+            Account parentFrag = (Account) SignInFragment.this.getParentFragment();
+            Log.e(TAG,"" + parentFrag);
+            if (parentFrag != null) {
+                parentFrag.replaceContainer();
+            }
+        });
 
         mGoogleSignIn.setOnClickListener(v -> {
             if (!checkConnection()) {
@@ -114,8 +120,8 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     }
 
     private void googleSignIn() {
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient)/*mGoogleSignInClient.getSignInIntent()*/;
-        startActivityForResult(signInIntent, RC_SIGN_IN);
+        Intent intent = mGoogleSignInClient.getSignInIntent();
+        startActivityForResult(intent, RC_SIGN_IN);
     }
 
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
@@ -133,11 +139,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         } catch (ApiException e) {
             Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
         }
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
     public interface OnChildFragmentInteractionListener {

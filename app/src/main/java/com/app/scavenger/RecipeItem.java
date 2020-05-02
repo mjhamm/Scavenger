@@ -1,19 +1,14 @@
 package com.app.scavenger;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.google.firebase.firestore.Exclude;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 
 class RecipeItem {
 
     //Empty Constructor
-    public RecipeItem() {}
+    RecipeItem() {}
 
     private String itemId;
 
@@ -65,35 +60,35 @@ class RecipeItem {
     private boolean favorited;
 
     @Exclude
-    public String getItemId() {
+    String getItemId() {
         return itemId;
     }
 
-    public void setItemId(String itemId) {
+    void setItemId(String itemId) {
         this.itemId = itemId;
     }
 
-    public void setmImageUrl(String mImageUrl) {
+    void setmImageUrl(String mImageUrl) {
         this.mImageUrl = mImageUrl;
     }
 
-    public void setmRecipeName(String mRecipeName) {
+    void setmRecipeName(String mRecipeName) {
         this.mRecipeName = mRecipeName;
     }
 
-    public void setmSourceName(String mSourceName) {
+    void setmSourceName(String mSourceName) {
         this.mSourceName = mSourceName;
     }
 
-    public String getmImageUrl() {
+    String getmImageUrl() {
         return mImageUrl;
     }
 
-    public String getmRecipeName() {
+    String getmRecipeName() {
         return mRecipeName;
     }
 
-    public String getmSourceName() {
+    String getmSourceName() {
         return mSourceName;
     }
 
@@ -113,67 +108,67 @@ class RecipeItem {
         this.favorited = favorited;
     }
 
-    public ArrayList<String> getmRecipeAttributes() {
+    ArrayList<String> getmRecipeAttributes() {
         return mRecipeAttributes;
     }
 
-    public void setmRecipeAttributes(ArrayList<String> mRecipeAttributes) {
+    void setmRecipeAttributes(ArrayList<String> mRecipeAttributes) {
         this.mRecipeAttributes = mRecipeAttributes;
     }
 
-    public ArrayList<String> getmIngredients() {
+    ArrayList<String> getmIngredients() {
         return mIngredients;
     }
 
-    public void setmIngredients(ArrayList<String> mIngredients) {
+    void setmIngredients(ArrayList<String> mIngredients) {
         this.mIngredients = mIngredients;
     }
 
-    public int getmCarbs() {
+    int getmCarbs() {
         return mCarbs;
     }
 
-    public void setmCarbs(int mCarbs) {
+    void setmCarbs(int mCarbs) {
         this.mCarbs = mCarbs;
     }
 
-    public int getmFat() {
+    int getmFat() {
         return mFat;
     }
 
-    public void setmFat(int mFat) {
+    void setmFat(int mFat) {
         this.mFat = mFat;
     }
 
-    public int getmProtein() {
+    int getmProtein() {
         return mProtein;
     }
 
-    public void setmProtein(int mProtein) {
+    void setmProtein(int mProtein) {
         this.mProtein = mProtein;
     }
 
-    public String getmRecipeURL() {
+    String getmRecipeURL() {
         return mRecipeURL;
     }
 
-    public void setmRecipeURL(String mRecipeURL) {
+    void setmRecipeURL(String mRecipeURL) {
         this.mRecipeURL = mRecipeURL;
     }
 
-    public int getmServings() {
+    int getmServings() {
         return mServings;
     }
 
-    public void setmServings(int mServings) {
+    void setmServings(int mServings) {
         this.mServings = mServings;
     }
 
-    public int getmCalories() {
+    int getmCalories() {
         return mCalories;
     }
 
-    public void setmCalories(int mCalories) {
+    void setmCalories(int mCalories) {
         this.mCalories = mCalories;
     }
 }

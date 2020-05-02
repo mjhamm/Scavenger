@@ -157,7 +157,7 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/facts_cardView"
                     android:layout_width="match_parent"
-                    android:layout_height="80dp"
+                    android:layout_height="70dp"
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="16dp"
                     app:cardCornerRadius="12dp"
@@ -203,21 +203,19 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintEnd_toStartOf="@id/guide1"
                             android:text="1800"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             android:fontFamily="@font/roboto_condensed_regular"
-                            android:textColor="@android:color/black"
-                            android:layout_marginTop="16dp"/>
+                            android:textColor="@android:color/black"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintEnd_toStartOf="@id/guide1"
                             android:fontFamily="@font/roboto_condensed_regular"
                             android:textColor="@android:color/black"
-                            android:textSize="18sp"
-                            android:layout_marginBottom="16dp"
+                            android:textSize="16sp"
+                            app:layout_constraintTop_toBottomOf="@id/calories_amount"
                             android:text="Calories"/>
 
                         <TextView
@@ -225,7 +223,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             app:layout_constraintTop_toTopOf="parent"
-                            android:layout_marginTop="16dp"
+                            android:layout_marginTop="8dp"
                             android:fontFamily="@font/roboto_condensed_regular"
                             android:textColor="@android:color/black"
                             android:textSize="18sp"
@@ -236,13 +234,12 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintStart_toEndOf="@id/guide1"
                             app:layout_constraintEnd_toStartOf="@id/guide2"
+                            app:layout_constraintTop_toBottomOf="@id/carbs_amount"
                             android:fontFamily="@font/roboto_condensed_regular"
                             android:textColor="@android:color/black"
                             android:textSize="18sp"
-                            android:layout_marginBottom="16dp"
                             android:text="Carbs"/>
 
                         <TextView
@@ -253,7 +250,7 @@
                             android:fontFamily="@font/roboto_condensed_regular"
                             android:textColor="@android:color/black"
                             android:textSize="18sp"
-                            android:layout_marginTop="16dp"
+                            android:layout_marginTop="8dp"
                             app:layout_constraintStart_toEndOf="@id/guide2"
                             app:layout_constraintEnd_toStartOf="@id/guide3"
                             android:text="20g"/>
@@ -261,20 +258,19 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/fat_amount"
                             app:layout_constraintStart_toEndOf="@id/guide2"
                             app:layout_constraintEnd_toStartOf="@id/guide3"
                             android:fontFamily="@font/roboto_condensed_regular"
                             android:textColor="@android:color/black"
                             android:textSize="18sp"
-                            android:layout_marginBottom="16dp"
                             android:text="Fat"/>
 
                         <TextView
                             android:id="@+id/protein_amount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
+                            android:layout_marginTop="8dp"
                             android:fontFamily="@font/roboto_condensed_regular"
                             android:textColor="@android:color/black"
                             android:textSize="18sp"
@@ -286,13 +282,12 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/protein_amount"
                             app:layout_constraintStart_toEndOf="@id/guide3"
                             app:layout_constraintEnd_toEndOf="parent"
                             android:fontFamily="@font/roboto_condensed_regular"
                             android:textColor="@android:color/black"
                             android:textSize="18sp"
-                            android:layout_marginBottom="16dp"
                             android:text="Protein"/>
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
