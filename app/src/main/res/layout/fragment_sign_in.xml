@@ -25,30 +25,27 @@
 
     <EditText
         android:id="@+id/password_editText"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Password"
         android:textSize="14sp"
         android:fontFamily="@font/roboto_condensed_regular"
         app:layout_constraintTop_toBottomOf="@id/email_editText"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/email_editText"
+        app:layout_constraintEnd_toEndOf="@id/email_editText"
         android:importantForAutofill="no"
         android:layout_marginTop="8dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
         android:inputType="textPassword"/>
 
     <TextView
         android:id="@+id/forgot_signIn"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@id/password_editText"
         app:layout_constraintTop_toBottomOf="@id/password_editText"
         android:text="@string/forgot_your_password"
         android:textColor="@android:color/holo_blue_dark"
         android:fontFamily="@font/roboto_condensed_regular"
-        android:layout_marginStart="26dp"
         android:layout_marginTop="8dp"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
@@ -78,15 +75,16 @@
 
     <TextView
         android:id="@+id/signIn_or"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/signin_or"
         android:fontFamily="@font/roboto_condensed_regular"
         android:textColor="@android:color/black"
         android:textSize="18sp"
+        android:gravity="center"
         app:layout_constraintTop_toBottomOf="@id/signIn_Button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/google_signIn"
+        app:layout_constraintEnd_toEndOf="@id/google_signIn"
         android:layout_marginTop="8dp"/>
 
     <com.google.android.material.button.MaterialButton
@@ -142,10 +140,8 @@
         android:textSize="14sp"
         android:textColor="@android:color/holo_blue_dark"
         app:layout_constraintTop_toBottomOf="@id/facebook_signIn"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
+        app:layout_constraintStart_toStartOf="@id/facebook_signIn"
+        app:layout_constraintEnd_toEndOf="@id/facebook_signIn"
         android:text="Don't have an account? Sign Up!"
         android:gravity="center"
         android:layout_marginTop="24dp"/>
@@ -155,15 +151,13 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/signUp_text"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/password_editText"
+        app:layout_constraintEnd_toEndOf="@id/password_editText"
         android:gravity="center"
         android:textColor="@android:color/black"
         android:textSize="12sp"
         android:fontFamily="@font/roboto_condensed_regular"
         android:layout_marginTop="24dp"
-        android:layout_marginStart="36dp"
-        android:layout_marginEnd="36dp"
         android:text="@string/terms_signin"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

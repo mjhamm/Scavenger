@@ -92,20 +92,24 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
     @Override
     public void onResume() {
         super.onResume();
-        getData(userId, logged);
-        if (!checkConnection()) {
-            favorite_message.setVisibility(View.VISIBLE);
-            favorite_message.setText(R.string.no_internet_connection);
-            retryConButton.setVisibility(View.VISIBLE);
-            recipeItemList.clear();
-        } else {
-            if (!logged) {
-                favorite_message.setVisibility(View.VISIBLE);
-                retryConButton.setVisibility(View.GONE);
-                favorite_message.setText(R.string.not_signed_in);
-                recipeItemList.clear();
-            }
+        getInfoFromSharedPrefs();
+        if (adapter != null) {
+            mFavoriteRecyclerView.setAdapter(adapter);
         }
+//        getData(userId, logged);
+//        if (!checkConnection()) {
+//            favorite_message.setVisibility(View.VISIBLE);
+//            favorite_message.setText(R.string.no_internet_connection);
+//            retryConButton.setVisibility(View.VISIBLE);
+//            recipeItemList.clear();
+//        } else {
+//            if (!logged) {
+//                favorite_message.setVisibility(View.VISIBLE);
+//                retryConButton.setVisibility(View.GONE);
+//                favorite_message.setText(R.string.not_signed_in);
+//                recipeItemList.clear();
+//            }
+//        }
     }
 
     void getData(String userId, boolean logged) {
@@ -123,7 +127,9 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
         mFavoriteSearch.setMaxWidth(Integer.MAX_VALUE);
         mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
 
-        getData(userId, logged);
+        getInfoFromSharedPrefs();
+
+        //getData(userId, logged);
         adapter = new FavoriteAdapter(mContext, recipeItemList,userId, this);
 
         if (!checkConnection()) {

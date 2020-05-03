@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -17,6 +18,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     private Context mContext;
     private Preference feedback, help, about, legal, delete;
     private SwitchPreference matchIngr;
+    private SharedPreferences sharedPreferences;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -26,6 +28,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         help = findPreference("help");
         about = findPreference("about");
         matchIngr = findPreference("match");
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+
+        if (sharedPreferences.getBoolean("logged", false)) {
+            delete.setVisible(true);
+        } else {
+            delete.setVisible(false);
+        }
     }
 
     @Override

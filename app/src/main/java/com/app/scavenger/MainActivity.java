@@ -66,13 +66,6 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
             Toast.makeText(this, "Match Ingredients is On", Toast.LENGTH_SHORT).show();
         }
 
-//        if (account != null) {
-//            logged = true;
-//            userId = account.getId();
-//            name = account.getDisplayName();
-//            email = account.getEmail();
-//        }
-
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestProfile()
                 .requestEmail()
@@ -94,10 +87,10 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
         BottomNavigationView mNavView = findViewById(R.id.bottom_nav_view);
 
         mNavView.setOnNavigationItemSelectedListener(item -> {
+            getInfoFromSharedPrefs();
             switch(item.getItemId()) {
                 case R.id.action_search:
                     fm.beginTransaction().hide(active).show(fragment1).commit();
-                    getInfoFromSharedPrefs();
                     if (matchOn) {
                         Toast.makeText(this, "Match Ingredients is On", Toast.LENGTH_SHORT).show();
                     }
@@ -105,12 +98,10 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
                     return true;
                 case R.id.action_favorites:
                     fm.beginTransaction().hide(active).show(fragment2).commit();
-                    getInfoFromSharedPrefs();
                     active = fragment2;
                     return true;
                 case R.id.action_account:
                     fm.beginTransaction().hide(active).show(fragment3).commit();
-                    getInfoFromSharedPrefs();
                     active = fragment3;
                     return true;
             }

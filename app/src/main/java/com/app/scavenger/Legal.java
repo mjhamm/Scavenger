@@ -11,11 +11,5 @@ public class Legal extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_legal);
-
-        ImageButton backButton = findViewById(R.id.legal_back);
-
-        backButton.setOnClickListener(v -> {
-            finish();
-        });
     }
 }

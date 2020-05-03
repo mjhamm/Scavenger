@@ -14,10 +14,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +33,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -46,9 +50,12 @@ public class SignInFragment extends Fragment {
     private Context mContext;
     private GoogleSignInClient mGoogleSignInClient;
     private TextView signUpText, forgotPass;
+    private MaterialButton signInButton;
+    private EditText emailEdit, passEdit;
     //private OnChildFragmentInteractionListener mParentListener;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private SharedPreferences sharedPreferences;
+    private boolean emailEmpty = true, passEmpty = true;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -87,16 +94,79 @@ public class SignInFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_sign_in, container, false);
 
         AppCompatButton mGoogleSignIn = view.findViewById(R.id.google_signIn);
+        signInButton = view.findViewById(R.id.signIn_Button);
         signUpText = view.findViewById(R.id.signUp_text);
         forgotPass = view.findViewById(R.id.forgot_signIn);
+        emailEdit = view.findViewById(R.id.email_editText);
+        passEdit = view.findViewById(R.id.password_editText);
 
-        signUpText.setOnClickListener(v -> {
-            Intent intent = new Intent(mContext, SignUpActivity.class);
+        emailEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().length() == 0) {
+                    emailEmpty = true;
+                    signInButton.setEnabled(false);
+                } else {
+                    if (!s.toString().trim().contains("@")) {
+                        emailEmpty = true;
+                        signInButton.setEnabled(false);
+                    } else {
+                        emailEmpty = false;
+                        if (!passEmpty) {
+                            signInButton.setEnabled(true);
+                        } else {
+                            signInButton.setEnabled(false);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        passEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().length() == 0) {
+                    passEmpty = true;
+                    signInButton.setEnabled(false);
+                } else {
+                    passEmpty = false;
+                    if (!emailEmpty) {
+                        signInButton.setEnabled(true);
+                    } else {
+                        signInButton.setEnabled(false);
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        // Forgot password activity launch textview
+        forgotPass.setOnClickListener(v -> {
+            Intent intent = new Intent(mContext, ForgotPassword.class);
             startActivity(intent);
         });
 
-        forgotPass.setOnClickListener(v -> {
-            Intent intent = new Intent(mContext, ForgotPassword.class);
+        // No account signup activity launch textview
+        signUpText.setOnClickListener(v -> {
+            Intent intent = new Intent(mContext, SignUpActivity.class);
             startActivity(intent);
         });
 

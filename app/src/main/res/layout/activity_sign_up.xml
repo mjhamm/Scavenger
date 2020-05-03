@@ -53,16 +53,17 @@
 
             <TextView
                 android:id="@+id/signUp_info"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:fontFamily="@font/roboto_condensed_regular"
                 android:gravity="center"
+                android:lines="1"
                 android:text="Sign Up to Save Recipes so you can go back to them later!"
                 android:textColor="@android:color/black"
                 android:textSize="14sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/fullName_editText"
+                app:layout_constraintStart_toStartOf="@id/fullName_editText"
                 app:layout_constraintTop_toTopOf="parent"/>
 
             <EditText
@@ -89,13 +90,11 @@
                 android:hint="Email Address"
                 android:fontFamily="@font/roboto_condensed_regular"
                 android:textSize="14sp"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
                 android:inputType="textEmailAddress"
                 android:importantForAutofill="no"
                 android:textColor="@android:color/black"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/fullName_editText"
+                app:layout_constraintStart_toStartOf="@id/fullName_editText"
                 app:layout_constraintTop_toBottomOf="@id/fullName_editText" />
 
             <EditText
@@ -105,13 +104,11 @@
                 android:hint="Password"
                 android:fontFamily="@font/roboto_condensed_regular"
                 android:textSize="14sp"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
                 android:importantForAutofill="no"
                 android:inputType="textPassword"
                 android:textColor="@android:color/black"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/email_editText"
+                app:layout_constraintStart_toStartOf="@id/email_editText"
                 app:layout_constraintTop_toBottomOf="@id/email_editText" />
 
             <EditText
@@ -121,28 +118,38 @@
                 android:hint="Confirm Password"
                 android:fontFamily="@font/roboto_condensed_regular"
                 android:textSize="14sp"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
                 android:importantForAutofill="no"
                 android:inputType="textPassword"
                 android:textColor="@android:color/black"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/password_editText"
+                app:layout_constraintStart_toStartOf="@id/password_editText"
                 app:layout_constraintTop_toBottomOf="@id/password_editText" />
+
+            <TextView
+                android:id="@+id/passNoMatch"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="*Passwords do not match"
+                app:layout_constraintStart_toStartOf="@id/passwordConfirm_editText"
+                app:layout_constraintEnd_toEndOf="@id/passwordConfirm_editText"
+                app:layout_constraintTop_toBottomOf="@id/passwordConfirm_editText"
+                android:textAllCaps="false"
+                android:visibility="gone"
+                android:textColor="@android:color/holo_red_dark"
+                android:textSize="12sp"
+                android:fontFamily="@font/roboto_condensed_regular"/>
 
             <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/signUpTerms"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="24dp"
+                android:layout_marginTop="4dp"
                 android:fontFamily="@font/roboto_condensed_regular"
                 android:text="By Signing Up You Agree to Scavenger's Terms &amp; Conditions and Privacy Policy"
                 android:textSize="12sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/passwordConfirm_editText"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/passwordConfirm_editText"
+                app:layout_constraintTop_toBottomOf="@id/passNoMatch"
+                app:layout_constraintEnd_toEndOf="@id/passwordConfirm_editText"
                 android:layout_marginBottom="16dp"/>
 
             <com.google.android.material.button.MaterialButton
@@ -155,6 +162,7 @@
                 android:text="Sign Up"
                 app:icon="@drawable/ic_mail_white_24dp"
                 app:iconGravity="textStart"
+                android:enabled="false"
                 android:textAllCaps="false"
                 android:paddingBottom="4dp"
                 android:layout_marginTop="8dp"
@@ -162,20 +170,20 @@
                 android:textSize="14sp"
                 app:iconPadding="12dp"
                 app:iconSize="18dp"
-                android:backgroundTint="@color/colorPrimary"
                 android:textColor="@android:color/white"/>
 
             <TextView
                 android:id="@+id/signUp_or"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="OR"
                 android:fontFamily="@font/roboto_condensed_regular"
                 android:textColor="@android:color/black"
                 android:textSize="18sp"
+                android:gravity="center"
                 app:layout_constraintTop_toBottomOf="@id/signUp_Button"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/google_signUp"
+                app:layout_constraintEnd_toEndOf="@id/google_signUp"
                 android:layout_marginTop="8dp"/>
 
             <com.google.android.material.button.MaterialButton

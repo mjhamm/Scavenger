@@ -89,10 +89,10 @@ public class SearchFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getContext();
-        if (getArguments() != null) {
-            userId = getArguments().getString("userId");
-            logged = getArguments().getBoolean("logged");
-        }
+//        if (getArguments() != null) {
+//            userId = getArguments().getString("userId");
+//            logged = getArguments().getBoolean("logged");
+//        }
     }
 
     interface ApiService {

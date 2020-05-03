@@ -9,8 +9,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -19,6 +25,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +38,11 @@ public class SignUpActivity extends AppCompatActivity {
     private Context mContext;
     private GoogleSignInClient mGoogleSignUpClient;
     private SharedPreferences sharedPreferences;
+    private EditText fullName, emailEdit, passEdit, passConfirmEdit;
+    private TextView passNoMatch;
+    private MaterialCheckBox termsCheck;
+    private MaterialButton signUpButton, googleSignUpButton, facebookSignUpButton;
+    private boolean nameEmpty = true, emailEmpty = true, passEmpty = true, passConfirmEmpty = true;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -60,10 +72,127 @@ public class SignUpActivity extends AppCompatActivity {
                 .build();
         mGoogleSignUpClient = GoogleSignIn.getClient(mContext, gso);
 
-        MaterialButton signUpButton = findViewById(R.id.google_signUp);
+        fullName = findViewById(R.id.fullName_editText);
+        emailEdit = findViewById(R.id.email_editText);
+        passEdit = findViewById(R.id.password_editText);
+        passConfirmEdit = findViewById(R.id.passwordConfirm_editText);
+        passNoMatch = findViewById(R.id.passNoMatch);
+        termsCheck = findViewById(R.id.signUpTerms);
+        signUpButton = findViewById(R.id.signUp_Button);
+        facebookSignUpButton = findViewById(R.id.facebook_signUp);
+        googleSignUpButton = findViewById(R.id.google_signUp);
         ImageButton settingsButton = findViewById(R.id.signUp_settings_button);
 
-        signUpButton.setOnClickListener(v -> {
+        // Edit Text fields for sign up
+        // ------------------------------------------------------------------------------------------------------
+        fullName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().length() == 0) {
+                    nameEmpty = true;
+                } else {
+                    nameEmpty = false;
+                    checkFieldsForEmpty();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        emailEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().length() == 0) {
+                    emailEmpty = true;
+                } else {
+                    if (!emailEdit.getText().toString().contains("@")) {
+                        emailEmpty = true;
+                    } else {
+                        emailEmpty = false;
+                    }
+                }
+                checkFieldsForEmpty();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        passEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().length() == 0) {
+                    passEmpty = true;
+                } else {
+                    if (!passEdit.getText().toString().equals(passConfirmEdit.getText().toString())) {
+                        passEmpty = true;
+                        passNoMatch.setVisibility(View.VISIBLE);
+                    } else {
+                        passEmpty = false;
+                        passNoMatch.setVisibility(View.GONE);
+                        checkFieldsForEmpty();
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        passConfirmEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().length() == 0) {
+                    passConfirmEmpty = true;
+                } else {
+                    if (!passEdit.getText().toString().equals(passConfirmEdit.getText().toString())) {
+                        passConfirmEmpty = true;
+                        passNoMatch.setVisibility(View.VISIBLE);
+                    } else {
+                        passConfirmEmpty = false;
+                        passNoMatch.setVisibility(View.GONE);
+                        checkFieldsForEmpty();
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        // ------------------------------------------------------------------------------------------------------
+
+
+        googleSignUpButton.setOnClickListener(v -> {
             googleSignUp();
         });
 
@@ -135,5 +264,18 @@ public class SignUpActivity extends AppCompatActivity {
         userId = sharedPreferences.getString("userId", null);
         email = sharedPreferences.getString("email", null);
         name = sharedPreferences.getString("name", null);
+    }
+
+    private void checkFieldsForEmpty() {
+        if (!nameEmpty && !emailEmpty && !passEmpty && !passConfirmEmpty) {
+            signUpButton.setEnabled(true);
+//            if (!passEdit.getText().toString().equals(passConfirmEdit.getText().toString())) {
+//                signUpButton.setEnabled(false);
+//            } else {
+//                signUpButton.setEnabled(true);
+//            }
+        } else {
+            signUpButton.setEnabled(false);
+        }
     }
 }
