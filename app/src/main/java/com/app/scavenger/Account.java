@@ -30,7 +30,7 @@ import com.google.android.material.tabs.TabLayout;
 
 // Activity that houses the information about when a user signs in or signs up inside of Scavenger
 
-public class Account extends Fragment implements SignInFragment.OnChildFragmentInteractionListener {
+public class Account extends Fragment {//implements SignInFragment.OnChildFragmentInteractionListener {
 
     private static final String TAG = "LOG: ";
 
@@ -41,6 +41,7 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     private Fragment fragment_signIn;
     private GoogleSignInClient mGoogleSignInClient;
     private RelativeLayout mAccountRL;
+    private SharedPreferences sharedPreferences;
     private SendDataToMain sendDataToMain;
 
     // Shared Preferences Data
@@ -77,6 +78,9 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_account, container, false);
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        getInfoFromSharedPrefs();
 
         accountContainer = view.findViewById(R.id.account_fragment_container);
         ImageButton settingsButton = view.findViewById(R.id.settings_button);
@@ -132,12 +136,7 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     public void onResume() {
         super.onResume();
 
-        if (getArguments() != null) {
-            name = getArguments().getString("name");
-            email = getArguments().getString("email");
-            userId = getArguments().getString("userId");
-            logged = getArguments().getBoolean("isLogged");
-        }
+        getInfoFromSharedPrefs();
 
         if (logged) {
             hideForLogin();
@@ -215,21 +214,28 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     private void signOut() {
         mGoogleSignInClient.signOut()
                 .addOnCompleteListener(getActivity(), task -> {
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putBoolean("logged", false);
+                    editor.putString("name", null);
+                    editor.putString("email", null);
+                    editor.putString("userId", null);
+                    editor.apply();
                     logged = false;
                     name = null;
                     email = null;
+                    userId = null;
                     showForLogin();
-                    sendDataToMain.getLoginData(userId, logged);
+//                    sendDataToMain.getLoginData(userId, logged);
                 });
     }
 
-    @Override
-    public void messageFromChildToParent(String userId, String name, String email, boolean isLogged) {
-        this.userId = userId;
-        this.name = name;
-        this.email = email;
-        this.logged = isLogged;
-    }
+//    @Override
+//    public void messageFromChildToParent(String userId, String name, String email, boolean isLogged) {
+//        this.userId = userId;
+//        this.name = name;
+//        this.email = email;
+//        this.logged = isLogged;
+//    }
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {

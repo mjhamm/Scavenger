@@ -30,6 +30,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     private Context mContext;
     private GoogleSignInClient mGoogleSignUpClient;
+    private SharedPreferences sharedPreferences;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -47,6 +48,11 @@ public class SignUpActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sign_up);
 
         mContext = getApplicationContext();
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+
+        getInfoFromSharedPrefs();
+
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.clientId_web_googleSignIn))
                 .requestProfile()
@@ -77,18 +83,24 @@ public class SignUpActivity extends AppCompatActivity {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
             if (account != null) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("logged", true);
+                editor.putString("userId", account.getId());
+                editor.putString("name", account.getDisplayName());
+                editor.putString("email", account.getEmail());
+                editor.apply();
                 userId = account.getId();
                 name = account.getDisplayName();
                 email = account.getEmail();
-                logged = true;
+//                logged = true;
+                sendDataToFirestore(userId, name, email);
+                finish();
             }
-            sendDataToFirestore(userId, name, email);
 
             //Sign in successful
         } catch (ApiException e) {
             Log.w(TAG, "signUpResult:failed code=" + e.getStatusCode());
         }
-        //finish();
     }
 
     @Override

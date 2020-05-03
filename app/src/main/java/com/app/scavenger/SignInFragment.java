@@ -46,7 +46,7 @@ public class SignInFragment extends Fragment {
     private Context mContext;
     private GoogleSignInClient mGoogleSignInClient;
     private TextView signUpText, forgotPass;
-    private OnChildFragmentInteractionListener mParentListener;
+    //private OnChildFragmentInteractionListener mParentListener;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private SharedPreferences sharedPreferences;
 
@@ -158,20 +158,20 @@ public class SignInFragment extends Fragment {
         }
     }
 
-    public interface OnChildFragmentInteractionListener {
-        void messageFromChildToParent(String userId, String name, String email, boolean isLogged);
-    }
+//    public interface OnChildFragmentInteractionListener {
+//        void messageFromChildToParent(String userId, String name, String email, boolean isLogged);
+//    }
 
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        // check if parent Fragment implements listener
-        if (getParentFragment() instanceof OnChildFragmentInteractionListener) {
-            mParentListener = (OnChildFragmentInteractionListener) getParentFragment();
-        } else {
-            throw new RuntimeException("The parent fragment must implement OnChildFragmentInteractionListener");
-        }
-    }
+//    @Override
+//    public void onAttach(@NonNull Context context) {
+//        super.onAttach(context);
+//        // check if parent Fragment implements listener
+//        if (getParentFragment() instanceof OnChildFragmentInteractionListener) {
+//            mParentListener = (OnChildFragmentInteractionListener) getParentFragment();
+//        } else {
+//            throw new RuntimeException("The parent fragment must implement OnChildFragmentInteractionListener");
+//        }
+//    }
 
     private void sendDataToFirestore(String userId, String name, String email) {
         Map<String, Object> data = new HashMap<>();
