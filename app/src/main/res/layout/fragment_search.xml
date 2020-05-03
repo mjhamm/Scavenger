@@ -94,16 +94,6 @@
     </com.facebook.shimmer.ShimmerFrameLayout>
 
     <TextView
-        android:id="@+id/matchIngr_textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Match Number of Ingredients is Currently On"
-        android:layout_below="@id/search_cardView"
-        android:layout_centerHorizontal="true"
-        android:textColor="@android:color/black"
-        android:visibility="gone"/>
-
-    <TextView
         android:id="@+id/startup_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -114,6 +104,18 @@
         android:gravity="center"
         android:text="Startup Message"/>
 
+    <TextView
+        android:id="@+id/match_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/startup_message"
+        android:fontFamily="@font/roboto_condensed_regular"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:text="This can occur if Match Ingredients is On"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_recyclerView"
         android:layout_width="match_parent"
@@ -121,6 +123,6 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_below="@id/matchIngr_textView"/>
+        android:layout_below="@id/search_cardView"/>
 
 </RelativeLayout>

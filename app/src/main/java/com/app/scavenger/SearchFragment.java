@@ -49,18 +49,23 @@ public class SearchFragment extends Fragment {
     private SearchAdapter adapter;
     private Context mContext;
     private SearchView mSearchView;
-    private TextView startup_message;
-    private TextView match_textView;
+    private TextView startup_message, matchMessage;
     private SharedPreferences sharedPreferences;
     private ShimmerFrameLayout shimmer;
-    private String userId = null;
-    private boolean logged = false;
     private boolean matchOn = false;
     private int fromIngr = 0;
     private int toIngr = 10;
     private LinearLayoutManager mLayoutManager;
     private ArrayList<RecipeItem> recipeItemArrayList;
     private String queryString = null;
+
+    // Shared Preferences Data
+    //-----------------------------------------
+    private String userId = null;
+    private boolean logged = false;
+    private String name = null;
+    private String email = null;
+    //------------------------------------------
 
     public SearchFragment() {
         // Required empty public constructor
@@ -73,6 +78,11 @@ public class SearchFragment extends Fragment {
         args.putBoolean("logged", logged);
         searchFragment.setArguments(args);
         return searchFragment;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
     }
 
     @Override
@@ -96,21 +106,14 @@ public class SearchFragment extends Fragment {
 
         startup_message = view.findViewById(R.id.startup_message);
         mSearchView = view.findViewById(R.id.search_searchView);
-        match_textView = view.findViewById(R.id.matchIngr_textView);
         mSearchView.setMaxWidth(Integer.MAX_VALUE);
         shimmer = view.findViewById(R.id.search_shimmerLayout);
+        matchMessage = view.findViewById(R.id.match_message);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        matchOn = sharedPreferences.getBoolean("match", false);
         recipeItemArrayList = new ArrayList<>();
 
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
-
-        if (matchOn) {
-            match_textView.setVisibility(View.VISIBLE);
-        } else {
-            match_textView.setVisibility(View.GONE);
-        }
 
         Random random_start_number = new Random();
 
@@ -172,10 +175,8 @@ public class SearchFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (matchOn) {
-            match_textView.setVisibility(View.VISIBLE);
-        } else {
-            match_textView.setVisibility(View.GONE);
+        if (adapter != null) {
+            mSearchRecyclerView.setAdapter(adapter);
         }
     }
 
@@ -221,6 +222,7 @@ public class SearchFragment extends Fragment {
         // Clears the array list holding recipe items. Remove this to add load on more
         //recipeItemArrayList.clear();
         startup_message.setVisibility(View.GONE);
+        matchMessage.setVisibility(View.GONE);
         shimmer.setVisibility(View.VISIBLE);
         shimmer.startShimmer();
         Retrofit retrofit = NetworkClient.getRetrofitClient();
@@ -323,6 +325,7 @@ public class SearchFragment extends Fragment {
                 startup_message.setVisibility(View.VISIBLE);
                 startup_message.setText("We Couldn't Find Any Recipes :(\n" +
                         "Sorry About That!");
+                matchMessage.setVisibility(View.VISIBLE);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -346,5 +349,14 @@ public class SearchFragment extends Fragment {
     //method for creating a Toast
     private void toastMessage(String message) {
         Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+    }
+
+    // Sets all variables related to logged status and user info
+    private void getInfoFromSharedPrefs() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        logged = sharedPreferences.getBoolean("logged", false);
+        userId = sharedPreferences.getString("userId", null);
+        email = sharedPreferences.getString("email", null);
+        name = sharedPreferences.getString("name", null);
     }
 }

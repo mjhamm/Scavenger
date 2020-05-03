@@ -17,28 +17,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:cardElevation="12dp">
 
-        <ImageButton
-            android:id="@+id/account_backButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:visibility="gone"
-            android:src="@drawable/ic_arrow_back_black_36dp"
-            android:backgroundTint="@android:color/transparent"/>
-
-        <TextView
-            android:id="@+id/account_name"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@string/michael_hamm_test_user"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_vertical"
-            android:layout_marginStart="24dp"
-            android:textSize="18sp"
-            android:textColor="@android:color/black"
-            android:layout_marginEnd="100dp"
-            android:visibility="gone"/>
-
         <TextView
             android:id="@+id/text_signInUp"
             android:layout_width="wrap_content"

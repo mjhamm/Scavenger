@@ -31,11 +31,6 @@
         android:title="Help"
         app:iconSpaceReserved="false">
         <Preference
-            android:key="feedback"
-            android:title="Send Feedback"
-            android:summary="Report technical issues or suggest new features"
-            app:iconSpaceReserved="false"/>
-        <Preference
             android:key="help"
             android:title="Help"
             app:iconSpaceReserved="false"/>
@@ -44,8 +39,8 @@
             android:title="About"
             app:iconSpaceReserved="false"/>
         <Preference
-            android:key="legal"
-            android:title="Legal"
+            android:key="delete"
+            android:title="Delete Account"
             app:iconSpaceReserved="false"/>
     </PreferenceCategory>
 

@@ -64,6 +64,7 @@
         app:layout_constraintStart_toStartOf="@id/google_signIn"
         app:layout_constraintEnd_toEndOf="@id/google_signIn"
         android:text="Sign In"
+        android:enabled="false"
         app:icon="@drawable/ic_mail_white_24dp"
         app:iconGravity="textStart"
         android:textAllCaps="false"
@@ -73,7 +74,6 @@
         android:textSize="14sp"
         app:iconPadding="12dp"
         app:iconSize="18dp"
-        android:backgroundTint="@color/colorPrimary"
         android:textColor="@android:color/white"/>
 
     <TextView
@@ -148,7 +148,7 @@
         android:layout_marginEnd="24dp"
         android:text="Don't have an account? Sign Up!"
         android:gravity="center"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="24dp"/>
 
     <TextView
         android:id="@+id/accept_terms_signin"
@@ -161,7 +161,7 @@
         android:textColor="@android:color/black"
         android:textSize="12sp"
         android:fontFamily="@font/roboto_condensed_regular"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:layout_marginStart="36dp"
         android:layout_marginEnd="36dp"
         android:text="@string/terms_signin"/>

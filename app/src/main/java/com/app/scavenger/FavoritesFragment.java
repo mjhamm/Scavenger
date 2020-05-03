@@ -1,6 +1,7 @@
 package com.app.scavenger;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
@@ -53,8 +55,14 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
     private TextView favorite_message;
     private ArrayList<RecipeItem> recipeItemList = new ArrayList<>();
     private MaterialButton retryConButton;
+
+    // Shared Preferences Data
+    //-----------------------------------------
     private String userId = null;
     private boolean logged = false;
+    private String name = null;
+    private String email = null;
+    //------------------------------------------
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -210,5 +218,14 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
         if (isRefresh) {
             getFavorites();
         }
+    }
+
+    // Sets all variables related to logged status and user info
+    private void getInfoFromSharedPrefs() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        logged = sharedPreferences.getBoolean("logged", false);
+        userId = sharedPreferences.getString("userId", null);
+        email = sharedPreferences.getString("email", null);
+        name = sharedPreferences.getString("name", null);
     }
 }

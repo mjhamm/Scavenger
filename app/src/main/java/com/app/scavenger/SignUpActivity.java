@@ -1,19 +1,16 @@
 package com.app.scavenger;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.preference.PreferenceManager;
+
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatButton;
-import androidx.fragment.app.Fragment;
-
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
+import android.widget.ImageButton;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -23,57 +20,51 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.util.HashMap;
 import java.util.Map;
 
+public class SignUpActivity extends AppCompatActivity {
 
-public class SignUpFragment extends Fragment {
-
-    private static final int RC_SIGN_UP = 102;
+    private static final int RC_SIGN_UP = 101;
     public static final String TAG = "LOG: ";
 
     private Context mContext;
     private GoogleSignInClient mGoogleSignUpClient;
-    private OnSignUpFragmentInteractionListener mListener;
-    private MaterialButton signUpButton;
-    private String mUserId = null;
-    private String mName = null;
-    private String mEmail = null;
-    private boolean isLogged = false;
+
+    // Shared Preferences Data
+    //-----------------------------------------
+    private String userId = null;
+    private boolean logged = false;
+    private String name = null;
+    private String email = null;
+    //------------------------------------------
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    public SignUpFragment() {
-        // Required empty public constructor
-    }
-
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_sign_up);
 
-        mContext = getContext();
+        mContext = getApplicationContext();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.clientId_web_googleSignIn))
                 .requestProfile()
                 .requestEmail()
                 .build();
         mGoogleSignUpClient = GoogleSignIn.getClient(mContext, gso);
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_sign_up, container, false);
+        MaterialButton signUpButton = findViewById(R.id.google_signUp);
+        ImageButton settingsButton = findViewById(R.id.signUp_settings_button);
 
-        AppCompatButton mGoogleSignUp = view.findViewById(R.id.google_signUp);
-        signUpButton = view.findViewById(R.id.signUp_Button);
-
-        mGoogleSignUp.setOnClickListener(v -> {
+        signUpButton.setOnClickListener(v -> {
             googleSignUp();
         });
 
-        return view;
+        settingsButton.setOnClickListener(v -> {
+            startActivity(new Intent(mContext, SettingsActivity.class));
+        });
+
     }
 
     private void googleSignUp() {
@@ -86,21 +77,18 @@ public class SignUpFragment extends Fragment {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
             if (account != null) {
-                mUserId = account.getId();
-                mName = account.getDisplayName();
-                mEmail = account.getEmail();
-                isLogged = true;
+                userId = account.getId();
+                name = account.getDisplayName();
+                email = account.getEmail();
+                logged = true;
             }
-            sendDataToFirestore(mUserId, mName, mEmail);
-            mListener.messageFromSignUpToParent(mUserId, mName, mEmail,isLogged);
+            sendDataToFirestore(userId, name, email);
+
             //Sign in successful
         } catch (ApiException e) {
             Log.w(TAG, "signUpResult:failed code=" + e.getStatusCode());
         }
-    }
-
-    public interface OnSignUpFragmentInteractionListener {
-        void messageFromSignUpToParent(String userId, String name, String email, boolean isLogged);
+        //finish();
     }
 
     @Override
@@ -110,17 +98,6 @@ public class SignUpFragment extends Fragment {
         if (requestCode == RC_SIGN_UP) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignUpResult(task);
-        }
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        // check if parent Fragment implements listener
-        if (getParentFragment() instanceof OnSignUpFragmentInteractionListener) {
-            mListener = (OnSignUpFragmentInteractionListener) getParentFragment();
-        } else {
-            throw new RuntimeException("The parent fragment must implement OnSignUpFragmentInteractionListener");
         }
     }
 
@@ -137,5 +114,14 @@ public class SignUpFragment extends Fragment {
                         }
                     }
                 });
+    }
+
+    // Sets all variables related to logged status and user info
+    private void getInfoFromSharedPrefs() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        logged = sharedPreferences.getBoolean("logged", false);
+        userId = sharedPreferences.getString("userId", null);
+        email = sharedPreferences.getString("email", null);
+        name = sharedPreferences.getString("name", null);
     }
 }

@@ -211,21 +211,12 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private TextView recipeName;
-        private TextView recipeSource;
-        private TextView recipeServings;
-        private TextView recipeCalories;
-        private TextView recipeIngredients;
-        private TextView recipeCarbs;
-        private TextView recipeFat;
-        private TextView recipeProtein;
-        private TextView recipeAttributes;
+        private TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
         private ImageView recipeImage;
-        private MaterialCardView mNutritionCard;
+        private MaterialCardView mNutritionCard, mViewRecipe;
         private RelativeLayout mRelativeLayout;
         private RecipeItem item;
         private ImageButton more_button, favorite_button;
-        private MaterialCardView mViewRecipe;
         private String reportReason = null;
         private boolean rotated;
         private long mLastClickTime = 0;

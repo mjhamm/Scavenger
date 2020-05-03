@@ -2,6 +2,7 @@ package com.app.scavenger;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.preference.PreferenceManager;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -28,26 +30,26 @@ import com.google.android.material.tabs.TabLayout;
 
 // Activity that houses the information about when a user signs in or signs up inside of Scavenger
 
-public class Account extends Fragment implements SignInFragment.OnChildFragmentInteractionListener, SignUpFragment.OnSignUpFragmentInteractionListener {
+public class Account extends Fragment implements SignInFragment.OnChildFragmentInteractionListener {
 
     private static final String TAG = "LOG: ";
 
     private Context mContext;
-    private TextView mName, mEmail, mAccountName, mTextSignInUp;
-    private ViewPager viewPager;
-    private TabLayout tabLayout;
+    private TextView mName, mEmail, mTextSignInUp;
     private FrameLayout accountContainer;
     private FragmentManager fm;
     private Fragment fragment_signIn;
-    private Fragment fragment_signUp;
     private GoogleSignInClient mGoogleSignInClient;
-    private ImageButton backButton;
-    private String mUserId = null;
-    private String mNameText = null;
-    private String mEmailText = null;
-    private boolean isLogged = false;
     private RelativeLayout mAccountRL;
     private SendDataToMain sendDataToMain;
+
+    // Shared Preferences Data
+    //-----------------------------------------
+    private String userId = null;
+    private boolean logged = false;
+    private String name = null;
+    private String email = null;
+    //------------------------------------------
 
     // Creates a new instance of the Account Fragment and passes arguments to the fragment when it is initialized
     static Account newInstance(String userId, String name, String email, boolean logged) {
@@ -76,21 +78,16 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_account, container, false);
 
-        //viewPager = view.findViewById(R.id.login_viewPager);
-        //tabLayout = view.findViewById(R.id.login_tabLayout);
         accountContainer = view.findViewById(R.id.account_fragment_container);
         ImageButton settingsButton = view.findViewById(R.id.settings_button);
         MaterialButton mLogoutButton = view.findViewById(R.id.logout_button);
         mName = view.findViewById(R.id.name_mainText);
         mEmail = view.findViewById(R.id.email_mainText);
-        backButton = view.findViewById(R.id.account_backButton);
         mTextSignInUp = view.findViewById(R.id.text_signInUp);
-        mAccountName = view.findViewById(R.id.account_name);
         mAccountRL = view.findViewById(R.id.account_relativeLayout);
 
         fm = getChildFragmentManager();
         fragment_signIn = new SignInFragment();
-        fragment_signUp = new SignUpFragment();
 
         //GOOGLE INFORMATION -------------------------------------------------------
         // Requests the information from Google
@@ -117,30 +114,9 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
 
         // Setup view pager with sign in / sign up fragments
         setUpContainer();
-        //setupViewPager(viewPager);
-        //tabLayout.setupWithViewPager(viewPager);
 
         // Settings button that opens up Preferences Fragment
         settingsButton.setOnClickListener(v -> startActivity(new Intent(mContext, SettingsActivity.class)));
-
-        backButton.setOnClickListener(v -> {
-            if (!fragment_signIn.isHidden()) {
-                backButton.setVisibility(View.VISIBLE);
-                fm.beginTransaction().hide(fragment_signIn).addToBackStack(null).commit();
-                fm.beginTransaction().show(fragment_signUp).commit();
-            } else {
-                backButton.setVisibility(View.GONE);
-                fm.beginTransaction().hide(fragment_signUp).commit();
-                fm.beginTransaction().show(fragment_signIn).commit();
-            }
-        });
-
-        // Click listener on Account Name TextView that opens to show account information
-        mAccountName.setOnClickListener(v -> {
-            Intent intent = new Intent(mContext, AccountInfo.class);
-            intent.putExtra("userId", mUserId);
-            startActivity(intent);
-        });
 
         // Log Out button that is shown when user is logged in
         mLogoutButton.setOnClickListener(v -> {
@@ -151,30 +127,25 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
         return view;
     }
 
-    public void replaceContainer() {
-        Log.e(TAG, "" + fragment_signIn.isHidden());
-        if (!fragment_signIn.isHidden()) {
-            backButton.setVisibility(View.VISIBLE);
-            fm.beginTransaction().hide(fragment_signIn).addToBackStack(null).commit();
-            fm.beginTransaction().show(fragment_signUp).commit();
-        } else {
-            backButton.setVisibility(View.GONE);
-            fm.beginTransaction().hide(fragment_signUp).commit();
-            fm.beginTransaction().show(fragment_signIn).commit();
-        }
-    }
-
     // On Resume will check to see if the user is logged in and will hide / show the corresponding information
     @Override
     public void onResume() {
         super.onResume();
-        if (isLogged) {
+
+        if (getArguments() != null) {
+            name = getArguments().getString("name");
+            email = getArguments().getString("email");
+            userId = getArguments().getString("userId");
+            logged = getArguments().getBoolean("isLogged");
+        }
+
+        if (logged) {
             hideForLogin();
         } else {
             showForLogin();
         }
         // Sends the information to the Parent Activity (Main)
-        sendDataToMain.getLoginData(mUserId, isLogged);
+        sendDataToMain.getLoginData(userId, logged);
     }
 
     @Override
@@ -193,18 +164,14 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     }
 
     private void hideForLogin() {
-        //viewPager.setVisibility(View.GONE);
-        //tabLayout.setVisibility(View.GONE);
         accountContainer.setVisibility(View.GONE);
         mAccountRL.setVisibility(View.VISIBLE);
-        mName.setText(mNameText);
-        mEmail.setText(mEmailText);
+        mName.setText(name);
+        mEmail.setText(email);
         mTextSignInUp.setText("My Account");
     }
 
     private void showForLogin() {
-        //viewPager.setVisibility(View.VISIBLE);
-        //tabLayout.setVisibility(View.VISIBLE);
         accountContainer.setVisibility(View.VISIBLE);
         mAccountRL.setVisibility(View.GONE);
         mTextSignInUp.setText("Sign In");
@@ -213,12 +180,12 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     private void getDataFromSignIn() {
         try {
             if (getArguments() != null) {
-                mUserId = getArguments().getString("userId");
-                mNameText = getArguments().getString("name");
-                mEmailText = getArguments().getString("email");
-                isLogged = getArguments().getBoolean("logged");
+                userId = getArguments().getString("userId");
+                name = getArguments().getString("name");
+                email = getArguments().getString("email");
+                logged = getArguments().getBoolean("logged");
             }
-            if (isLogged) {
+            if (logged) {
                 hideForLogin();
             } else {
                 showForLogin();
@@ -230,7 +197,6 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
 
     private void setUpContainer() {
         fm.beginTransaction().replace(R.id.account_fragment_container, fragment_signIn, "signIn").commit();
-        fm.beginTransaction().add(R.id.account_fragment_container, fragment_signUp, "signUp").hide(fragment_signUp).commit();
     }
 
     private void logoutDialog() {
@@ -249,27 +215,28 @@ public class Account extends Fragment implements SignInFragment.OnChildFragmentI
     private void signOut() {
         mGoogleSignInClient.signOut()
                 .addOnCompleteListener(getActivity(), task -> {
-                    isLogged = false;
-                    mNameText = null;
-                    mEmailText = null;
+                    logged = false;
+                    name = null;
+                    email = null;
                     showForLogin();
-                    sendDataToMain.getLoginData(mUserId, isLogged);
+                    sendDataToMain.getLoginData(userId, logged);
                 });
     }
 
     @Override
     public void messageFromChildToParent(String userId, String name, String email, boolean isLogged) {
-        this.mUserId = userId;
-        this.mNameText = name;
-        this.mEmailText = email;
-        this.isLogged = isLogged;
+        this.userId = userId;
+        this.name = name;
+        this.email = email;
+        this.logged = isLogged;
     }
 
-    @Override
-    public void messageFromSignUpToParent(String userId, String name, String email, boolean isLogged) {
-        this.mUserId = userId;
-        this.mNameText = name;
-        this.mEmailText = email;
-        this.isLogged = isLogged;
+    // Sets all variables related to logged status and user info
+    private void getInfoFromSharedPrefs() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        logged = sharedPreferences.getBoolean("logged", false);
+        userId = sharedPreferences.getString("userId", null);
+        email = sharedPreferences.getString("email", null);
+        name = sharedPreferences.getString("name", null);
     }
 }

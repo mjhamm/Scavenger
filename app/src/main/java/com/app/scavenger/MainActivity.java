@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
+
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -30,10 +32,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private final FragmentManager fm = getSupportFragmentManager();
     private SharedPreferences mSharedPreferences;
     private Fragment active = null;
+    private boolean matchOn = false;
+
+    // Shared Preferences Data
+    //-----------------------------------------
     private String userId = null;
+    private boolean logged = false;
     private String name = null;
     private String email = null;
-    private boolean logged = false;
+    //------------------------------------------
 
     @Override
     protected void onStart() {
@@ -51,8 +58,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         setContentView(R.layout.activity_main);
 
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        getInfoFromSharedPrefs();
+
+        if (matchOn) {
+            Toast.makeText(this, "Match Ingredients is On", Toast.LENGTH_SHORT).show();
+        }
 
         if (account != null) {
             logged = true;
@@ -85,6 +97,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             switch(item.getItemId()) {
                 case R.id.action_search:
                     fm.beginTransaction().hide(active).show(fragment1).commit();
+                    matchOn = mSharedPreferences.getBoolean("match", false);
+                    if (matchOn) {
+                        Toast.makeText(this, "Match Ingredients is On", Toast.LENGTH_SHORT).show();
+                    }
                     active = fragment1;
                     return true;
                 case R.id.action_favorites:
@@ -110,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         try {
             if (searchFragment != null) {
                 searchFragment.getData(userId, logged);
-                fm.beginTransaction().detach(fragment1).attach(fragment1).commit();
+                //fm.beginTransaction().detach(fragment1).attach(fragment1).commit();
             }
             if (favoritesFragment != null) {
                 favoritesFragment.getData(userId, logged);
@@ -120,5 +136,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             e.printStackTrace();
             Log.d(TAG, e.toString());
         }
+    }
+
+    // Sets all variables related to logged status and user info
+    private void getInfoFromSharedPrefs() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        matchOn = sharedPreferences.getBoolean("match", false);
+        logged = sharedPreferences.getBoolean("logged", false);
+        userId = sharedPreferences.getString("userId", null);
+        email = sharedPreferences.getString("email", null);
+        name = sharedPreferences.getString("name", null);
     }
 }

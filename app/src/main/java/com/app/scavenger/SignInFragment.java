@@ -3,6 +3,7 @@ package com.app.scavenger;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.preference.PreferenceManager;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -43,13 +45,18 @@ public class SignInFragment extends Fragment {
 
     private Context mContext;
     private GoogleSignInClient mGoogleSignInClient;
-    private String mUserId = null;
-    private String mName = null;
-    private String mEmail = null;
-    private boolean isLogged = false;
-    private TextView signUpText;
+    private TextView signUpText, forgotPass;
     private OnChildFragmentInteractionListener mParentListener;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private SharedPreferences sharedPreferences;
+
+    // Shared Preferences Data
+    //-----------------------------------------
+    private String userId = null;
+    private boolean logged = false;
+    private String name = null;
+    private String email = null;
+    //------------------------------------------
 
     public SignInFragment() {
         // Required empty public constructor
@@ -70,6 +77,8 @@ public class SignInFragment extends Fragment {
                 .requestIdToken(getString(R.string.clientId_web_googleSignIn))
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
 
     @Override
@@ -79,13 +88,16 @@ public class SignInFragment extends Fragment {
 
         AppCompatButton mGoogleSignIn = view.findViewById(R.id.google_signIn);
         signUpText = view.findViewById(R.id.signUp_text);
+        forgotPass = view.findViewById(R.id.forgot_signIn);
 
         signUpText.setOnClickListener(v -> {
-            Account parentFrag = (Account) SignInFragment.this.getParentFragment();
-            Log.e(TAG,"" + parentFrag);
-            if (parentFrag != null) {
-                parentFrag.replaceContainer();
-            }
+            Intent intent = new Intent(mContext, SignUpActivity.class);
+            startActivity(intent);
+        });
+
+        forgotPass.setOnClickListener(v -> {
+            Intent intent = new Intent(mContext, ForgotPassword.class);
+            startActivity(intent);
         });
 
         mGoogleSignIn.setOnClickListener(v -> {
@@ -128,14 +140,19 @@ public class SignInFragment extends Fragment {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             if (account != null) {
-                mUserId = account.getId();
-                mName = account.getDisplayName();
-                mEmail = account.getEmail();
-                isLogged = true;
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("logged", true);
+                editor.putString("userId", account.getId());
+                editor.putString("name", account.getDisplayName());
+                editor.putString("email", account.getEmail());
+                editor.apply();
+                userId = account.getId();
+                name = account.getDisplayName();
+                email = account.getEmail();
+//                logged = true;
+                sendDataToFirestore(userId, name, email);
             }
-            sendDataToFirestore(mUserId, mName, mEmail);
-            mParentListener.messageFromChildToParent(mUserId, mName, mEmail,isLogged);
-            //Sign in successful
+//            mParentListener.messageFromChildToParent(userId, name, email, logged);
         } catch (ApiException e) {
             Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
         }
@@ -156,7 +173,7 @@ public class SignInFragment extends Fragment {
         }
     }
 
-    public void sendDataToFirestore(String userId, String name, String email) {
+    private void sendDataToFirestore(String userId, String name, String email) {
         Map<String, Object> data = new HashMap<>();
         data.put("userId", userId);
         data.put("name", name);
@@ -176,5 +193,14 @@ public class SignInFragment extends Fragment {
         ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected();
+    }
+
+    // Sets all variables related to logged status and user info
+    private void getInfoFromSharedPrefs() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        logged = sharedPreferences.getBoolean("logged", false);
+        userId = sharedPreferences.getString("userId", null);
+        email = sharedPreferences.getString("email", null);
+        name = sharedPreferences.getString("name", null);
     }
 }

@@ -1,8 +1,11 @@
 package com.app.scavenger;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
+
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageButton;
@@ -15,8 +18,15 @@ public class AccountInfo extends AppCompatActivity {
     private static final String TAG = "LOG: ";
 
     private Context mContext;
-    private String mUserId = null;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    // Shared Preferences Data
+    //-----------------------------------------
+    private String userId = null;
+    private boolean logged = false;
+    private String name = null;
+    private String email = null;
+    //------------------------------------------
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +46,11 @@ public class AccountInfo extends AppCompatActivity {
         });
 
         Intent intent = getIntent();
-        mUserId = intent.getStringExtra("userId");
+        userId = intent.getStringExtra("userId");
     }
 
     private void deleteAccountFromFirebase() {
-        db.collection("Users").document(mUserId)
+        db.collection("Users").document(userId)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
                     Log.d(TAG, "Successfully removed account from Firebase");
@@ -78,5 +88,14 @@ public class AccountInfo extends AppCompatActivity {
                 })
                 .create()
                 .show();
+    }
+
+    // Sets all variables related to logged status and user info
+    private void getInfoFromSharedPrefs() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        logged = sharedPreferences.getBoolean("logged", false);
+        userId = sharedPreferences.getString("userId", null);
+        email = sharedPreferences.getString("email", null);
+        name = sharedPreferences.getString("name", null);
     }
 }
