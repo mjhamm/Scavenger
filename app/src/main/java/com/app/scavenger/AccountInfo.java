@@ -35,14 +35,9 @@ public class AccountInfo extends AppCompatActivity {
         mContext = this;
 
         MaterialButton mDeleteAccountButton = findViewById(R.id.delete_account);
-        ImageButton mBackButton = findViewById(R.id.account_info_back);
 
         mDeleteAccountButton.setOnClickListener(v -> {
             deleteAccountFirst();
-        });
-
-        mBackButton.setOnClickListener(v -> {
-            finish();
         });
 
         Intent intent = getIntent();

@@ -70,16 +70,19 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     //-----------------------------------------------------------------------------
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private String mUserId = null;
+    private String userId = null;
     private boolean logged = false;
+    private String name = null;
+    private String email = null;
     private boolean expanded = false;
+    private SharedPreferences sharedPreferences;
     /*private CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");*/
     private ArrayList<RecipeItem> mRecipeItems;
     private Context mContext;
     private LayoutInflater mInflater;
 
     SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId, boolean logged) {
-        this.mUserId = userId;
+        this.userId = userId;
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
@@ -90,6 +93,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     @Override
     public SearchAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.card_item, parent, false);
+        getInfoFromSharedPrefs();
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         return new ViewHolder(view);
     }
 
@@ -159,7 +164,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
     private void saveDataToFirebase(String itemId, String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
         Map<String, Object> item = new HashMap<>();
-        CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");
+        CollectionReference favoritesRef = db.collection("Users").document(userId).collection("Favorites");
 
         item.put(ITEM_ID, itemId);
         item.put(ITEM_NAME, name);
@@ -191,7 +196,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     }
 
     private void removeDataFromFirebase(RecipeItem recipeItem, String itemId) {
-        CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");
+        CollectionReference favoritesRef = db.collection("Users").document(userId).collection("Favorites");
 
         favoritesRef.document(recipeItem.getItemId())
                 .delete()
@@ -266,6 +271,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             OvershootInterpolator overshootInterpolator_Favorite = new OvershootInterpolator(4);
             scaleAnimation_Favorite.setInterpolator(overshootInterpolator_Favorite);
             favorite_button.setOnClickListener(v -> {
+                getInfoFromSharedPrefs();
                 item = mRecipeItems.get(getAdapterPosition());
                 v.getTag();
                 if (SystemClock.elapsedRealtime() - mLastClickTime < 1500) {
@@ -479,6 +485,15 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     @Override
     public int getItemCount() {
         return mRecipeItems.size();
+    }
+
+    // Sets all variables related to logged status and user info
+    private void getInfoFromSharedPrefs() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        logged = sharedPreferences.getBoolean("logged", false);
+        userId = sharedPreferences.getString("userId", null);
+        email = sharedPreferences.getString("email", null);
+        name = sharedPreferences.getString("name", null);
     }
 }
 

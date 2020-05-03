@@ -22,7 +22,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, Account.SendDataToMain {
+public class MainActivity extends AppCompatActivity { // Account.SendDataToMain {
 
 
     private static final String TAG = "LOG: ";
@@ -66,17 +66,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             Toast.makeText(this, "Match Ingredients is On", Toast.LENGTH_SHORT).show();
         }
 
-        if (account != null) {
-            logged = true;
-            userId = account.getId();
-            name = account.getDisplayName();
-            email = account.getEmail();
-        }
+//        if (account != null) {
+//            logged = true;
+//            userId = account.getId();
+//            name = account.getDisplayName();
+//            email = account.getEmail();
+//        }
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestProfile()
                 .requestEmail()
-                .requestIdToken("565312817175-cipp792csradj5qukdb836j8e9tuq7gr.apps.googleusercontent.com")
+                .requestIdToken(getString(R.string.clientId_web_googleSignIn))
                 .build();
         GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, gso);
 
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             switch(item.getItemId()) {
                 case R.id.action_search:
                     fm.beginTransaction().hide(active).show(fragment1).commit();
-                    matchOn = mSharedPreferences.getBoolean("match", false);
+                    getInfoFromSharedPrefs();
                     if (matchOn) {
                         Toast.makeText(this, "Match Ingredients is On", Toast.LENGTH_SHORT).show();
                     }
@@ -105,10 +105,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     return true;
                 case R.id.action_favorites:
                     fm.beginTransaction().hide(active).show(fragment2).commit();
+                    getInfoFromSharedPrefs();
                     active = fragment2;
                     return true;
                 case R.id.action_account:
                     fm.beginTransaction().hide(active).show(fragment3).commit();
+                    getInfoFromSharedPrefs();
                     active = fragment3;
                     return true;
             }
@@ -116,27 +118,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         });
     }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {}
-
-    @Override
-    public void getLoginData(String userId, boolean logged) {
-        SearchFragment searchFragment = (SearchFragment) fm.findFragmentByTag("1");
-        FavoritesFragment favoritesFragment = (FavoritesFragment) fm.findFragmentByTag("2");
-        try {
-            if (searchFragment != null) {
-                searchFragment.getData(userId, logged);
-                //fm.beginTransaction().detach(fragment1).attach(fragment1).commit();
-            }
-            if (favoritesFragment != null) {
-                favoritesFragment.getData(userId, logged);
-                fm.beginTransaction().detach(fragment2).attach(fragment2).commit();
-            }
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            Log.d(TAG, e.toString());
-        }
-    }
+//    @Override
+//    public void getLoginData(String userId, boolean logged) {
+//        SearchFragment searchFragment = (SearchFragment) fm.findFragmentByTag("1");
+//        FavoritesFragment favoritesFragment = (FavoritesFragment) fm.findFragmentByTag("2");
+//        try {
+//            if (searchFragment != null) {
+//                searchFragment.getData(userId, logged);
+//                //fm.beginTransaction().detach(fragment1).attach(fragment1).commit();
+//            }
+//            if (favoritesFragment != null) {
+//                favoritesFragment.getData(userId, logged);
+//                fm.beginTransaction().detach(fragment2).attach(fragment2).commit();
+//            }
+//        } catch (NullPointerException e) {
+//            e.printStackTrace();
+//            Log.d(TAG, e.toString());
+//        }
+//    }
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {

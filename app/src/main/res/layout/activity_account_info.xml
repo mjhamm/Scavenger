@@ -15,41 +15,31 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:cardElevation="12dp">
 
-        <ImageButton
-            android:id="@+id/account_info_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="16dp"
-            android:padding="4dp"
-            android:src="@drawable/ic_arrow_back_black_36dp"
-            android:contentDescription="@string/back_button"
-            android:background="@android:color/transparent"/>
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Account Information"
             android:layout_gravity="center"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textColor="@android:color/black"
-            android:fontFamily="@font/roboto_condensed_regular"/>
+            android:fontFamily="@font/roboto_medium"/>
 
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/delete_account"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:elevation="6dp"
+        app:cornerRadius="10dp"
         android:text="Delete Account"
         app:layout_constraintTop_toBottomOf="@id/account_info_toolbar"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_centerHorizontal="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:paddingStart="72dp"
+        android:paddingEnd="72dp"
+        android:textAllCaps="false"
         android:layout_marginTop="8dp"
-        android:layout_marginStart="36dp"
-        android:layout_marginEnd="36dp"
         android:visibility="visible"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

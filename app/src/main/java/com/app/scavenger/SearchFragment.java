@@ -175,6 +175,7 @@ public class SearchFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        getInfoFromSharedPrefs();
         if (adapter != null) {
             mSearchRecyclerView.setAdapter(adapter);
         }

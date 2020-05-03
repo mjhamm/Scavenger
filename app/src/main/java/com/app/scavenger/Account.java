@@ -30,7 +30,7 @@ import com.google.android.material.tabs.TabLayout;
 
 // Activity that houses the information about when a user signs in or signs up inside of Scavenger
 
-public class Account extends Fragment {//implements SignInFragment.OnChildFragmentInteractionListener {
+public class Account extends Fragment {
 
     private static final String TAG = "LOG: ";
 
@@ -42,7 +42,6 @@ public class Account extends Fragment {//implements SignInFragment.OnChildFragme
     private GoogleSignInClient mGoogleSignInClient;
     private RelativeLayout mAccountRL;
     private SharedPreferences sharedPreferences;
-    private SendDataToMain sendDataToMain;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -62,11 +61,6 @@ public class Account extends Fragment {//implements SignInFragment.OnChildFragme
         args.putBoolean("logged", logged);
         account.setArguments(args);
         return account;
-    }
-
-    // Interface that sends login data from the Account Activity to Parent Activity (Main)
-    public interface SendDataToMain {
-        void getLoginData(String userId, boolean logged);
     }
 
     @Override
@@ -143,23 +137,11 @@ public class Account extends Fragment {//implements SignInFragment.OnChildFragme
         } else {
             showForLogin();
         }
-        // Sends the information to the Parent Activity (Main)
-        sendDataToMain.getLoginData(userId, logged);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (getActivity() instanceof SendDataToMain) {
-            sendDataToMain = (SendDataToMain) getActivity();
-        } else {
-            throw new RuntimeException("The parent fragment must implement SendDataToMain");
-        }
     }
 
     private void hideForLogin() {
@@ -225,17 +207,8 @@ public class Account extends Fragment {//implements SignInFragment.OnChildFragme
                     email = null;
                     userId = null;
                     showForLogin();
-//                    sendDataToMain.getLoginData(userId, logged);
                 });
     }
-
-//    @Override
-//    public void messageFromChildToParent(String userId, String name, String email, boolean isLogged) {
-//        this.userId = userId;
-//        this.name = name;
-//        this.email = email;
-//        this.logged = isLogged;
-//    }
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
