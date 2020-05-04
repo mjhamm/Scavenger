@@ -63,7 +63,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         //--------------------------------------------------------------------------
 
-
+        if (sharedPreferences.getBoolean("logged", false)) {
+            signOut.setVisible(true);
+            signIn.setVisible(false);
+        } else {
+            signOut.setVisible(false);
+            signIn.setVisible(true);
+        }
     }
 
     @Override
@@ -74,14 +80,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        if (sharedPreferences.getBoolean("logged", false)) {
-            signOut.setVisible(true);
-            signIn.setVisible(false);
-        } else {
-            signOut.setVisible(false);
-            signIn.setVisible(true);
-        }
 
         signIn.setOnPreferenceClickListener(v -> {
             openSignIn();
@@ -188,8 +186,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 //                .show();
 //    }
 
+
+
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
         if (key.equals("match")) {
             if (sharedPreferences.getBoolean("match", false)) {
                 new MaterialAlertDialogBuilder(mContext)
@@ -204,15 +205,24 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     @Override
     public void onResume() {
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         super.onResume();
         getInfoFromSharedPrefs();
+
+        if (sharedPreferences.getBoolean("logged", false)) {
+            signOut.setVisible(true);
+            signIn.setVisible(false);
+        } else {
+            signOut.setVisible(false);
+            signIn.setVisible(true);
+        }
+
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onPause() {
-        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         super.onPause();
+        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.app.scavenger;
 
+import android.animation.LayoutTransition;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -8,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
@@ -18,6 +20,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.OvershootInterpolator;
+import android.view.animation.RotateAnimation;
 import android.view.animation.ScaleAnimation;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -30,10 +33,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.AutoTransition;
+import androidx.transition.TransitionManager;
+
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -220,6 +227,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         private ImageView recipeImage;
         private MaterialCardView mNutritionCard, mViewRecipe;
         private RelativeLayout mRelativeLayout;
+        private ConstraintLayout mConstraintLayout;
         private RecipeItem item;
         private ImageButton more_button, favorite_button;
         private String reportReason = null;
@@ -241,6 +249,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
             favorite_button = itemView.findViewById(R.id.recipe_favorite);
             mRelativeLayout = itemView.findViewById(R.id.ingredients_relativeLayout);
+            mConstraintLayout = itemView.findViewById(R.id.card_constraintLayout);
             more_button = itemView.findViewById(R.id.more_button);
             mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
             itemView.setOnClickListener(this);
@@ -248,20 +257,31 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             // Recipe Image Click Listener
             recipeImage.setOnClickListener(v -> {
                 int position = getAdapterPosition();
+
+                final Animation animationUp;
+                final Animation animationDown;
+
+                animationUp = AnimationUtils.loadAnimation(mContext, R.anim.slide_up);
+                animationDown = AnimationUtils.loadAnimation(mContext, R.anim.slide_down);
+
+
                 // Adapter Position
                 // Gets the item at the position
                 item = mRecipeItems.get(position);
                 // Checks if the item is clicked
                 // Sets the layout visible/gone
                 if (item.isClicked()) {
-                    //Animations.collapse(mRelativeLayout);
-
-                    item.setClicked(false);
+                    //mRelativeLayout.startAnimation(animationUp);
                     mRelativeLayout.setVisibility(View.GONE);
+                    mRelativeLayout.startAnimation(animationUp);
+                    item.setClicked(false);
+                    //notifyItemChanged(position);
                 } else {
-                    //Animations.expand(mRelativeLayout);
+                    //mRelativeLayout.startAnimation(animationDown);
                     mRelativeLayout.setVisibility(View.VISIBLE);
+                    mRelativeLayout.startAnimation(animationDown);
                     item.setClicked(true);
+                    //notifyItemChanged(position);
                 }
             });
 
@@ -485,6 +505,12 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     @Override
     public int getItemCount() {
         return mRecipeItems.size();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        //RecipeItem item = mRecipeItems.get(position);
+        return position;
     }
 
     // Sets all variables related to logged status and user info

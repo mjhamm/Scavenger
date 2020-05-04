@@ -12,8 +12,11 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
+import androidx.transition.TransitionManager;
 
 import android.os.Parcelable;
 import android.util.Log;
@@ -318,7 +321,10 @@ public class SearchFragment extends Fragment {
 
                 recipeItemArrayList.add(item);
             }
+
             adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
+            adapter.setHasStableIds(true);
+            mSearchRecyclerView.setItemAnimator(new DefaultItemAnimator());
             mSearchRecyclerView.setAdapter(adapter);
             mSearchRecyclerView.setLayoutManager(mLayoutManager);
 

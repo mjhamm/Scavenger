@@ -93,23 +93,20 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
     public void onResume() {
         super.onResume();
         getInfoFromSharedPrefs();
+
+        if (!logged) {
+            favorite_message.setText(R.string.not_signed_in);
+        } else {
+            if (recipeItemList.isEmpty()) {
+                favorite_message.setText("You currently don't have any Favorites. Go out there and discover something great!");
+            } else {
+                getFavorites();
+            }
+        }
+
         if (adapter != null) {
             mFavoriteRecyclerView.setAdapter(adapter);
         }
-//        getData(userId, logged);
-//        if (!checkConnection()) {
-//            favorite_message.setVisibility(View.VISIBLE);
-//            favorite_message.setText(R.string.no_internet_connection);
-//            retryConButton.setVisibility(View.VISIBLE);
-//            recipeItemList.clear();
-//        } else {
-//            if (!logged) {
-//                favorite_message.setVisibility(View.VISIBLE);
-//                retryConButton.setVisibility(View.GONE);
-//                favorite_message.setText(R.string.not_signed_in);
-//                recipeItemList.clear();
-//            }
-//        }
     }
 
     void getData(String userId, boolean logged) {

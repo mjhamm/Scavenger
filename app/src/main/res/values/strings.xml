@@ -1,13 +1,13 @@
 <resources>
     <string name="app_name">Scavenger</string>
     <string name="menu_search">Search</string>
-    <string name="menu_favorites">Favorites</string>
+    <string name="menu_favorites">Likes</string>
     <string name="menu_account">Account</string>
     <string name="recipe_image_content_descr">Recipe Image</string>
     <string name="more_button_content_descr">More Button</string>
     <string name="example_recipe_name">Example Recipe Name</string>
     <string name="example_recipe_source">Example Recipe Source</string>
-    <string name="recipe_favorite_button_content_descr">Recipe Favorite Button</string>
+    <string name="recipe_favorite_button_content_descr">Recipe Like Button</string>
     <string name="settings_button_content_descr">Settings Button</string>
     <string name="michael_hamm_test_user">Test User</string>
     <string name="full_name_text_view">Full Name</string>
@@ -17,18 +17,17 @@
 
     <string name="facebook_app_id">505719136936823</string>
     <string name="fb_login_protocol_scheme">fb505719136936823</string>
-    <string name="back_button">Back Button</string>
     <string name="terms_signin"><![CDATA[By Signing In, you agree to Scavenger\'s Terms & Conditions and Privacy Policy.]]></string>
     <string name="sign_in_button">Sign In</string>
     <string name="sign_in_with_facebook">Sign In with Facebook</string>
     <string name="sign_in_with_google">Sign In with Google</string>
     <string name="signin_or">OR</string>
-    <string name="forgot_your_password">Forgot your Password?</string>
+    <string name="forgot_your_password">Forgot Password?</string>
     <string name="password_signin">Password</string>
     <string name="email_address_signin">Email Address</string>
-    <string name="no_internet_connection">You Don\'t Have an Internet Connection. In order to see your favorites you must be connected to the internet.</string>
-    <string name="not_signed_in">You are not Signed in. Sign In or Sign Up to save and view your favorites.</string>
-    <string name="no_favorites">You Don\'t Have Any Favorites. Go Out There and Find Something Amazing!</string>
+    <string name="no_internet_connection">You don\'t have an internet connection. In order to see your Likes you must be connected to the internet.</string>
+    <string name="not_signed_in">You are not Signed In. Sign In or Sign Up to Save and View Your Favorites.</string>
+    <string name="no_favorites">You don\'t have any Likes. Go out there and discover something great!</string>
     <string name="sign_out_button">Sign Out</string>
     <string name="test_email">testEmail@test.com</string>
     <string name="test_user">Test User</string>

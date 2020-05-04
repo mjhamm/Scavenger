@@ -14,7 +14,7 @@
     </item>
 
     <item
-        android:id="@+id/action_account"
+        android:id="@+id/action_settings"
         android:title="@string/menu_account"
         android:icon="@drawable/ic_settings_black_36dp">
     </item>

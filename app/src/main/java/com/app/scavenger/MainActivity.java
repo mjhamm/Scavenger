@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
         getInfoFromSharedPrefs();
 
         if (matchOn) {
-            Toast.makeText(this, "Match Ingredients is On", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Match ingredients is On", Toast.LENGTH_SHORT).show();
         }
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
                     fm.beginTransaction().hide(active).show(fragment2).commit();
                     active = fragment2;
                     return true;
-                case R.id.action_account:
+                case R.id.action_settings:
                     fm.beginTransaction().hide(active).show(fragment3).commit();
                     active = fragment3;
                     return true;
@@ -109,25 +109,6 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
             return false;
         });
     }
-
-//    @Override
-//    public void getLoginData(String userId, boolean logged) {
-//        SearchFragment searchFragment = (SearchFragment) fm.findFragmentByTag("1");
-//        FavoritesFragment favoritesFragment = (FavoritesFragment) fm.findFragmentByTag("2");
-//        try {
-//            if (searchFragment != null) {
-//                searchFragment.getData(userId, logged);
-//                //fm.beginTransaction().detach(fragment1).attach(fragment1).commit();
-//            }
-//            if (favoritesFragment != null) {
-//                favoritesFragment.getData(userId, logged);
-//                fm.beginTransaction().detach(fragment2).attach(fragment2).commit();
-//            }
-//        } catch (NullPointerException e) {
-//            e.printStackTrace();
-//            Log.d(TAG, e.toString());
-//        }
-//    }
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
