@@ -7,42 +7,32 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
+
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class SignInFragment extends Fragment {
+public class SignInActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 101;
     private static final String TAG = "LOG: ";
@@ -52,7 +42,6 @@ public class SignInFragment extends Fragment {
     private TextView signUpText, forgotPass;
     private MaterialButton signInButton;
     private EditText emailEdit, passEdit;
-    //private OnChildFragmentInteractionListener mParentListener;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private SharedPreferences sharedPreferences;
     private boolean emailEmpty = true, passEmpty = true;
@@ -65,7 +54,7 @@ public class SignInFragment extends Fragment {
     private String email = null;
     //------------------------------------------
 
-    public SignInFragment() {
+    public SignInActivity() {
         // Required empty public constructor
     }
 
@@ -74,10 +63,13 @@ public class SignInFragment extends Fragment {
         super.onStart();
     }
 
+
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mContext = getContext();
+        setContentView(R.layout.activity_sign_in);
+        mContext = getApplicationContext();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestProfile()
                 .requestEmail()
@@ -86,19 +78,13 @@ public class SignInFragment extends Fragment {
         mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_sign_in, container, false);
-
-        AppCompatButton mGoogleSignIn = view.findViewById(R.id.google_signIn);
-        signInButton = view.findViewById(R.id.signIn_Button);
-        signUpText = view.findViewById(R.id.signUp_text);
-        forgotPass = view.findViewById(R.id.forgot_signIn);
-        emailEdit = view.findViewById(R.id.email_editText);
-        passEdit = view.findViewById(R.id.password_editText);
+        AppCompatButton mGoogleSignIn = findViewById(R.id.google_signIn);
+        signInButton = findViewById(R.id.signIn_Button);
+        signUpText = findViewById(R.id.signUp_text);
+        forgotPass = findViewById(R.id.forgot_signIn);
+        emailEdit = findViewById(R.id.email_editText);
+        passEdit = findViewById(R.id.password_editText);
 
         emailEdit.addTextChangedListener(new TextWatcher() {
             @Override
@@ -168,6 +154,7 @@ public class SignInFragment extends Fragment {
         signUpText.setOnClickListener(v -> {
             Intent intent = new Intent(mContext, SignUpActivity.class);
             startActivity(intent);
+            finish();
         });
 
         mGoogleSignIn.setOnClickListener(v -> {
@@ -187,8 +174,6 @@ public class SignInFragment extends Fragment {
                 googleSignIn();
             }
         });
-
-        return view;
     }
 
     @Override
@@ -219,8 +204,9 @@ public class SignInFragment extends Fragment {
                 userId = account.getId();
                 name = account.getDisplayName();
                 email = account.getEmail();
+                finish();
 //                logged = true;
-                sendDataToFirestore(userId, name, email);
+                //sendDataToFirestore(userId, name, email);
             }
 //            mParentListener.messageFromChildToParent(userId, name, email, logged);
         } catch (ApiException e) {

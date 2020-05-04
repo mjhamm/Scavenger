@@ -81,7 +81,6 @@ public class SignUpActivity extends AppCompatActivity {
         signUpButton = findViewById(R.id.signUp_Button);
         facebookSignUpButton = findViewById(R.id.facebook_signUp);
         googleSignUpButton = findViewById(R.id.google_signUp);
-        ImageButton settingsButton = findViewById(R.id.signUp_settings_button);
 
         // Edit Text fields for sign up
         // ------------------------------------------------------------------------------------------------------
@@ -97,13 +96,13 @@ public class SignUpActivity extends AppCompatActivity {
                     nameEmpty = true;
                 } else {
                     nameEmpty = false;
-                    checkFieldsForEmpty();
                 }
+                checkFieldsForEmpty();
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-
+                checkFieldsForEmpty();
             }
         });
 
@@ -118,11 +117,13 @@ public class SignUpActivity extends AppCompatActivity {
                 if (s.toString().trim().length() == 0) {
                     emailEmpty = true;
                 } else {
-                    if (!emailEdit.getText().toString().contains("@")) {
-                        emailEmpty = true;
-                    } else {
-                        emailEmpty = false;
-                    }
+                    emailEmpty = false;
+//                    if (!s.toString().trim().contains("@")) {
+//                        emailEmpty = true;
+//                    } else {
+//                        emailEmpty = false;
+//
+//                    }
                 }
                 checkFieldsForEmpty();
             }
@@ -150,9 +151,9 @@ public class SignUpActivity extends AppCompatActivity {
                     } else {
                         passEmpty = false;
                         passNoMatch.setVisibility(View.GONE);
-                        checkFieldsForEmpty();
                     }
                 }
+                checkFieldsForEmpty();
             }
 
             @Override
@@ -178,9 +179,9 @@ public class SignUpActivity extends AppCompatActivity {
                     } else {
                         passConfirmEmpty = false;
                         passNoMatch.setVisibility(View.GONE);
-                        checkFieldsForEmpty();
                     }
                 }
+                checkFieldsForEmpty();
             }
 
             @Override
@@ -194,10 +195,6 @@ public class SignUpActivity extends AppCompatActivity {
 
         googleSignUpButton.setOnClickListener(v -> {
             googleSignUp();
-        });
-
-        settingsButton.setOnClickListener(v -> {
-            startActivity(new Intent(mContext, SettingsActivity.class));
         });
 
     }
@@ -268,7 +265,11 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void checkFieldsForEmpty() {
         if (!nameEmpty && !emailEmpty && !passEmpty && !passConfirmEmpty) {
-            signUpButton.setEnabled(true);
+            if (!emailEdit.getText().toString().contains("@")) {
+                signUpButton.setEnabled(false);
+            } else {
+                signUpButton.setEnabled(true);
+            }
 //            if (!passEdit.getText().toString().equals(passConfirmEdit.getText().toString())) {
 //                signUpButton.setEnabled(false);
 //            } else {

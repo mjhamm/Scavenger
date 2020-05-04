@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 
+import android.accounts.Account;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
 
         fragment1 = SearchFragment.newInstance(userId, logged);
         fragment2 = FavoritesFragment.newInstance(userId, logged);
-        fragment3 = Account.newInstance(userId, name, email, logged);
+        fragment3 = new SettingsFragment();
         active = fragment1;
 
         fm.beginTransaction().add(R.id.fragment_container, fragment3, "3").hide(fragment3).commit();
