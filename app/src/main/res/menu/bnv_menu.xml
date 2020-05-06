@@ -9,13 +9,13 @@
 
     <item
         android:id="@+id/action_favorites"
-        android:title="@string/menu_favorites"
+        android:title="@string/menu_likes"
         android:icon="@drawable/ic_favorite_filled_black_48dp">
     </item>
 
     <item
         android:id="@+id/action_settings"
-        android:title="@string/menu_account"
+        android:title="@string/menu_settings"
         android:icon="@drawable/ic_settings_black_36dp">
     </item>
 

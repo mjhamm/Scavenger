@@ -1,22 +1,16 @@
 <resources>
+
+    <!-- Main String Information -->
     <string name="app_name">Scavenger</string>
     <string name="menu_search">Search</string>
-    <string name="menu_favorites">Likes</string>
-    <string name="menu_account">Account</string>
-    <string name="recipe_image_content_descr">Recipe Image</string>
-    <string name="more_button_content_descr">More Button</string>
-    <string name="example_recipe_name">Example Recipe Name</string>
-    <string name="example_recipe_source">Example Recipe Source</string>
-    <string name="recipe_favorite_button_content_descr">Recipe Like Button</string>
-    <string name="settings_button_content_descr">Settings Button</string>
-    <string name="michael_hamm_test_user">Test User</string>
-    <string name="full_name_text_view">Full Name</string>
-    <string name="email_address_text_view">Email Address</string>
-    <string name="servings_text">Serves %1$d</string>
+    <string name="menu_likes">Likes</string>
+    <string name="menu_settings">Settings</string>
     <string name="settings">Settings</string>
+    <string name="no_internet_connection">You don\'t have an internet connection. In order to see your Likes you must be connected to the internet.</string>
 
-    <string name="facebook_app_id">505719136936823</string>
-    <string name="fb_login_protocol_scheme">fb505719136936823</string>
+    <!-- Sign In / Sign Up String Information -->
+    <string name="full_name_text_view">Full Name</string>
+    <string name="email_address">Email Address</string>
     <string name="terms_signin"><![CDATA[By Signing In, you agree to Scavenger\'s Terms & Conditions and Privacy Policy.]]></string>
     <string name="sign_in_button">Sign In</string>
     <string name="sign_in_with_facebook">Sign In with Facebook</string>
@@ -24,15 +18,23 @@
     <string name="signin_or">OR</string>
     <string name="forgot_your_password">Forgot Password?</string>
     <string name="password_signin">Password</string>
-    <string name="email_address_signin">Email Address</string>
-    <string name="no_internet_connection">You don\'t have an internet connection. In order to see your Likes you must be connected to the internet.</string>
-    <string name="not_signed_in">You are not Signed In. Sign In or Sign Up to Save and View Your Favorites.</string>
-    <string name="no_favorites">You don\'t have any Likes. Go out there and discover something great!</string>
     <string name="sign_out_button">Sign Out</string>
-    <string name="test_email">testEmail@test.com</string>
-    <string name="test_user">Test User</string>
-    <string name="sign_in_sign_up_header">Sign In / Sign Up</string>
 
+    <!-- Like String Information -->
+    <string name="not_signed_in">You are not Signed In. Sign In or Sign Up to save and view your Likes.</string>
+    <string name="no_favorites">You don\'t have any Likes. Go out there and discover something great!</string>
+
+    <!-- Recipe Card String Information -->
+    <string name="recipe_image_content_descr">Recipe Image</string>
+    <string name="more_button_content_descr">More Button</string>
+    <string name="example_recipe_name">Example Recipe Name</string>
+    <string name="example_recipe_source">Example Recipe Source</string>
+    <string name="recipe_favorite_button_content_descr">Recipe Like Button</string>
+    <string name="servings_text">Serves %1$d</string>
+
+    <!-- ID String Information -->
+    <string name="facebook_app_id">505719136936823</string>
+    <string name="fb_login_protocol_scheme">fb505719136936823</string>
     <string name="clientId_web_googleSignIn">565312817175-cipp792csradj5qukdb836j8e9tuq7gr.apps.googleusercontent.com</string>
 
     <!-- Open Source Library String Information -->
@@ -46,4 +48,14 @@
         \n\nLicensed under the Apache License, Version 2.0 (the \"License\"); You may not use this file except in compliance with the License. You may obtain a copy of the License at
         \n\n<a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a>
         \n\nUnless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</string>
+
+    <!-- Feedback String Information -->
+    <string name="report_problem_text">Please only leave feedback about Scavenger and our features. If you would like to report a specific recipe for issues regarding profanity, nudity, or language, please use the report feature on the recipe\'s card. All reports are subject to our Terms of Use.</string>
+    <string name="feedback_text">Please only leave feedback about Scavenger and our features. If you would like to report a specific recipe for issues regarding profanity, nudity, or language, please use the report feature on the recipe\'s card. All reports are subject to our Terms of Use.</string>
+    <string name="report_problem_edittext">What went wrong?</string>
+    <string name="report_a_problem">Report a Problem</string>
+    <string name="submit">Submit</string>
+    <string name="send_feedback">Send Feedback</string>
+    <string name="feedback_edittext">What would you like us to improve?</string>
+
 </resources>
