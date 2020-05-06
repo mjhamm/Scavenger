@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
 
@@ -26,6 +27,7 @@ public class SendFeedback extends AppCompatActivity {
         feedbackSubmitButton.setTextColor(getResources().getColor(R.color.dark_gray, null));
         feedbackSubmitButton.setBackgroundColor(getResources().getColor(android.R.color.white, null));
 
+        // Checks for whether or not the edit text is empty or not and changes the appearance of the submit button
         feedbackEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -49,6 +51,12 @@ public class SendFeedback extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
 
             }
+        });
+
+        // Submits Feedback
+        feedbackSubmitButton.setOnClickListener(v -> {
+            Toast.makeText(this, "Thank you for your feedback", Toast.LENGTH_SHORT).show();
+            finish();
         });
     }
 }
