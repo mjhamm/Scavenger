@@ -5,20 +5,48 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
-        <item name="materialAlertDialogTheme">@style/MaterialDialogTheme</item>
-    </style>
-
-    <style name="MaterialDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
-        <item name="materialAlertDialogBodyTextStyle">@style/BodyTextStyle</item>
-    </style>
-
-    <style name="BodyTextStyle" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
-        <item name="android:textSize">14sp</item>
+        <item name="materialAlertDialogTheme">@style/ReminderAlertTheme</item>
     </style>
 
     <!-- Custom Preference Theme -->
     <style name="AppTheme.PreferenceThemeOverlay" parent="@style/PreferenceThemeOverlay">
         <item name="android:layout">@layout/activity_settings</item>
+    </style>
+
+    <!-- Reminder Alert Theme -->
+    <style name="ReminderAlertTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="materialAlertDialogBodyTextStyle">@style/ReminderBodyAlert</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/ReminderTitleAlert</item>
+    </style>
+
+    <style name="ReminderTitleAlert" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="fontFamily">@font/roboto_medium</item>
+    </style>
+
+    <style name="ReminderBodyAlert" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="fontFamily">@font/roboto_condensed_regular</item>
+    </style>
+
+    <!-- Report Dialog Theme -->
+    <style name="ReportAlertTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="materialAlertDialogTitleTextStyle">@style/ReportTitleAlert</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/ReportBodyAlert</item>
+    </style>
+
+    <style name="ReportTitleAlert" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="fontFamily">@font/roboto_medium</item>
+    </style>
+
+    <style name="ReportBodyAlert" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="fontFamily">@font/roboto_condensed_regular</item>
     </style>
 
 </resources>

@@ -1,6 +1,5 @@
 package com.app.scavenger;
 
-import android.animation.LayoutTransition;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -9,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
@@ -20,32 +18,24 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.OvershootInterpolator;
-import android.view.animation.RotateAnimation;
 import android.view.animation.ScaleAnimation;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.transition.AutoTransition;
-import androidx.transition.TransitionManager;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -54,8 +44,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import animations.Animations;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
@@ -99,7 +87,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     @NonNull
     @Override
     public SearchAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.card_item, parent, false);
+        View view = mInflater.inflate(R.layout.row_card_item, parent, false);
         getInfoFromSharedPrefs();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         return new ViewHolder(view);

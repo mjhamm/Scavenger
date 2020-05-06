@@ -26,7 +26,7 @@ public class HelpAdapter extends RecyclerView.Adapter<HelpAdapter.ViewHolder> {
     @NonNull
     @Override
     public HelpAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.help_row, parent, false);
+        View view = mInflater.inflate(R.layout.row_help, parent, false);
         return new ViewHolder(view);
     }
 

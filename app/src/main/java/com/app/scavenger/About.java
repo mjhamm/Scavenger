@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -45,6 +46,22 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
 
     @Override
     public void onItemClick(View view, int position) {
-        Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
+
+        switch (position) {
+            case 0:
+                Toast.makeText(this, "Terms & Conditions", Toast.LENGTH_SHORT).show();
+                break;
+            case 1:
+                Toast.makeText(this, "Privacy Policy", Toast.LENGTH_SHORT).show();
+                break;
+            case 2:
+                openOSL();
+                break;
+        }
+    }
+
+    private void openOSL() {
+        Intent intent = new Intent(this, OpenSourceLibraries.class);
+        startActivity(intent);
     }
 }

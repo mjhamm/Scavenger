@@ -1,15 +1,18 @@
 package com.app.scavenger;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ListView;
-import android.widget.Toast;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 
@@ -41,6 +44,31 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
 
     @Override
     public void onItemClick(View view, int position) {
-        Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
+
+        switch (position) {
+            case 0:
+                final CharSequence[] items = {"Report a Problem", "Send Feedback"};
+
+                new MaterialAlertDialogBuilder(this, R.style.ReportAlertTheme)
+                        .setTitle("Report a Problem")
+                        .setCancelable(true)
+                        .setItems(items, (dialog, which) -> {
+                            switch (which) {
+                                case 0:
+                                    Intent reportProblem = new Intent(this, ReportProblem.class);
+                                    startActivity(reportProblem);
+                                    break;
+                                case 1:
+                                    Intent sendFeedback = new Intent(this, SendFeedback.class);
+                                    startActivity(sendFeedback);
+                                    break;
+                            }
+                        })
+                        .create()
+                        .show();
+                break;
+            case 1:
+                break;
+        }
     }
 }

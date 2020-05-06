@@ -18,6 +18,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -204,6 +205,7 @@ public class SignInActivity extends AppCompatActivity {
                 userId = account.getId();
                 name = account.getDisplayName();
                 email = account.getEmail();
+                Toast.makeText(mContext, "Successfully Signed In", Toast.LENGTH_SHORT).show();
                 finish();
 //                logged = true;
                 //sendDataToFirestore(userId, name, email);

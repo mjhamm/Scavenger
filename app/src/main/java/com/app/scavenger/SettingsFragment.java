@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.Preference;
@@ -140,7 +142,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     name = null;
                     email = null;
                     userId = null;
-
+                    Toast.makeText(mContext, "Successfully Signed Out", Toast.LENGTH_SHORT).show();
                     signOut.setVisible(false);
                     signIn.setVisible(true);
                 });
@@ -193,7 +195,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         if (key.equals("match")) {
             if (sharedPreferences.getBoolean("match", false)) {
-                new MaterialAlertDialogBuilder(mContext)
+                new MaterialAlertDialogBuilder(mContext, R.style.ReminderAlertTheme)
                         .setTitle("Just a Quick Thing")
                         .setMessage("In order to get the best results with Match Ingredients, separate your ingredients with a comma (',')")
                         .setCancelable(false)

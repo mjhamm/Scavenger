@@ -218,8 +218,9 @@ public class SignUpActivity extends AppCompatActivity {
                 userId = account.getId();
                 name = account.getDisplayName();
                 email = account.getEmail();
-//                logged = true;
-                sendDataToFirestore(userId, name, email);
+                logged = true;
+                Toast.makeText(mContext, "Successfully Signed Up", Toast.LENGTH_SHORT).show();
+                //sendDataToFirestore(userId, name, email);
                 finish();
             }
 
