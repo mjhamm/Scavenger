@@ -1,5 +1,6 @@
 package com.app.scavenger;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
@@ -23,9 +24,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +46,7 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText fullName, emailEdit, passEdit, passConfirmEdit;
     private TextView passNoMatch;
     private MaterialCheckBox termsCheck;
+    private FirebaseAuth mAuth;
     private MaterialButton signUpButton, googleSignUpButton, facebookSignUpButton;
     private boolean nameEmpty = true, emailEmpty = true, passEmpty = true, passConfirmEmpty = true;
 
@@ -51,8 +57,18 @@ public class SignUpActivity extends AppCompatActivity {
     private String name = null;
     private String email = null;
     //------------------------------------------
+    private String pass = null;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            Toast.makeText(mContext, "Firebase User Logged In" + currentUser.getEmail(), Toast.LENGTH_SHORT).show();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +87,8 @@ public class SignUpActivity extends AppCompatActivity {
                 .requestEmail()
                 .build();
         mGoogleSignUpClient = GoogleSignIn.getClient(mContext, gso);
+        
+        mAuth = FirebaseAuth.getInstance();
 
         fullName = findViewById(R.id.fullName_editText);
         emailEdit = findViewById(R.id.email_editText);
@@ -196,6 +214,32 @@ public class SignUpActivity extends AppCompatActivity {
         googleSignUpButton.setOnClickListener(v -> {
             googleSignUp();
         });
+        
+        signUpButton.setOnClickListener(v -> {
+            name = fullName.getText().toString();
+            email = emailEdit.getText().toString();
+            pass = passEdit.getText().toString();
+            if (!email.isEmpty() && !pass.isEmpty()) {
+                mAuth.createUserWithEmailAndPassword(email, pass)
+                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
+                                    Map<String, Object> data = new HashMap<>();
+                                    //data.put("userId", mAuth.getCurrentUser().getIdToken(true));
+                                    data.put("name", name);
+                                    data.put("email", email);
+                                    // Sign in success
+                                } else {
+                                    // Sign in failed
+                                    Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                                    Toast.makeText(SignUpActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+            }
+
+        });
 
     }
 
@@ -218,10 +262,8 @@ public class SignUpActivity extends AppCompatActivity {
                 userId = account.getId();
                 name = account.getDisplayName();
                 email = account.getEmail();
-                logged = true;
-                Toast.makeText(mContext, "Successfully Signed Up", Toast.LENGTH_SHORT).show();
-                //sendDataToFirestore(userId, name, email);
                 finish();
+                sendDataToFirestore(userId, name, email);
             }
 
             //Sign in successful

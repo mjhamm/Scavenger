@@ -171,7 +171,6 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/roboto_condensed_regular"
                 android:textSize="14sp"
-                android:textColor="@android:color/holo_blue_dark"
                 app:layout_constraintTop_toBottomOf="@id/facebook_signIn"
                 app:layout_constraintStart_toStartOf="@id/facebook_signIn"
                 app:layout_constraintEnd_toEndOf="@id/facebook_signIn"

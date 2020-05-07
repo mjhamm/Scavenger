@@ -2,6 +2,7 @@ package com.app.scavenger;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -24,8 +25,8 @@ public class SendFeedback extends AppCompatActivity {
         feedbackSubmitButton = findViewById(R.id.feedback_submit);
 
         feedbackSubmitButton.setEnabled(false);
-        feedbackSubmitButton.setTextColor(getResources().getColor(R.color.dark_gray, null));
-        feedbackSubmitButton.setBackgroundColor(getResources().getColor(android.R.color.white, null));
+        feedbackSubmitButton.setTextColor(Color.GRAY);
+        feedbackSubmitButton.setBackgroundColor(Color.WHITE);
 
         // Checks for whether or not the edit text is empty or not and changes the appearance of the submit button
         feedbackEditText.addTextChangedListener(new TextWatcher() {
@@ -38,12 +39,12 @@ public class SendFeedback extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.toString().trim().length() != 0) {
                     feedbackSubmitButton.setEnabled(true);
-                    feedbackSubmitButton.setTextColor(getResources().getColor(android.R.color.white, null));
-                    feedbackSubmitButton.setBackgroundColor(getResources().getColor(R.color.buttonRed, null));
+                    feedbackSubmitButton.setTextColor(Color.BLUE);
+                    feedbackSubmitButton.setBackgroundColor(Color.WHITE);
                 } else {
                     feedbackSubmitButton.setEnabled(false);
-                    feedbackSubmitButton.setTextColor(getResources().getColor(R.color.dark_gray, null));
-                    feedbackSubmitButton.setBackgroundColor(getResources().getColor(android.R.color.white, null));
+                    feedbackSubmitButton.setTextColor(Color.GRAY);
+                    feedbackSubmitButton.setBackgroundColor(Color.WHITE);
                 }
             }
 

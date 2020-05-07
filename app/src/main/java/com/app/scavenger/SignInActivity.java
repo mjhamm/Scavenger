@@ -4,18 +4,26 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.preference.PreferenceManager;
 
 import android.text.Editable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextPaint;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,9 +33,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -40,10 +55,11 @@ public class SignInActivity extends AppCompatActivity {
 
     private Context mContext;
     private GoogleSignInClient mGoogleSignInClient;
-    private TextView signUpText, forgotPass;
+    private TextView signUpText, forgotPass, signInTerms;
     private MaterialButton signInButton;
     private EditText emailEdit, passEdit;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseAuth mAuth;
     private SharedPreferences sharedPreferences;
     private boolean emailEmpty = true, passEmpty = true;
 
@@ -54,6 +70,7 @@ public class SignInActivity extends AppCompatActivity {
     private String name = null;
     private String email = null;
     //------------------------------------------
+    private String pass = null;
 
     public SignInActivity() {
         // Required empty public constructor
@@ -62,6 +79,7 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+        
     }
 
 
@@ -78,6 +96,8 @@ public class SignInActivity extends AppCompatActivity {
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
 
+        mAuth = FirebaseAuth.getInstance();
+
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         AppCompatButton mGoogleSignIn = findViewById(R.id.google_signIn);
@@ -86,6 +106,62 @@ public class SignInActivity extends AppCompatActivity {
         forgotPass = findViewById(R.id.forgot_signIn);
         emailEdit = findViewById(R.id.email_editText);
         passEdit = findViewById(R.id.password_editText);
+        signInTerms = findViewById(R.id.accept_terms_signin);
+
+        String termsText = "By Signing In, you agree to Scavenger's Terms & Conditions and Privacy Policy.";
+        SpannableString termsSS = new SpannableString(termsText);
+
+        ClickableSpan clickableSpanTerms = new ClickableSpan() {
+            @Override
+            public void onClick(@NonNull View widget) {
+                Toast.makeText(mContext, "Terms & Conditions", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void updateDrawState(@NonNull TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setColor(Color.BLUE);
+                ds.setUnderlineText(false);
+            }
+        };
+
+        ClickableSpan clickableSpanPrivacy = new ClickableSpan() {
+            @Override
+            public void onClick(@NonNull View widget) {
+                Toast.makeText(mContext, "Privacy Policy", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void updateDrawState(@NonNull TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setColor(Color.BLUE);
+                ds.setUnderlineText(false);
+            }
+        };
+
+        termsSS.setSpan(clickableSpanTerms, 39, 58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(clickableSpanPrivacy, 62, 76, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        signInTerms.setText(termsSS);
+        signInTerms.setMovementMethod(LinkMovementMethod.getInstance());
+        
+        signInButton.setOnClickListener(v -> {
+            email = emailEdit.getText().toString();
+            pass = passEdit.getText().toString();
+            mAuth.signInWithEmailAndPassword(email, pass)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                FirebaseUser user = mAuth.getCurrentUser();
+                                Toast.makeText(mContext, "Sign In Successful", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.w(TAG, "SignInWithEmail:failure", task.getException());
+                                Toast.makeText(mContext, "Sign in Failed", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+        });
 
         emailEdit.addTextChangedListener(new TextWatcher() {
             @Override
@@ -152,6 +228,8 @@ public class SignInActivity extends AppCompatActivity {
         });
 
         // No account signup activity launch textview
+        signUpText.setTextColor(Color.BLUE);
+
         signUpText.setOnClickListener(v -> {
             Intent intent = new Intent(mContext, SignUpActivity.class);
             startActivity(intent);
@@ -177,61 +255,8 @@ public class SignInActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignInResult(task);
-        }
-    }
-
-    private void googleSignIn() {
-        Intent intent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(intent, RC_SIGN_IN);
-    }
-
-    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
-        try {
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            if (account != null) {
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putBoolean("logged", true);
-                editor.putString("userId", account.getId());
-                editor.putString("name", account.getDisplayName());
-                editor.putString("email", account.getEmail());
-                editor.apply();
-                userId = account.getId();
-                name = account.getDisplayName();
-                email = account.getEmail();
-                Toast.makeText(mContext, "Successfully Signed In", Toast.LENGTH_SHORT).show();
-                finish();
-//                logged = true;
-                //sendDataToFirestore(userId, name, email);
-            }
-//            mParentListener.messageFromChildToParent(userId, name, email, logged);
-        } catch (ApiException e) {
-            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
-        }
-    }
-
-//    public interface OnChildFragmentInteractionListener {
-//        void messageFromChildToParent(String userId, String name, String email, boolean isLogged);
-//    }
-
-//    @Override
-//    public void onAttach(@NonNull Context context) {
-//        super.onAttach(context);
-//        // check if parent Fragment implements listener
-//        if (getParentFragment() instanceof OnChildFragmentInteractionListener) {
-//            mParentListener = (OnChildFragmentInteractionListener) getParentFragment();
-//        } else {
-//            throw new RuntimeException("The parent fragment must implement OnChildFragmentInteractionListener");
-//        }
-//    }
-
-    private void sendDataToFirestore(String userId, String name, String email) {
+    // Sends user information to Firebase
+    private void sendDataToFirebase(String userId, String name, String email) {
         Map<String, Object> data = new HashMap<>();
         data.put("userId", userId);
         data.put("name", name);
@@ -244,6 +269,75 @@ public class SignInActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+
+
+    // Google Sign In information and Methods -----------------------------------------------------------------------------------------------------------------
+
+    private void googleSignIn() {
+        Intent intent = mGoogleSignInClient.getSignInIntent();
+        startActivityForResult(intent, RC_SIGN_IN);
+    }
+
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            if (account != null) {
+                firebaseAuthWithGoogle(account.getIdToken());
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("logged", true);
+                editor.putString("userId", account.getId());
+                editor.putString("name", account.getDisplayName());
+                editor.putString("email", account.getEmail());
+                editor.apply();
+                userId = account.getId();
+                name = account.getDisplayName();
+                email = account.getEmail();
+                Toast.makeText(mContext, "Successfully Signed In", Toast.LENGTH_SHORT).show();
+                finish();
+                sendDataToFirebase(userId, name, email);
+            }
+        } catch (ApiException e) {
+            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+        }
+    }
+
+    // Authenticate Google Sign In with Firebase to make sure user exists and then can sign in
+    private void firebaseAuthWithGoogle(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signInWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            //updateUI(user);
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            Toast.makeText(mContext, "Authentication Failed", Toast.LENGTH_SHORT).show();
+                            //updateUI(null);
+                        }
+
+                        // ...
+                    }
+                });
+    }
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // On Activity Result
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleSignInResult(task);
+        }
     }
 
     //boolean that returns true if you are connected to internet and false if not

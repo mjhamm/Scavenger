@@ -98,7 +98,7 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
             favorite_message.setText(R.string.not_signed_in);
         } else {
             if (recipeItemList.isEmpty()) {
-                favorite_message.setText("You currently don't have any Favorites. Go out there and discover something great!");
+                favorite_message.setText(R.string.no_favorites);
             } else {
                 getFavorites();
             }
