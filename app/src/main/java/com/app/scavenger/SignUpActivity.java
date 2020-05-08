@@ -19,25 +19,29 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SignUpActivity extends AppCompatActivity {
+public class SignUpActivity extends AppCompatActivity implements FirebaseAuth.AuthStateListener {
 
-    private static final int RC_SIGN_UP = 101;
+    private static final int RC_SIGN_UP = 102;
     public static final String TAG = "LOG: ";
 
     private Context mContext;
@@ -76,6 +80,7 @@ public class SignUpActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sign_up);
 
         mContext = getApplicationContext();
+        mAuth = FirebaseAuth.getInstance();
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
 
@@ -87,8 +92,7 @@ public class SignUpActivity extends AppCompatActivity {
                 .requestEmail()
                 .build();
         mGoogleSignUpClient = GoogleSignIn.getClient(mContext, gso);
-        
-        mAuth = FirebaseAuth.getInstance();
+
 
         fullName = findViewById(R.id.fullName_editText);
         emailEdit = findViewById(R.id.email_editText);
@@ -212,7 +216,11 @@ public class SignUpActivity extends AppCompatActivity {
 
 
         googleSignUpButton.setOnClickListener(v -> {
-            googleSignUp();
+            if (termsCheck.isChecked()) {
+                googleSignUp();
+            } else {
+                Toast.makeText(mContext, "Please accept the Terms & Conditions", Toast.LENGTH_SHORT).show();
+            }
         });
         
         signUpButton.setOnClickListener(v -> {
@@ -243,34 +251,56 @@ public class SignUpActivity extends AppCompatActivity {
 
     }
 
+    // Sends user information to Firebase
+    private void sendDataToFirebase(FirebaseUser user) {
+        Map<String, Object> data = new HashMap<>();
+        //data.put("userId", user.getUid());
+        data.put("name", user.getDisplayName());
+        data.put("email", user.getEmail());
+        db.collection("Users").whereEqualTo("userId", user.getUid()).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (task.getResult().getDocuments().size() == 0) {
+                            db.collection("Users").document(user.getUid()).set(data);
+                        }
+                    }
+                });
+    }
+
+    // Google Sign In information and Methods -----------------------------------------------------------------------------------------------------------------
+
     private void googleSignUp() {
         Intent signInIntent = mGoogleSignUpClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_UP);
     }
 
-    private void handleSignUpResult(Task<GoogleSignInAccount> completedTask) {
-        try {
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-
-            if (account != null) {
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putBoolean("logged", true);
-                editor.putString("userId", account.getId());
-                editor.putString("name", account.getDisplayName());
-                editor.putString("email", account.getEmail());
-                editor.apply();
-                userId = account.getId();
-                name = account.getDisplayName();
-                email = account.getEmail();
-                finish();
-                sendDataToFirestore(userId, name, email);
-            }
-
-            //Sign in successful
-        } catch (ApiException e) {
-            Log.w(TAG, "signUpResult:failed code=" + e.getStatusCode());
-        }
+    // Authenticate Google Sign In with Firebase to make sure user exists and then can sign in
+    private void firebaseAuthWithGoogle(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signUpWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            Toast.makeText(mContext, "Authentication Success", Toast.LENGTH_SHORT).show();
+                            if (user != null) {
+                                updatePrefInfo(true, user.getUid(), user.getDisplayName(), user.getEmail());
+                                sendDataToFirebase(user);
+                            }
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signUpWithCredential:failure", task.getException());
+                            Toast.makeText(mContext, "Authentication Failed", Toast.LENGTH_SHORT).show();
+                        }
+                        finish();
+                    }
+                });
     }
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -278,23 +308,24 @@ public class SignUpActivity extends AppCompatActivity {
 
         if (requestCode == RC_SIGN_UP) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignUpResult(task);
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
+                firebaseAuthWithGoogle(account.getIdToken());
+
+            } catch (ApiException e) {
+                Log.d(TAG, "Google sign up failed", e);
+            }
         }
     }
 
-    private void sendDataToFirestore(String userId, String name, String email) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("userId", userId);
-        data.put("name", name);
-        data.put("email", email);
-        db.collection("Users").whereEqualTo("userId", userId).get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        if (task.getResult().getDocuments().size() == 0) {
-                            db.collection("Users").document(userId).set(data);
-                        }
-                    }
-                });
+    private void updatePrefInfo(boolean logged, String id, String name, String email) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("logged", logged);
+        editor.putString("userId", id);
+        editor.putString("name", name);
+        editor.putString("email", email);
+        editor.apply();
     }
 
     // Sets all variables related to logged status and user info
@@ -321,5 +352,9 @@ public class SignUpActivity extends AppCompatActivity {
         } else {
             signUpButton.setEnabled(false);
         }
+    }
+
+    @Override
+    public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
     }
 }

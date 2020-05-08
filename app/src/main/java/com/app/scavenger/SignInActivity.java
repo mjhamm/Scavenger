@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.nfc.Tag;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -28,6 +29,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -236,6 +238,7 @@ public class SignInActivity extends AppCompatActivity {
             finish();
         });
 
+        // Sign in with google button
         mGoogleSignIn.setOnClickListener(v -> {
             if (!checkConnection()) {
                 new MaterialAlertDialogBuilder(mContext)
@@ -257,50 +260,28 @@ public class SignInActivity extends AppCompatActivity {
 
     // Sends user information to Firebase
     private void sendDataToFirebase(String userId, String name, String email) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("userId", userId);
-        data.put("name", name);
-        data.put("email", email);
-        db.collection("Users").whereEqualTo("userId", userId).get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        if (task.getResult().getDocuments().size() == 0) {
-                            db.collection("Users").document(userId).set(data);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            Map<String, Object> data = new HashMap<>();
+            data.put("userId", userId);
+            data.put("name", name);
+            data.put("email", email);
+            db.collection("Users").whereEqualTo("userId", userId).get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            if (task.getResult().getDocuments().size() == 0) {
+                                db.collection("Users").document(userId).set(data);
+                            }
                         }
-                    }
-                });
+                    });
+        }
     }
-
-
 
     // Google Sign In information and Methods -----------------------------------------------------------------------------------------------------------------
 
     private void googleSignIn() {
         Intent intent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(intent, RC_SIGN_IN);
-    }
-
-    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
-        try {
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            if (account != null) {
-                firebaseAuthWithGoogle(account.getIdToken());
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putBoolean("logged", true);
-                editor.putString("userId", account.getId());
-                editor.putString("name", account.getDisplayName());
-                editor.putString("email", account.getEmail());
-                editor.apply();
-                userId = account.getId();
-                name = account.getDisplayName();
-                email = account.getEmail();
-                Toast.makeText(mContext, "Successfully Signed In", Toast.LENGTH_SHORT).show();
-                finish();
-                sendDataToFirebase(userId, name, email);
-            }
-        } catch (ApiException e) {
-            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
-        }
     }
 
     // Authenticate Google Sign In with Firebase to make sure user exists and then can sign in
@@ -313,16 +294,15 @@ public class SignInActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            //updateUI(user);
+
+                            //FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                            //sendDataToFirebase(user.getUid(), user.getDisplayName(), user.getEmail());
+
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                             Toast.makeText(mContext, "Authentication Failed", Toast.LENGTH_SHORT).show();
-                            //updateUI(null);
                         }
-
-                        // ...
                     }
                 });
     }
@@ -336,7 +316,13 @@ public class SignInActivity extends AppCompatActivity {
 
         if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignInResult(task);
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                firebaseAuthWithGoogle(account.getIdToken());
+                finish();
+            } catch (ApiException e) {
+                Log.w(TAG, "Google Sign In Failed", e);
+            }
         }
     }
 

@@ -18,6 +18,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -26,6 +27,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     private SwitchPreference matchIngr;
     private SharedPreferences sharedPreferences;
     private GoogleSignInClient mGoogleSignInClient;
+    private FirebaseAuth mAuth;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -53,6 +55,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mAuth = FirebaseAuth.getInstance();
 
         //GOOGLE INFORMATION -------------------------------------------------------
         // Requests the information from Google
@@ -130,65 +134,26 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     private void signOut() {
-        mGoogleSignInClient.signOut()
-                .addOnCompleteListener(getActivity(), task -> {
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putBoolean("logged", false);
-                    editor.putString("name", null);
-                    editor.putString("email", null);
-                    editor.putString("userId", null);
-                    editor.apply();
-                    logged = false;
-                    name = null;
-                    email = null;
-                    userId = null;
-                    Toast.makeText(mContext, "Successfully Signed Out", Toast.LENGTH_SHORT).show();
-                    signOut.setVisible(false);
-                    signIn.setVisible(true);
-                });
+        mAuth.signOut();
+
+        if (GoogleSignIn.getLastSignedInAccount(mContext) != null) {
+            mGoogleSignInClient.signOut();
+        }
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("logged", false);
+        editor.putString("name", null);
+        editor.putString("email", null);
+        editor.putString("userId", null);
+        editor.apply();
+        logged = false;
+        name = null;
+        email = null;
+        userId = null;
+        Toast.makeText(mContext, "Successfully Signed Out", Toast.LENGTH_SHORT).show();
+        signOut.setVisible(false);
+        signIn.setVisible(true);
     }
-
-//    private void deleteAccountFromFirebase() {
-//        db.collection("Users").document(userId)
-//                .delete()
-//                .addOnSuccessListener(aVoid -> {
-//                    Log.d(TAG, "Successfully removed account from Firebase");
-//                })
-//                .addOnFailureListener(e -> Log.d(TAG, "Failure to delete account from Firebase " + e.toString()));
-//    }
-//
-//    private void deleteAccountFirst() {
-//        new MaterialAlertDialogBuilder(mContext)
-//                .setTitle("Are you sure you want to delete your account?")
-//                .setMessage("If you delete your account, you will lose all of your favorites that you have saved.")
-//                .setCancelable(false)
-//                .setPositiveButton("I'm Sure!", (dialog, which) -> {
-//                    deleteAccountSecond();
-//                })
-//                .setNegativeButton("Cancel", (dialog, which) -> {
-//                    dialog.cancel();
-//                })
-//                .create()
-//                .show();
-//    }
-//
-//    private void deleteAccountSecond() {
-//        new MaterialAlertDialogBuilder(mContext)
-//                .setTitle("Just making sure. Do you really want to delete your account?")
-//                .setMessage("Just double checking that you want to delete your account and lose all of your favorites?")
-//                .setCancelable(false)
-//                .setPositiveButton("Yep! Delete it!", (dialog, which) -> {
-//                    //DELETE ACCOUNT
-//                    //deleteAccountFromFirebase();
-//                })
-//                .setNegativeButton("Cancel", (dialog, which) -> {
-//                    dialog.cancel();
-//                })
-//                .create()
-//                .show();
-//    }
-
-
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {

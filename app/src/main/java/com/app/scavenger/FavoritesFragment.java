@@ -17,9 +17,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -55,6 +56,7 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
     private TextView favorite_message;
     private ArrayList<RecipeItem> recipeItemList = new ArrayList<>();
     private MaterialButton retryConButton;
+    private FirebaseAuth mAuth;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -83,10 +85,12 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getContext();
-        if (getArguments() != null) {
-            userId = getArguments().getString("userId");
-            logged = getArguments().getBoolean("logged");
-        }
+//        if (getArguments() != null) {
+//            userId = getArguments().getString("userId");
+//            logged = getArguments().getBoolean("logged");
+//        }
+
+        mAuth = FirebaseAuth.getInstance();
     }
 
     @Override
@@ -161,6 +165,10 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
         recipeItemList.clear();
         if (adapter != null) {
             adapter.clearList();
+        }
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            userId = user.getUid();
         }
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
         favoritesRef.get()
