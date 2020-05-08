@@ -15,6 +15,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,7 +40,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SignUpActivity extends AppCompatActivity implements FirebaseAuth.AuthStateListener {
+public class SignUpActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_UP = 102;
     public static final String TAG = "LOG: ";
@@ -51,19 +52,18 @@ public class SignUpActivity extends AppCompatActivity implements FirebaseAuth.Au
     private TextView passNoMatch;
     private MaterialCheckBox termsCheck;
     private FirebaseAuth mAuth;
+    private FrameLayout progressHolder;
     private MaterialButton signUpButton, googleSignUpButton, facebookSignUpButton;
     private boolean nameEmpty = true, emailEmpty = true, passEmpty = true, passConfirmEmpty = true;
+    private String name = null;
+    private String email = null;
+    private String pass = null;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     // Shared Preferences Data
     //-----------------------------------------
-    private String userId = null;
     private boolean logged = false;
-    private String name = null;
-    private String email = null;
     //------------------------------------------
-    private String pass = null;
-
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     protected void onStart() {
@@ -103,6 +103,7 @@ public class SignUpActivity extends AppCompatActivity implements FirebaseAuth.Au
         signUpButton = findViewById(R.id.signUp_Button);
         facebookSignUpButton = findViewById(R.id.facebook_signUp);
         googleSignUpButton = findViewById(R.id.google_signUp);
+        progressHolder = findViewById(R.id.signUp_progressHolder);
 
         // Edit Text fields for sign up
         // ------------------------------------------------------------------------------------------------------
@@ -267,7 +268,7 @@ public class SignUpActivity extends AppCompatActivity implements FirebaseAuth.Au
                 });
     }
 
-    // Google Sign In information and Methods -----------------------------------------------------------------------------------------------------------------
+    // Google Sign Up information and Methods -----------------------------------------------------------------------------------------------------------------
 
     private void googleSignUp() {
         Intent signInIntent = mGoogleSignUpClient.getSignInIntent();
@@ -285,17 +286,19 @@ public class SignUpActivity extends AppCompatActivity implements FirebaseAuth.Au
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signUpWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(mContext, "Authentication Success", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mContext, "Signed Up Successfully", Toast.LENGTH_SHORT).show();
                             if (user != null) {
-                                updatePrefInfo(true, user.getUid(), user.getDisplayName(), user.getEmail());
+                                updatePrefInfo(true);
                                 sendDataToFirebase(user);
                             }
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signUpWithCredential:failure", task.getException());
-                            Toast.makeText(mContext, "Authentication Failed", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mContext, "Authentication Failed. Please try again or reach out to Help", Toast.LENGTH_SHORT).show();
                         }
+
                         finish();
+                        progressHolder.setVisibility(View.GONE);
                     }
                 });
     }
@@ -307,24 +310,21 @@ public class SignUpActivity extends AppCompatActivity implements FirebaseAuth.Au
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SIGN_UP) {
+            progressHolder.setVisibility(View.VISIBLE);
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
                 firebaseAuthWithGoogle(account.getIdToken());
-
             } catch (ApiException e) {
                 Log.d(TAG, "Google sign up failed", e);
             }
         }
     }
 
-    private void updatePrefInfo(boolean logged, String id, String name, String email) {
+    private void updatePrefInfo(boolean logged) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("logged", logged);
-        editor.putString("userId", id);
-        editor.putString("name", name);
-        editor.putString("email", email);
         editor.apply();
     }
 
@@ -332,9 +332,6 @@ public class SignUpActivity extends AppCompatActivity implements FirebaseAuth.Au
     private void getInfoFromSharedPrefs() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         logged = sharedPreferences.getBoolean("logged", false);
-        userId = sharedPreferences.getString("userId", null);
-        email = sharedPreferences.getString("email", null);
-        name = sharedPreferences.getString("name", null);
     }
 
     private void checkFieldsForEmpty() {
@@ -352,9 +349,5 @@ public class SignUpActivity extends AppCompatActivity implements FirebaseAuth.Au
         } else {
             signUpButton.setEnabled(false);
         }
-    }
-
-    @Override
-    public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
     }
 }

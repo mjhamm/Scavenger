@@ -62,8 +62,6 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
     //-----------------------------------------
     private String userId = null;
     private boolean logged = false;
-    private String name = null;
-    private String email = null;
     //------------------------------------------
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -85,10 +83,6 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getContext();
-//        if (getArguments() != null) {
-//            userId = getArguments().getString("userId");
-//            logged = getArguments().getBoolean("logged");
-//        }
 
         mAuth = FirebaseAuth.getInstance();
     }
@@ -111,11 +105,6 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
         if (adapter != null) {
             mFavoriteRecyclerView.setAdapter(adapter);
         }
-    }
-
-    void getData(String userId, boolean logged) {
-        this.userId = userId;
-        this.logged = logged;
     }
 
     @Override
@@ -235,8 +224,5 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
     private void getInfoFromSharedPrefs() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         logged = sharedPreferences.getBoolean("logged", false);
-        userId = sharedPreferences.getString("userId", null);
-        email = sharedPreferences.getString("email", null);
-        name = sharedPreferences.getString("name", null);
     }
 }

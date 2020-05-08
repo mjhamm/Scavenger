@@ -26,6 +26,7 @@ import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,6 +63,7 @@ public class SignInActivity extends AppCompatActivity {
     private EditText emailEdit, passEdit;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
+    private FrameLayout progressHolder;
     private SharedPreferences sharedPreferences;
     private boolean emailEmpty = true, passEmpty = true;
 
@@ -84,8 +86,6 @@ public class SignInActivity extends AppCompatActivity {
         
     }
 
-
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,6 +98,8 @@ public class SignInActivity extends AppCompatActivity {
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
 
+        getInfoFromSharedPrefs();
+
         mAuth = FirebaseAuth.getInstance();
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -109,6 +111,7 @@ public class SignInActivity extends AppCompatActivity {
         emailEdit = findViewById(R.id.email_editText);
         passEdit = findViewById(R.id.password_editText);
         signInTerms = findViewById(R.id.accept_terms_signin);
+        progressHolder = findViewById(R.id.signIn_progressHolder);
 
         String termsText = "By Signing In, you agree to Scavenger's Terms & Conditions and Privacy Policy.";
         SpannableString termsSS = new SpannableString(termsText);
@@ -231,7 +234,6 @@ public class SignInActivity extends AppCompatActivity {
 
         // No account signup activity launch textview
         signUpText.setTextColor(Color.BLUE);
-
         signUpText.setOnClickListener(v -> {
             Intent intent = new Intent(mContext, SignUpActivity.class);
             startActivity(intent);
@@ -259,18 +261,17 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     // Sends user information to Firebase
-    private void sendDataToFirebase(String userId, String name, String email) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    private void sendDataToFirebase(FirebaseUser user) {
         if (user != null) {
             Map<String, Object> data = new HashMap<>();
-            data.put("userId", userId);
-            data.put("name", name);
-            data.put("email", email);
-            db.collection("Users").whereEqualTo("userId", userId).get()
+            data.put("userId", user.getUid());
+            data.put("name", user.getDisplayName());
+            data.put("email", user.getEmail());
+            db.collection("Users").whereEqualTo("userId", user.getUid()).get()
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             if (task.getResult().getDocuments().size() == 0) {
-                                db.collection("Users").document(userId).set(data);
+                                db.collection("Users").document(user.getUid()).set(data);
                             }
                         }
                     });
@@ -294,15 +295,20 @@ public class SignInActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
-
-                            //FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                            //sendDataToFirebase(user.getUid(), user.getDisplayName(), user.getEmail());
-
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            Toast.makeText(mContext, "Signed In Successfully", Toast.LENGTH_SHORT).show();
+                            if (user != null) {
+                                updatePrefInfo(true);
+                                sendDataToFirebase(user);
+                            }
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(mContext, "Authentication Failed", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mContext, "Authentication Failed. Please try again or reach out to Help", Toast.LENGTH_SHORT).show();
                         }
+
+                        finish();
+                        progressHolder.setVisibility(View.GONE);
                     }
                 });
     }
@@ -315,13 +321,15 @@ public class SignInActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SIGN_IN) {
+            progressHolder.setVisibility(View.VISIBLE);
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
+                Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
                 firebaseAuthWithGoogle(account.getIdToken());
-                finish();
+                //Toast.makeText(mContext, "Signed In Successfully", Toast.LENGTH_SHORT).show();
             } catch (ApiException e) {
-                Log.w(TAG, "Google Sign In Failed", e);
+                Log.d(TAG, "Google sign in failed", e);
             }
         }
     }
@@ -331,6 +339,12 @@ public class SignInActivity extends AppCompatActivity {
         ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected();
+    }
+
+    private void updatePrefInfo(boolean logged) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("logged", logged);
+        editor.apply();
     }
 
     // Sets all variables related to logged status and user info
