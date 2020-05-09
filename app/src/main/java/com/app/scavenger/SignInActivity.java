@@ -27,6 +27,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,6 +60,7 @@ public class SignInActivity extends AppCompatActivity {
     private Context mContext;
     private GoogleSignInClient mGoogleSignInClient;
     private TextView signUpText, forgotPass, signInTerms;
+    private ImageButton backButton;
     private MaterialButton signInButton;
     private EditText emailEdit, passEdit;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -66,15 +68,14 @@ public class SignInActivity extends AppCompatActivity {
     private FrameLayout progressHolder;
     private SharedPreferences sharedPreferences;
     private boolean emailEmpty = true, passEmpty = true;
+    private String email = null;
+    private String pass = null;
 
     // Shared Preferences Data
     //-----------------------------------------
     private String userId = null;
     private boolean logged = false;
-    private String name = null;
-    private String email = null;
     //------------------------------------------
-    private String pass = null;
 
     public SignInActivity() {
         // Required empty public constructor
@@ -112,6 +113,11 @@ public class SignInActivity extends AppCompatActivity {
         passEdit = findViewById(R.id.password_editText);
         signInTerms = findViewById(R.id.accept_terms_signin);
         progressHolder = findViewById(R.id.signIn_progressHolder);
+        backButton = findViewById(R.id.signIn_back);
+
+        backButton.setOnClickListener(v -> {
+            finish();
+        });
 
         String termsText = "By Signing In, you agree to Scavenger's Terms & Conditions and Privacy Policy.";
         SpannableString termsSS = new SpannableString(termsText);
@@ -298,7 +304,7 @@ public class SignInActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(mContext, "Signed In Successfully", Toast.LENGTH_SHORT).show();
                             if (user != null) {
-                                updatePrefInfo(true);
+                                updatePrefInfo(true, user.getUid());
                                 sendDataToFirebase(user);
                             }
                         } else {
@@ -341,9 +347,10 @@ public class SignInActivity extends AppCompatActivity {
         return activeNetwork != null && activeNetwork.isConnected();
     }
 
-    private void updatePrefInfo(boolean logged) {
+    private void updatePrefInfo(boolean logged, String userId) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("logged", logged);
+        editor.putString("userId", userId);
         editor.apply();
     }
 
@@ -352,7 +359,5 @@ public class SignInActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
-        email = sharedPreferences.getString("email", null);
-        name = sharedPreferences.getString("name", null);
     }
 }

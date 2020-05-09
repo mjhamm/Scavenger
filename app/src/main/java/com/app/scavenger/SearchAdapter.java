@@ -37,6 +37,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -67,14 +68,13 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String userId = null;
     private boolean logged = false;
-    private String name = null;
-    private String email = null;
     private boolean expanded = false;
     private SharedPreferences sharedPreferences;
     /*private CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");*/
     private ArrayList<RecipeItem> mRecipeItems;
     private Context mContext;
     private LayoutInflater mInflater;
+    private FirebaseAuth mAuth;
 
     SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId, boolean logged) {
         this.userId = userId;
@@ -89,6 +89,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     public SearchAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.row_card_item, parent, false);
         getInfoFromSharedPrefs();
+        mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         return new ViewHolder(view);
     }
@@ -178,7 +179,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.d("LOG: ", "Item saved to Firestore");
+                        Log.d("LOG: ", "Item saved to Firebase");
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -506,8 +507,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
-        email = sharedPreferences.getString("email", null);
-        name = sharedPreferences.getString("name", null);
     }
 }
 

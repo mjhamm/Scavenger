@@ -1,25 +1,21 @@
 package com.app.scavenger;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-
+import android.widget.ImageButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
 import java.util.ArrayList;
 
 public class Help extends AppCompatActivity implements HelpAdapter.ItemClickListener {
 
     private RecyclerView helpRecycler;
     private HelpAdapter adapter;
+    private ImageButton backButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +23,7 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
         setContentView(R.layout.activity_help);
 
         helpRecycler = findViewById(R.id.help_list);
+        backButton = findViewById(R.id.help_back);
 
         ArrayList<String> options = new ArrayList<>();
         options.add("Report a Problem");
@@ -40,6 +37,10 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
         LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(helpRecycler.getContext(), layoutManager.getOrientation());
         helpRecycler.addItemDecoration(dividerItemDecoration);
+
+        backButton.setOnClickListener(v -> {
+            finish();
+        });
     }
 
     @Override

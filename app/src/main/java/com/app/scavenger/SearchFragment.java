@@ -28,6 +28,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.material.internal.ParcelableSparseArray;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -61,13 +63,12 @@ public class SearchFragment extends Fragment {
     private LinearLayoutManager mLayoutManager;
     private ArrayList<RecipeItem> recipeItemArrayList;
     private String queryString = null;
+    private FirebaseAuth mAuth;
 
     // Shared Preferences Data
     //-----------------------------------------
     private String userId = null;
     private boolean logged = false;
-    private String name = null;
-    private String email = null;
     //------------------------------------------
 
     public SearchFragment() {
@@ -86,12 +87,20 @@ public class SearchFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            logged = true;
+        } else {
+            logged = false;
+        }
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getContext();
+
+        mAuth = FirebaseAuth.getInstance();
 
     }
 
@@ -360,7 +369,5 @@ public class SearchFragment extends Fragment {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
-        email = sharedPreferences.getString("email", null);
-        name = sharedPreferences.getString("name", null);
     }
 }

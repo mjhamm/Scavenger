@@ -12,6 +12,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity { // Account.SendDataToMain {
 
@@ -23,6 +25,7 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
     private final FragmentManager fm = getSupportFragmentManager();//
     private Fragment active = null;
     private boolean matchOn = false;
+    private FirebaseAuth mAuth;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -33,6 +36,11 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
     @Override
     protected void onStart() {
         super.onStart();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            logged = true;
+            userId = mAuth.getUid();
+        }
     }
 
     @Override
@@ -44,6 +52,8 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mAuth = FirebaseAuth.getInstance();
 
         BottomNavigationView mNavView = findViewById(R.id.bottom_nav_view);
         //GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);

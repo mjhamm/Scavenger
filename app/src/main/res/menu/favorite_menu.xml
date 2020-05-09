@@ -18,10 +18,10 @@
         android:orderInCategory="60"
         app:showAsAction="collapseActionView"/>
 
-    <item
-        android:id="@+id/fav_menu_remove"
-        android:title="Remove from Favorites"
-        android:orderInCategory="80"
-        app:showAsAction="collapseActionView"/>
+<!--    <item-->
+<!--        android:id="@+id/fav_menu_remove"-->
+<!--        android:title="Remove from Favorites"-->
+<!--        android:orderInCategory="80"-->
+<!--        app:showAsAction="collapseActionView"/>-->
 
 </menu>

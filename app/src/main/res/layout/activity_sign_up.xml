@@ -27,6 +27,14 @@
             android:textSize="18sp"
             android:textColor="@android:color/black"/>
 
+        <ImageButton
+            android:id="@+id/signUp_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_arrow_back_black_36dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"/>
+
     </com.google.android.material.card.MaterialCardView>
 
     <ScrollView

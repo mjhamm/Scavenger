@@ -54,6 +54,7 @@ public class SignUpActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FrameLayout progressHolder;
     private MaterialButton signUpButton, googleSignUpButton, facebookSignUpButton;
+    private ImageButton backButton;
     private boolean nameEmpty = true, emailEmpty = true, passEmpty = true, passConfirmEmpty = true;
     private String name = null;
     private String email = null;
@@ -63,6 +64,7 @@ public class SignUpActivity extends AppCompatActivity {
     // Shared Preferences Data
     //-----------------------------------------
     private boolean logged = false;
+    private String userId = null;
     //------------------------------------------
 
     @Override
@@ -70,7 +72,7 @@ public class SignUpActivity extends AppCompatActivity {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            Toast.makeText(mContext, "Firebase User Logged In" + currentUser.getEmail(), Toast.LENGTH_SHORT).show();
+            updatePrefInfo(true, currentUser.getUid());
         }
     }
 
@@ -104,6 +106,11 @@ public class SignUpActivity extends AppCompatActivity {
         facebookSignUpButton = findViewById(R.id.facebook_signUp);
         googleSignUpButton = findViewById(R.id.google_signUp);
         progressHolder = findViewById(R.id.signUp_progressHolder);
+        backButton = findViewById(R.id.signUp_back);
+
+        backButton.setOnClickListener(v -> {
+            finish();
+        });
 
         // Edit Text fields for sign up
         // ------------------------------------------------------------------------------------------------------
@@ -288,7 +295,7 @@ public class SignUpActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(mContext, "Signed Up Successfully", Toast.LENGTH_SHORT).show();
                             if (user != null) {
-                                updatePrefInfo(true);
+                                updatePrefInfo(true, user.getUid());
                                 sendDataToFirebase(user);
                             }
                         } else {
@@ -322,9 +329,10 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }
 
-    private void updatePrefInfo(boolean logged) {
+    private void updatePrefInfo(boolean logged, String userId) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("logged", logged);
+        editor.putString("userId", userId);
         editor.apply();
     }
 
@@ -332,6 +340,7 @@ public class SignUpActivity extends AppCompatActivity {
     private void getInfoFromSharedPrefs() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         logged = sharedPreferences.getBoolean("logged", false);
+        userId = sharedPreferences.getString("userId", null);
     }
 
     private void checkFieldsForEmpty() {

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 import com.google.android.material.button.MaterialButton;
 
@@ -13,6 +14,7 @@ public class ReportProblem extends AppCompatActivity {
 
     private EditText reportEditText;
     private MaterialButton reportSubmitButton;
+    private ImageButton backButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,10 +23,15 @@ public class ReportProblem extends AppCompatActivity {
 
         reportEditText = findViewById(R.id.report_editText);
         reportSubmitButton = findViewById(R.id.report_submit);
+        backButton = findViewById(R.id.reportProblem_back);
 
         reportSubmitButton.setEnabled(false);
         reportSubmitButton.setTextColor(Color.GRAY);
         reportSubmitButton.setBackgroundColor(Color.WHITE);
+
+        backButton.setOnClickListener(v -> {
+            finish();
+        });
 
         // Checks for whether or not the edit text is empty or not and changes the appearance of the submit button
         reportEditText.addTextChangedListener(new TextWatcher() {

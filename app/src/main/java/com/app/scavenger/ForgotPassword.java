@@ -11,6 +11,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
@@ -20,6 +21,7 @@ public class ForgotPassword extends AppCompatActivity {
 
     private EditText forgot_editText;
     private MaterialButton forgot_pass_button;
+    private ImageButton backButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +30,12 @@ public class ForgotPassword extends AppCompatActivity {
 
         forgot_editText = findViewById(R.id.forgot_editText);
         forgot_pass_button = findViewById(R.id.forgot_pass_button);
+        backButton = findViewById(R.id.forgotPass_back);
+
+
+        backButton.setOnClickListener(v -> {
+            finish();
+        });
 
         forgot_pass_button.setEnabled(false);
 

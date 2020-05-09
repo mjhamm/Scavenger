@@ -82,7 +82,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     @NonNull
     @Override
     public FavoriteAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.row_fav_card_item, parent, false);
+        View view = mInflater.inflate(R.layout.row_card_item, parent, false);
         return new ViewHolder(view);
     }
 
@@ -101,6 +101,16 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         int protein_int  = item.getmProtein();
         ArrayList<String> ingredients_list = item.getmIngredients();
         ArrayList<String> attributes_list = item.getmRecipeAttributes();
+
+        if (item.isClicked()) {
+            holder.mRelativeLayout.setVisibility(View.VISIBLE);
+        } else {
+            holder.mRelativeLayout.setVisibility(View.GONE);
+        }
+
+        item.setFavorited(true);
+        holder.favorite_button.setTag(position);
+        holder.favorite_button.setImageResource(R.mipmap.heart_icon_filled);
 
         TextView name = holder.recipeName;
         TextView source = holder.recipeSource;
@@ -197,6 +207,37 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                 }
             });
 
+            favorite_button.setOnClickListener(v -> {
+                // Gets the item at the position
+                recipeItem = mRecipeItems.get(getAdapterPosition());
+                new MaterialAlertDialogBuilder(mContext)
+                        .setTitle("Remove this recipe from your Likes?")
+                        .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
+                        .setCancelable(false)
+                        .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                mRecipeItems.remove(getAdapterPosition());
+                                notifyDataSetChanged();
+                                try {
+                                    removeDataFromFirebase(recipeItem);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .create()
+                        .show();
+
+
+            });
+
             more_button.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 recipeItem = mRecipeItems.get(position);
@@ -215,9 +256,9 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                         case R.id.fav_menu_report:
                             reportRecipe();
                             return true;
-                        case R.id.fav_menu_remove:
-                            removeDataFromFirebase(recipeItem);
-                            refreshFavorites.refresh(true);
+//                        case R.id.fav_menu_remove:
+//                            removeDataFromFirebase(recipeItem);
+//                            refreshFavorites.refresh(true);
                     }
                     return false;
                 });

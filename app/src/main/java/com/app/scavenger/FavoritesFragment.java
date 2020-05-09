@@ -92,19 +92,22 @@ public class FavoritesFragment extends Fragment implements FavoriteAdapter.Refre
         super.onResume();
         getInfoFromSharedPrefs();
 
-        if (!logged) {
-            favorite_message.setText(R.string.not_signed_in);
-        } else {
-            if (recipeItemList.isEmpty()) {
-                favorite_message.setText(R.string.no_favorites);
-            } else {
-                getFavorites();
-            }
-        }
-
         if (adapter != null) {
             mFavoriteRecyclerView.setAdapter(adapter);
         }
+//        } else {
+//            if (mAuth.getCurrentUser() == null) {
+//                favorite_message.setText(R.string.not_signed_in);
+//            } else {
+//                if (adapter.getItemCount() == 0) {
+//                    favorite_message.setText(R.string.no_favorites);
+//                } else {
+//                    getFavorites();
+//                }
+//            }
+//        }
+
+
     }
 
     @Override

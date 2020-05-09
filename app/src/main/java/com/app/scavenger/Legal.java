@@ -7,9 +7,17 @@ import android.widget.ImageButton;
 
 public class Legal extends AppCompatActivity {
 
+    private ImageButton backButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_legal);
+
+        backButton = findViewById(R.id.legal_back);
+
+        backButton.setOnClickListener(v -> {
+            finish();
+        });
     }
 }

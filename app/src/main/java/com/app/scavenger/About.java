@@ -20,6 +20,7 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
 
     private RecyclerView aboutRecycler;
     private AboutAdapter adapter;
+    private ImageButton backButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +28,7 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
         setContentView(R.layout.activity_about);
 
         aboutRecycler = findViewById(R.id.about_list);
+        backButton = findViewById(R.id.about_back);
 
         ArrayList<String> options = new ArrayList<>();
         options.add("Terms & Conditions");
@@ -41,6 +43,10 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
         LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(aboutRecycler.getContext(), layoutManager.getOrientation());
         aboutRecycler.addItemDecoration(dividerItemDecoration);
+
+        backButton.setOnClickListener(v -> {
+            finish();
+        });
 
     }
 
