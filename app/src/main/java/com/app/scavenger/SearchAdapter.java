@@ -202,7 +202,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 });
     }
 
-    private void removeDataFromFirebase(RecipeItem recipeItem, String itemId) {
+    private void removeDataFromFirebase(RecipeItem recipeItem) {
         CollectionReference favoritesRef = db.collection("Users").document(userId).collection("Favorites");
 
         favoritesRef.document(recipeItem.getItemId())
@@ -304,7 +304,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                         favorite_button.setImageResource(R.mipmap.heart_icon_outline_white);
                         item.setFavorited(false);
                         try {
-                            removeDataFromFirebase(item, item.getItemId());
+                            removeDataFromFirebase(item);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

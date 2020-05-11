@@ -119,17 +119,8 @@ public class FavoritesFragment extends Fragment {
         super.onResume();
         getInfoFromSharedPrefs();
 
-        if (adapter != null) {
-            mFavoriteRecyclerView.setAdapter(adapter);
-        }
         retrieveLikesFromFirebase();
-//        if (!logged) {
-//            recipeItemList.clear();
-//            if (adapter != null) {
-//                adapter.clearList();
-//            }
-//
-//        }
+
     }
 
     @Override
@@ -167,16 +158,16 @@ public class FavoritesFragment extends Fragment {
 //    }
 
     private void retrieveLikesFromFirebase() {
-        Log.d(TAG, "UserId: " + userId);
-        recipeItemList.clear();
-        if (adapter != null) {
-            adapter.clearList();
-        }
         if (!logged) {
             favorite_message.setVisibility(View.VISIBLE);
             favorite_message.setText(R.string.not_signed_in);
+            recipeItemList.clear();
+            if (adapter != null) {
+                adapter.clearList();
+            }
             mFavoriteRecyclerView.setAdapter(adapter);
         } else {
+
             CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
             favoritesRef.orderBy("Timestamp", Query.Direction.DESCENDING).get()
                     .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -186,6 +177,10 @@ public class FavoritesFragment extends Fragment {
                                 favorite_message.setVisibility(View.VISIBLE);
                                 favorite_message.setText(R.string.no_favorites);
                             } else {
+                                recipeItemList.clear();
+                                if (adapter != null) {
+                                    adapter.clearList();
+                                }
                                 favorite_message.setVisibility(View.GONE);
                                 for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                                     RecipeItem item = new RecipeItem();

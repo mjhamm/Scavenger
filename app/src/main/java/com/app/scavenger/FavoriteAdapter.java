@@ -380,10 +380,9 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     }
 
     private void removeDataFromFirebase(RecipeItem recipeItem) {
-        String itemId = recipeItem.getmRecipeName() + recipeItem.getmSourceName() + recipeItem.getmCalories();
         CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");
 
-        favoritesRef.document(itemId)
+        favoritesRef.document(recipeItem.getItemId())
                 .delete()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
