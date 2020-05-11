@@ -16,19 +16,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class FavoritesFragment extends Fragment {
 
@@ -67,6 +66,7 @@ public class FavoritesFragment extends Fragment {
     private SearchView mFavoriteSearch;
     private TextView favorite_message;
     private MaterialButton retryConButton;
+    private MaterialCardView progressHolder;
     //--------------------------------------------
 
     private FirebaseAuth mAuth;
@@ -101,25 +101,89 @@ public class FavoritesFragment extends Fragment {
     public void onStart() {
         super.onStart();
         getInfoFromSharedPrefs();
-//        if (logged) {
-//            retrieveLikesFromFirebase();
-//        } else {
-//            recipeItemList.clear();
-//            if (adapter != null) {
-//                adapter.clearList();
-//            }
-//            favorite_message.setVisibility(View.VISIBLE);
-//            favorite_message.setText(R.string.not_signed_in);
-//            mFavoriteRecyclerView.setAdapter(adapter);
-//        }
+        if (!logged) {
+            favorite_message.setVisibility(View.VISIBLE);
+            favorite_message.setText(R.string.not_signed_in);
+            recipeItemList.clear();
+            if (adapter != null) {
+                adapter.clearList();
+            }
+            mFavoriteRecyclerView.setAdapter(adapter);
+        }
+        retrieveLikesFromFirebase();
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+
+        if (!hidden) {
+            getInfoFromSharedPrefs();
+            /* Added */
+            if (!logged) {
+                recipeItemList.clear();
+                if (adapter != null) {
+                    adapter.clearList();
+                }
+                mFavoriteRecyclerView.setAdapter(adapter);
+                favorite_message.setVisibility(View.VISIBLE);
+                favorite_message.setText(R.string.not_signed_in);
+            } else {
+                if (sharedPreferences.getInt("numLikes", 0) == 0) {
+                    favorite_message.setVisibility(View.VISIBLE);
+                    favorite_message.setText(R.string.no_favorites);
+                } else {
+                    if ((sharedPreferences.getInt("numLikes", 0) != sharedPreferences.getInt("actualNumLikes", 0)) && sharedPreferences.getInt("actualNumLikes", 0) > 0) {
+                        favorite_message.setVisibility(View.GONE);
+                        retrieveLikesFromFirebase();
+                    }
+                }
+            }
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        getInfoFromSharedPrefs();
-
-        retrieveLikesFromFirebase();
+//        getInfoFromSharedPrefs();
+//         /* Added */
+//        if (!logged) {
+//            recipeItemList.clear();
+//            if (adapter != null) {
+//                adapter.clearList();
+//            }
+//            mFavoriteRecyclerView.setAdapter(adapter);
+//            favorite_message.setVisibility(View.VISIBLE);
+//            favorite_message.setText(R.string.not_signed_in);
+//        } else {
+//            if (sharedPreferences.getInt("numLikes", 0) == 0) {
+//                favorite_message.setVisibility(View.VISIBLE);
+//                favorite_message.setText(R.string.no_favorites);
+//            } else {
+//                if ((sharedPreferences.getInt("numLikes", 0) != sharedPreferences.getInt("actualNumLikes", 0)) && sharedPreferences.getInt("actualNumLikes", 0) > 0) {
+//                    favorite_message.setVisibility(View.GONE);
+//                    retrieveLikesFromFirebase();
+//                }
+//            }
+//        }
+        /* Added */
+//        if (actualNumLikes == 0) {
+//            favorite_message.setVisibility(View.VISIBLE);
+//            favorite_message.setText(R.string.no_favorites);
+//        } else {
+//            if (logged) {
+//                retrieveLikesFromFirebase();
+//            } else {
+//                favorite_message.setVisibility(View.VISIBLE);
+//                favorite_message.setText(R.string.not_signed_in);
+//                recipeItemList.clear();
+//                if (adapter != null) {
+//                    adapter.clearList();
+//                }
+//                mFavoriteRecyclerView.setAdapter(adapter);
+//            }
+//        }
+        //retrieveLikesFromFirebase();
 
     }
 
@@ -132,11 +196,15 @@ public class FavoritesFragment extends Fragment {
         retryConButton = view.findViewById(R.id.fav_retry_con_button);
         mFavoriteSearch.setMaxWidth(Integer.MAX_VALUE);
         mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
+        progressHolder = view.findViewById(R.id.likes_progressHolder);
 
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
+
+        mFavoriteRecyclerView.setHasFixedSize(true);
+        mFavoriteRecyclerView.setItemViewCacheSize(6);
 
         return view;
     }
@@ -152,35 +220,35 @@ public class FavoritesFragment extends Fragment {
         }
     }
 
-//    FirebaseUser user = mAuth.getCurrentUser();
-//            if (user != null) {
-//        userId = user.getUid();
-//    }
+    public boolean adapterNull() {
+        return adapter == null;
+    }
 
     private void retrieveLikesFromFirebase() {
-        if (!logged) {
-            favorite_message.setVisibility(View.VISIBLE);
-            favorite_message.setText(R.string.not_signed_in);
-            recipeItemList.clear();
-            if (adapter != null) {
-                adapter.clearList();
-            }
-            mFavoriteRecyclerView.setAdapter(adapter);
-        } else {
-
+//        if (!logged) {
+//            favorite_message.setVisibility(View.VISIBLE);
+//            favorite_message.setText(R.string.not_signed_in);
+//            recipeItemList.clear();
+//            if (adapter != null) {
+//                adapter.clearList();
+//            }
+//            mFavoriteRecyclerView.setAdapter(adapter);
+//        } else {
             CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
             favoritesRef.orderBy("Timestamp", Query.Direction.DESCENDING).get()
                     .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                         @Override
                         public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                            recipeItemList.clear(); // added
+                            int actualNumLikes = 0;
                             if (queryDocumentSnapshots.isEmpty()) {
                                 favorite_message.setVisibility(View.VISIBLE);
                                 favorite_message.setText(R.string.no_favorites);
                             } else {
-                                recipeItemList.clear();
-                                if (adapter != null) {
-                                    adapter.clearList();
-                                }
+//                                recipeItemList.clear();
+//                                if (adapter != null) {
+//                                    adapter.clearList();
+//                                }
                                 favorite_message.setVisibility(View.GONE);
                                 for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                                     RecipeItem item = new RecipeItem();
@@ -229,20 +297,27 @@ public class FavoritesFragment extends Fragment {
                                     item.setmRecipeAttributes(att);
                                     item.setmIngredients(ingr);
 
-                                    if (!recipeItemList.contains(item)) {
-                                        recipeItemList.add(item);
-                                    }
+                                    recipeItemList.add(item); // added
+//                                    if (!recipeItemList.contains(item)) {
+//                                        recipeItemList.add(item);
+//                                        actualNumLikes += 1;
+//                                    }
                                 }
-                                SharedPreferences.Editor editor = sharedPreferences.edit();
-                                editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
-                                editor.apply();
+                                SharedPreferences.Editor editor = sharedPreferences.edit(); // added
+                                editor.putInt("actualNumLikes", queryDocumentSnapshots.size()); // added
+                                editor.putInt("numLikes", queryDocumentSnapshots.size());
+                                editor.apply(); // apply
                             }
+//                            SharedPreferences.Editor editor = sharedPreferences.edit();
+//                            editor.putInt("actualNumLikes", actualNumLikes);
+//                            editor.putInt("numLikes", actualNumLikes);
+//                            editor.apply();
                         }
                     });
             adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
             mFavoriteRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
             mFavoriteRecyclerView.setAdapter(adapter);
-        }
+//        }
     }
 
     //boolean that returns true if you are connected to internet and false if not

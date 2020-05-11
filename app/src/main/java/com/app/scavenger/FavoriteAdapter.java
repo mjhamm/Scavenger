@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
@@ -60,17 +61,19 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    private String userId = null;
+
     private ArrayList<RecipeItem> mRecipeItems;
     private Context mContext;
     private LayoutInflater mInflater;
-    private String mUserId = null;
+
     private boolean refresh = false;
 
     FavoriteAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId) {
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
-        this.mUserId = userId;
+        this.userId = userId;
     }
 
     @NonNull
@@ -125,7 +128,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
         Glide.with(mContext)
                 .load(imageURL)
-                .skipMemoryCache(true)
+                .skipMemoryCache(false)
                 .centerCrop()
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(image);
@@ -380,7 +383,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     }
 
     private void removeDataFromFirebase(RecipeItem recipeItem) {
-        CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");
+        CollectionReference favoritesRef = db.collection("Users").document(userId).collection("Favorites");
 
         favoritesRef.document(recipeItem.getItemId())
                 .delete()
@@ -441,5 +444,15 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     @Override
     public int getItemCount() {
         return mRecipeItems.size();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
     }
 }

@@ -144,7 +144,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         //Setting all items in each recipe item ------------
         GlideApp.with(mContext)
                 .load(imageURL)
-                .skipMemoryCache(true)
+                .skipMemoryCache(false)
                 .centerCrop()
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(image);
@@ -227,7 +227,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         private ImageView recipeImage;
         private MaterialCardView mNutritionCard, mViewRecipe;
         private RelativeLayout mRelativeLayout;
-        private ConstraintLayout mConstraintLayout;
+        private RelativeLayout mConstraintLayout;
         private RecipeItem item;
         private ImageButton more_button, favorite_button;
         private String reportReason = null;

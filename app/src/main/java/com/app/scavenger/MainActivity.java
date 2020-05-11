@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
         if (logged) {
             userId = mAuth.getUid();
             retrieveLikesFromFirebase();
+            numLikes = actualNumLikes;
         }
     }
 
@@ -111,21 +112,27 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
                     active = fragment1;
                     return true;
                 case R.id.action_favorites:
-                    if (logged) {
-                        if (numLikes != actualNumLikes) {
-                            fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
-                            SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putInt("numLikes", actualNumLikes);
-                            numLikes = actualNumLikes;
-                            editor.apply();
-                        } else {
-                            fm.beginTransaction().hide(active).show(fragment2).commit();
-                        }
-                    } else {
+                    if ((sharedPreferences.getInt("numLikes", 0) != sharedPreferences.getInt("actualNumLikes", 0)) && sharedPreferences.getInt("actualNumLikes", 0) != 0) {
                         fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
+                    } else {
+                        fm.beginTransaction().hide(active).show(fragment2).commit();
                     }
-                    Log.d("MAIN ACTIVITY", "numLikes: " + numLikes + " actualNumLikes: " + actualNumLikes);
-                    //fm.beginTransaction().hide(active).show(fragment2).commit();
+//                    if (logged) {
+//                        if (numLikes != actualNumLikes) {
+//                            retrieveLikesFromFirebase();
+//                            //numLikes = actualNumLikes;
+//                            fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
+//                        } else {
+//                            if (actualNumLikes == 0) {
+//                                fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
+//                            } else {
+//                                fm.beginTransaction().hide(active).show(fragment2).commit();
+//                            }
+//                        }
+//                    } else {
+//                        fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
+//                    }
+
                     active = fragment2;
                     return true;
                 case R.id.action_settings:
@@ -157,17 +164,19 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
     }
 
     private void retrieveLikesFromFirebase() {
-        Log.d("MAIN ACTIVITY", "USER ID: " + userId);
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
         favoritesRef.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        actualNumLikes = queryDocumentSnapshots.size();
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
-                        numLikes = actualNumLikes;
+                        editor.putInt("numLikes", queryDocumentSnapshots.size());
                         editor.apply();
+                        Log.d("Retrieve from Firebase", "actual Number of Likes: " + queryDocumentSnapshots.size());
                     }
                 });
+        numLikes = actualNumLikes;
     }
 }

@@ -149,6 +149,7 @@ public class SearchFragment extends Fragment {
 
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
         mSearchRecyclerView.setHasFixedSize(true);
+        mSearchRecyclerView.setItemViewCacheSize(6);
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
