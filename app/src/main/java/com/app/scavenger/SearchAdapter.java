@@ -37,11 +37,13 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -162,6 +164,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         Map<String, Object> item = new HashMap<>();
         CollectionReference favoritesRef = db.collection("Users").document(userId).collection("Favorites");
 
+        Date now = new Date();
+        Timestamp timestamp = new Timestamp(now);
+
         item.put(ITEM_ID, itemId);
         item.put(ITEM_NAME, name);
         item.put(ITEM_SOURCE, source);
@@ -174,12 +179,18 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         item.put(ITEM_PROTEIN, protein);
         item.put(ITEM_ATT, attributes);
         item.put(ITEM_INGR, ingredients);
+        item.put("Timestamp", timestamp);
 
         favoritesRef.document(itemId).set(item)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d("LOG: ", "Item saved to Firebase");
+                        int likes = sharedPreferences.getInt("numLikes", 0);
+                        likes += 1;
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putInt("numLikes", likes);
+                        editor.apply();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

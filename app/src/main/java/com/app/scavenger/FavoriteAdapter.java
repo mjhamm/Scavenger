@@ -65,18 +65,12 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     private LayoutInflater mInflater;
     private String mUserId = null;
     private boolean refresh = false;
-    private RefreshFavorites refreshFavorites;
 
-    FavoriteAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId, RefreshFavorites mListener) {
+    FavoriteAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId) {
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
         this.mUserId = userId;
-        refreshFavorites = mListener;
-    }
-
-    public interface RefreshFavorites {
-        void refresh(boolean isRefresh);
     }
 
     @NonNull
@@ -217,13 +211,13 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                         .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                mRecipeItems.remove(getAdapterPosition());
-                                notifyDataSetChanged();
                                 try {
                                     removeDataFromFirebase(recipeItem);
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
+                                mRecipeItems.remove(getAdapterPosition());
+                                notifyDataSetChanged();
                             }
                         })
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -384,8 +378,6 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
         }
     }
-
-
 
     private void removeDataFromFirebase(RecipeItem recipeItem) {
         String itemId = recipeItem.getmRecipeName() + recipeItem.getmSourceName() + recipeItem.getmCalories();

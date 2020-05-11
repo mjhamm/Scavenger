@@ -82,12 +82,6 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        
-    }
-
-    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
@@ -293,6 +287,7 @@ public class SignInActivity extends AppCompatActivity {
 
     // Authenticate Google Sign In with Firebase to make sure user exists and then can sign in
     private void firebaseAuthWithGoogle(String idToken) {
+        progressHolder.setVisibility(View.VISIBLE);
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -327,7 +322,6 @@ public class SignInActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SIGN_IN) {
-            progressHolder.setVisibility(View.VISIBLE);
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
