@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Toast;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -55,7 +56,6 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
     @Override
     protected void onStart() {
         super.onStart();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
         getInfoFromSharedPrefs();
         if (logged) {
             userId = mAuth.getUid();
@@ -86,12 +86,6 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
             Toast.makeText(this, "Match ingredients is On", Toast.LENGTH_SHORT).show();
         }
 
-//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-//                .requestProfile()
-//                .requestEmail()
-//                .requestIdToken(getString(R.string.clientId_web_googleSignIn))
-//                .build();
-
         fragment1 = SearchFragment.newInstance(userId, logged);
         fragment2 = FavoritesFragment.newInstance(userId, logged);
         fragment3 = new SettingsFragment();
@@ -112,27 +106,13 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
                     active = fragment1;
                     return true;
                 case R.id.action_favorites:
-                    if ((sharedPreferences.getInt("numLikes", 0) != sharedPreferences.getInt("actualNumLikes", 0)) && sharedPreferences.getInt("actualNumLikes", 0) != 0) {
-                        fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
-                    } else {
-                        fm.beginTransaction().hide(active).show(fragment2).commit();
+                    if (active != fragment2) {
+                        if (logged && (numLikes != actualNumLikes)) {
+                            fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
+                        } else {
+                            fm.beginTransaction().hide(active).show(fragment2).commit();
+                        }
                     }
-//                    if (logged) {
-//                        if (numLikes != actualNumLikes) {
-//                            retrieveLikesFromFirebase();
-//                            //numLikes = actualNumLikes;
-//                            fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
-//                        } else {
-//                            if (actualNumLikes == 0) {
-//                                fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
-//                            } else {
-//                                fm.beginTransaction().hide(active).show(fragment2).commit();
-//                            }
-//                        }
-//                    } else {
-//                        fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
-//                    }
-
                     active = fragment2;
                     return true;
                 case R.id.action_settings:
@@ -159,7 +139,7 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
         super.onDestroy();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("numLikes", 0);
+        editor.putInt("actualNumLikes", 0);
         editor.apply();
     }
 
@@ -172,11 +152,15 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
                         actualNumLikes = queryDocumentSnapshots.size();
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
-                        editor.putInt("numLikes", queryDocumentSnapshots.size());
                         editor.apply();
                         Log.d("Retrieve from Firebase", "actual Number of Likes: " + queryDocumentSnapshots.size());
                     }
                 });
         numLikes = actualNumLikes;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return true;
     }
 }

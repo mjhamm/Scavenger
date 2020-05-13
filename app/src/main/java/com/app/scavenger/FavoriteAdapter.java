@@ -19,6 +19,8 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -38,10 +40,12 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHolder> {
+public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHolder> implements Filterable {
 
     private static final String TAG = "LOG: ";
 
@@ -64,8 +68,10 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     private String userId = null;
 
     private ArrayList<RecipeItem> mRecipeItems;
+    private ArrayList<RecipeItem> mRecipeItemsFull;
     private Context mContext;
     private LayoutInflater mInflater;
+    private SharedPreferences sharedPreferences;
 
     private boolean refresh = false;
 
@@ -74,6 +80,9 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         this.mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
         this.userId = userId;
+        mRecipeItemsFull = new ArrayList<>(mRecipeItems);
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
 
     @NonNull
@@ -219,7 +228,13 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
+                                // CHECK - Let fragment know to reload
                                 mRecipeItems.remove(getAdapterPosition());
+                                int actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
+                                actualNumLikes -= 1;
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putInt("actualNumLikes", actualNumLikes);
+                                editor.apply();
                                 notifyDataSetChanged();
                             }
                         })
@@ -435,9 +450,9 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     }
 
     public void clearList() {
-        int size = mRecipeItems.size();
+        //int size = mRecipeItems.size();
         mRecipeItems.clear();
-        notifyItemRangeRemoved(0, size);
+        notifyDataSetChanged();
     }
 
     // Returns the total count of items in the list
@@ -455,4 +470,39 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     public int getItemViewType(int position) {
         return position;
     }
+
+    @Override
+    public Filter getFilter() {
+        return itemsFilter;
+    }
+
+    private Filter itemsFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            ArrayList<RecipeItem> filteredList = new ArrayList<>();
+
+            if (constraint == null || constraint.length() == 0) {
+                filteredList.addAll(mRecipeItemsFull);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+
+                for (RecipeItem item : mRecipeItemsFull) {
+                    if (item.getmRecipeName().toLowerCase().contains(filterPattern)) {
+                        filteredList.add(item);
+                    }
+                }
+            }
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            mRecipeItems.clear();
+            mRecipeItems.addAll((ArrayList) results.values);
+            notifyDataSetChanged();
+        }
+    };
 }

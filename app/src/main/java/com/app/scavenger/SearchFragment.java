@@ -269,6 +269,7 @@ public class SearchFragment extends Fragment {
     }
 
     private void writeRecycler(String response) {
+        recipeItemArrayList.clear();
         try {
             JSONObject obj = new JSONObject(response);
             JSONArray dataArray = obj.getJSONArray("hits");

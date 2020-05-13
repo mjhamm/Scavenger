@@ -5,15 +5,23 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.view.MenuCompat;
+import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -101,22 +109,15 @@ public class FavoritesFragment extends Fragment {
     public void onStart() {
         super.onStart();
         getInfoFromSharedPrefs();
-        if (!logged) {
-            favorite_message.setVisibility(View.VISIBLE);
-            favorite_message.setText(R.string.not_signed_in);
-            recipeItemList.clear();
-            if (adapter != null) {
-                adapter.clearList();
-            }
-            mFavoriteRecyclerView.setAdapter(adapter);
+        if (logged) {
+            retrieveLikesFromFirebase();
         }
-        retrieveLikesFromFirebase();
     }
 
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-
+        Log.d(TAG, "HIDDEN CHANGED");
         if (!hidden) {
             getInfoFromSharedPrefs();
             /* Added */
@@ -128,16 +129,6 @@ public class FavoritesFragment extends Fragment {
                 mFavoriteRecyclerView.setAdapter(adapter);
                 favorite_message.setVisibility(View.VISIBLE);
                 favorite_message.setText(R.string.not_signed_in);
-            } else {
-                if (sharedPreferences.getInt("numLikes", 0) == 0) {
-                    favorite_message.setVisibility(View.VISIBLE);
-                    favorite_message.setText(R.string.no_favorites);
-                } else {
-                    if ((sharedPreferences.getInt("numLikes", 0) != sharedPreferences.getInt("actualNumLikes", 0)) && sharedPreferences.getInt("actualNumLikes", 0) > 0) {
-                        favorite_message.setVisibility(View.GONE);
-                        retrieveLikesFromFirebase();
-                    }
-                }
             }
         }
     }
@@ -145,46 +136,6 @@ public class FavoritesFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-//        getInfoFromSharedPrefs();
-//         /* Added */
-//        if (!logged) {
-//            recipeItemList.clear();
-//            if (adapter != null) {
-//                adapter.clearList();
-//            }
-//            mFavoriteRecyclerView.setAdapter(adapter);
-//            favorite_message.setVisibility(View.VISIBLE);
-//            favorite_message.setText(R.string.not_signed_in);
-//        } else {
-//            if (sharedPreferences.getInt("numLikes", 0) == 0) {
-//                favorite_message.setVisibility(View.VISIBLE);
-//                favorite_message.setText(R.string.no_favorites);
-//            } else {
-//                if ((sharedPreferences.getInt("numLikes", 0) != sharedPreferences.getInt("actualNumLikes", 0)) && sharedPreferences.getInt("actualNumLikes", 0) > 0) {
-//                    favorite_message.setVisibility(View.GONE);
-//                    retrieveLikesFromFirebase();
-//                }
-//            }
-//        }
-        /* Added */
-//        if (actualNumLikes == 0) {
-//            favorite_message.setVisibility(View.VISIBLE);
-//            favorite_message.setText(R.string.no_favorites);
-//        } else {
-//            if (logged) {
-//                retrieveLikesFromFirebase();
-//            } else {
-//                favorite_message.setVisibility(View.VISIBLE);
-//                favorite_message.setText(R.string.not_signed_in);
-//                recipeItemList.clear();
-//                if (adapter != null) {
-//                    adapter.clearList();
-//                }
-//                mFavoriteRecyclerView.setAdapter(adapter);
-//            }
-//        }
-        //retrieveLikesFromFirebase();
-
     }
 
     @Override
@@ -197,7 +148,6 @@ public class FavoritesFragment extends Fragment {
         mFavoriteSearch.setMaxWidth(Integer.MAX_VALUE);
         mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
         progressHolder = view.findViewById(R.id.likes_progressHolder);
-
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
 
@@ -205,6 +155,20 @@ public class FavoritesFragment extends Fragment {
 
         mFavoriteRecyclerView.setHasFixedSize(true);
         mFavoriteRecyclerView.setItemViewCacheSize(6);
+        mFavoriteRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
+
+        mFavoriteSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
+                return false;
+            }
+        });
 
         return view;
     }
@@ -220,104 +184,83 @@ public class FavoritesFragment extends Fragment {
         }
     }
 
-    public boolean adapterNull() {
-        return adapter == null;
-    }
-
     private void retrieveLikesFromFirebase() {
-//        if (!logged) {
-//            favorite_message.setVisibility(View.VISIBLE);
-//            favorite_message.setText(R.string.not_signed_in);
-//            recipeItemList.clear();
-//            if (adapter != null) {
-//                adapter.clearList();
-//            }
-//            mFavoriteRecyclerView.setAdapter(adapter);
-//        } else {
-            CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
-            favoritesRef.orderBy("Timestamp", Query.Direction.DESCENDING).get()
-                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                        @Override
-                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                            recipeItemList.clear(); // added
-                            int actualNumLikes = 0;
-                            if (queryDocumentSnapshots.isEmpty()) {
-                                favorite_message.setVisibility(View.VISIBLE);
-                                favorite_message.setText(R.string.no_favorites);
-                            } else {
-//                                recipeItemList.clear();
-//                                if (adapter != null) {
-//                                    adapter.clearList();
-//                                }
-                                favorite_message.setVisibility(View.GONE);
-                                for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                                    RecipeItem item = new RecipeItem();
-                                    String itemId = documentSnapshot.getString(ITEM_ID);
-                                    String name = documentSnapshot.getString(ITEM_NAME);
-                                    String source = documentSnapshot.getString(ITEM_SOURCE);
-                                    String image = documentSnapshot.getString(ITEM_IMAGE);
-                                    String url = documentSnapshot.getString(ITEM_URL);
-                                    int serves = 0;
-                                    int cals = 0;
-                                    int carb = 1;
-                                    int fat = 1;
-                                    int protein = 1;
-                                    if (documentSnapshot.getLong(ITEM_YIELD) != null) {
-                                        serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
-                                    }
-                                    if (documentSnapshot.getLong(ITEM_CAL) != null) {
-                                        cals = documentSnapshot.getLong(ITEM_CAL).intValue();
-                                    }
-                                    if (documentSnapshot.getLong(ITEM_CARB) != null) {
-                                        carb = documentSnapshot.getLong(ITEM_CARB).intValue();
-                                    }
-                                    if (documentSnapshot.getLong(ITEM_FAT) != null) {
-                                        fat = documentSnapshot.getLong(ITEM_FAT).intValue();
-                                    }
-                                    if (documentSnapshot.getLong(ITEM_PROTEIN) != null) {
-                                        protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
-                                    }
-                                    ArrayList<String> att = new ArrayList<>();
-                                    ArrayList<String> ingr = new ArrayList<>();
-                                    if (documentSnapshot.exists()) {
-                                        att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
-                                        ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
-                                    }
-
-                                    item.setItemId(itemId);
-                                    item.setmRecipeName(name);
-                                    item.setmSourceName(source);
-                                    item.setmImageUrl(image);
-                                    item.setmRecipeURL(url);
-                                    item.setmServings(serves);
-                                    item.setmCalories(cals);
-                                    item.setmCarbs(carb);
-                                    item.setmFat(fat);
-                                    item.setmProtein(protein);
-                                    item.setmRecipeAttributes(att);
-                                    item.setmIngredients(ingr);
-
-                                    recipeItemList.add(item); // added
-//                                    if (!recipeItemList.contains(item)) {
-//                                        recipeItemList.add(item);
-//                                        actualNumLikes += 1;
-//                                    }
-                                }
-                                SharedPreferences.Editor editor = sharedPreferences.edit(); // added
-                                editor.putInt("actualNumLikes", queryDocumentSnapshots.size()); // added
-                                editor.putInt("numLikes", queryDocumentSnapshots.size());
-                                editor.apply(); // apply
+        CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
+        favoritesRef.orderBy("Timestamp", Query.Direction.DESCENDING).get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (queryDocumentSnapshots.isEmpty()) {
+                            favorite_message.setVisibility(View.VISIBLE);
+                            favorite_message.setText(R.string.no_favorites);
+                        } else {
+                            recipeItemList.clear();
+                            if (adapter != null) {
+                                adapter.clearList();
                             }
-//                            SharedPreferences.Editor editor = sharedPreferences.edit();
-//                            editor.putInt("actualNumLikes", actualNumLikes);
-//                            editor.putInt("numLikes", actualNumLikes);
-//                            editor.apply();
+                            favorite_message.setVisibility(View.GONE);
+                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                RecipeItem item = new RecipeItem();
+                                String itemId = documentSnapshot.getString(ITEM_ID);
+                                String name = documentSnapshot.getString(ITEM_NAME);
+                                String source = documentSnapshot.getString(ITEM_SOURCE);
+                                String image = documentSnapshot.getString(ITEM_IMAGE);
+                                String url = documentSnapshot.getString(ITEM_URL);
+                                int serves = 0;
+                                int cals = 0;
+                                int carb = 1;
+                                int fat = 1;
+                                int protein = 1;
+                                if (documentSnapshot.getLong(ITEM_YIELD) != null) {
+                                    serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
+                                }
+                                if (documentSnapshot.getLong(ITEM_CAL) != null) {
+                                    cals = documentSnapshot.getLong(ITEM_CAL).intValue();
+                                }
+                                if (documentSnapshot.getLong(ITEM_CARB) != null) {
+                                    carb = documentSnapshot.getLong(ITEM_CARB).intValue();
+                                }
+                                if (documentSnapshot.getLong(ITEM_FAT) != null) {
+                                    fat = documentSnapshot.getLong(ITEM_FAT).intValue();
+                                }
+                                if (documentSnapshot.getLong(ITEM_PROTEIN) != null) {
+                                    protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
+                                }
+                                ArrayList<String> att = new ArrayList<>();
+                                ArrayList<String> ingr = new ArrayList<>();
+                                if (documentSnapshot.exists()) {
+                                    att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
+                                    ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
+                                }
+                                item.setItemId(itemId);
+                                item.setmRecipeName(name);
+                                item.setmSourceName(source);
+                                item.setmImageUrl(image);
+                                item.setmRecipeURL(url);
+                                item.setmServings(serves);
+                                item.setmCalories(cals);
+                                item.setmCarbs(carb);
+                                item.setmFat(fat);
+                                item.setmProtein(protein);
+                                item.setmRecipeAttributes(att);
+                                item.setmIngredients(ingr);
+
+                                if (!recipeItemList.contains(item)) {
+                                    recipeItemList.add(item);
+                                }
+                            }
+
                         }
-                    });
-            adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
-            mFavoriteRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
-            mFavoriteRecyclerView.setAdapter(adapter);
-//        }
+                        SharedPreferences.Editor editor = sharedPreferences.edit(); // added
+                        editor.putInt("actualNumLikes", queryDocumentSnapshots.size()); // added
+                        editor.putInt("numLikes", queryDocumentSnapshots.size());
+                        editor.apply(); // apply
+                        Log.d(TAG, "Recipe List Size: " + recipeItemList.size());
+                    }
+                });
+        numLikes = actualNumLikes;
+        adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
+        mFavoriteRecyclerView.setAdapter(adapter);
     }
 
     //boolean that returns true if you are connected to internet and false if not
