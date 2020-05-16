@@ -34,7 +34,7 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
         adapter.setClickListener(this);
         helpRecycler.setAdapter(adapter);
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(helpRecycler.getContext(), layoutManager.getOrientation());
         helpRecycler.addItemDecoration(dividerItemDecoration);
 

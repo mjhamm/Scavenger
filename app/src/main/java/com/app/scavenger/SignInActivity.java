@@ -57,7 +57,6 @@ public class SignInActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 101;
     private static final String TAG = "LOG: ";
 
-    private Context mContext;
     private GoogleSignInClient mGoogleSignInClient;
     private TextView signUpText, forgotPass, signInTerms;
     private ImageButton backButton;
@@ -85,19 +84,18 @@ public class SignInActivity extends AppCompatActivity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
-        mContext = getApplicationContext();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestProfile()
                 .requestEmail()
                 .requestIdToken(getString(R.string.clientId_web_googleSignIn))
                 .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         getInfoFromSharedPrefs();
 
         mAuth = FirebaseAuth.getInstance();
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         AppCompatButton mGoogleSignIn = findViewById(R.id.google_signIn);
         signInButton = findViewById(R.id.signIn_Button);
@@ -121,7 +119,7 @@ public class SignInActivity extends AppCompatActivity {
         ClickableSpan clickableSpanTerms = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                Toast.makeText(mContext, "Terms & Conditions", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Terms & Conditions", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -135,7 +133,7 @@ public class SignInActivity extends AppCompatActivity {
         ClickableSpan clickableSpanPrivacy = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                Toast.makeText(mContext, "Privacy Policy", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Privacy Policy", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -161,10 +159,10 @@ public class SignInActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                Toast.makeText(mContext, "Sign In Successful", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), "Sign In Successful", Toast.LENGTH_SHORT).show();
                             } else {
                                 Log.w(TAG, "SignInWithEmail:failure", task.getException());
-                                Toast.makeText(mContext, "Sign in Failed", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), "Sign in Failed", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
@@ -230,14 +228,14 @@ public class SignInActivity extends AppCompatActivity {
 
         // Forgot password activity launch textview
         forgotPass.setOnClickListener(v -> {
-            Intent intent = new Intent(mContext, ForgotPassword.class);
+            Intent intent = new Intent(this, ForgotPassword.class);
             startActivity(intent);
         });
 
         // No account signup activity launch textview
         signUpText.setTextColor(Color.BLUE);
         signUpText.setOnClickListener(v -> {
-            Intent intent = new Intent(mContext, SignUpActivity.class);
+            Intent intent = new Intent(this, SignUpActivity.class);
             startActivity(intent);
             finish();
         });
@@ -245,7 +243,7 @@ public class SignInActivity extends AppCompatActivity {
         // Sign in with google button
         mGoogleSignIn.setOnClickListener(v -> {
             if (!checkConnection()) {
-                new MaterialAlertDialogBuilder(mContext)
+                new MaterialAlertDialogBuilder(this)
                         .setTitle("No Internet Connection")
                         .setMessage("You don't have an internet connection. Please reconnect and try to Sign In again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -266,7 +264,6 @@ public class SignInActivity extends AppCompatActivity {
     private void sendDataToFirebase(FirebaseUser user) {
         if (user != null) {
             Map<String, Object> data = new HashMap<>();
-            data.put("userId", user.getUid());
             data.put("name", user.getDisplayName());
             data.put("email", user.getEmail());
             db.collection("Users").whereEqualTo("userId", user.getUid()).get()
@@ -289,7 +286,6 @@ public class SignInActivity extends AppCompatActivity {
 
     // Authenticate Google Sign In with Firebase to make sure user exists and then can sign in
     private void firebaseAuthWithGoogle(String idToken) {
-        progressHolder.setVisibility(View.VISIBLE);
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -299,7 +295,7 @@ public class SignInActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(mContext, "Signed In Successfully", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Signed In Successfully", Toast.LENGTH_SHORT).show();
                             if (user != null) {
                                 updatePrefInfo(true, user.getUid());
                                 sendDataToFirebase(user);
@@ -307,7 +303,7 @@ public class SignInActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(mContext, "Authentication Failed. Please try again or reach out to Help", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Authentication Failed. Please try again or reach out to Help", Toast.LENGTH_SHORT).show();
                         }
 
                         finish();
@@ -324,21 +320,22 @@ public class SignInActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SIGN_IN) {
+            progressHolder.setVisibility(View.VISIBLE);
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
                 firebaseAuthWithGoogle(account.getIdToken());
-                //Toast.makeText(mContext, "Signed In Successfully", Toast.LENGTH_SHORT).show();
             } catch (ApiException e) {
                 Log.d(TAG, "Google sign in failed", e);
+                progressHolder.setVisibility(View.GONE);
             }
         }
     }
 
     //boolean that returns true if you are connected to internet and false if not
     private boolean checkConnection() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivityManager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected();
     }
@@ -352,7 +349,7 @@ public class SignInActivity extends AppCompatActivity {
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
     }

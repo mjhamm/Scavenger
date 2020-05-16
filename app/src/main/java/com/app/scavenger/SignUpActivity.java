@@ -7,8 +7,11 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.preference.PreferenceManager;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -31,6 +34,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -45,7 +49,6 @@ public class SignUpActivity extends AppCompatActivity {
     private static final int RC_SIGN_UP = 102;
     public static final String TAG = "LOG: ";
 
-    private Context mContext;
     private GoogleSignInClient mGoogleSignUpClient;
     private SharedPreferences sharedPreferences;
     private EditText fullName, emailEdit, passEdit, passConfirmEdit;
@@ -81,10 +84,10 @@ public class SignUpActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
 
-        mContext = getApplicationContext();
+        //mContext = getApplicationContext();
         mAuth = FirebaseAuth.getInstance();
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         getInfoFromSharedPrefs();
 
@@ -93,7 +96,7 @@ public class SignUpActivity extends AppCompatActivity {
                 .requestProfile()
                 .requestEmail()
                 .build();
-        mGoogleSignUpClient = GoogleSignIn.getClient(mContext, gso);
+        mGoogleSignUpClient = GoogleSignIn.getClient(this, gso);
 
 
         fullName = findViewById(R.id.fullName_editText);
@@ -224,10 +227,24 @@ public class SignUpActivity extends AppCompatActivity {
 
 
         googleSignUpButton.setOnClickListener(v -> {
-            if (termsCheck.isChecked()) {
-                googleSignUp();
+            if (!checkConnection()) {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("No Internet Connection")
+                        .setMessage("You don't have an internet connection. Please reconnect and try to Sign In again.")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .create()
+                        .show();
             } else {
-                Toast.makeText(mContext, "Please accept the Terms & Conditions", Toast.LENGTH_SHORT).show();
+                if (termsCheck.isChecked()) {
+                    googleSignUp();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please accept the Terms & Conditions", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         
@@ -262,7 +279,6 @@ public class SignUpActivity extends AppCompatActivity {
     // Sends user information to Firebase
     private void sendDataToFirebase(FirebaseUser user) {
         Map<String, Object> data = new HashMap<>();
-        //data.put("userId", user.getUid());
         data.put("name", user.getDisplayName());
         data.put("email", user.getEmail());
         db.collection("Users").whereEqualTo("userId", user.getUid()).get()
@@ -293,7 +309,7 @@ public class SignUpActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signUpWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(mContext, "Signed Up Successfully", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Signed Up Successfully", Toast.LENGTH_SHORT).show();
                             if (user != null) {
                                 updatePrefInfo(true, user.getUid());
                                 sendDataToFirebase(user);
@@ -301,7 +317,7 @@ public class SignUpActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signUpWithCredential:failure", task.getException());
-                            Toast.makeText(mContext, "Authentication Failed. Please try again or reach out to Help", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Authentication Failed. Please try again or reach out to Help", Toast.LENGTH_SHORT).show();
                         }
 
                         finish();
@@ -325,6 +341,7 @@ public class SignUpActivity extends AppCompatActivity {
                 firebaseAuthWithGoogle(account.getIdToken());
             } catch (ApiException e) {
                 Log.d(TAG, "Google sign up failed", e);
+                progressHolder.setVisibility(View.GONE);
             }
         }
     }
@@ -338,7 +355,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
     }
@@ -358,5 +375,12 @@ public class SignUpActivity extends AppCompatActivity {
         } else {
             signUpButton.setEnabled(false);
         }
+    }
+
+    //boolean that returns true if you are connected to internet and false if not
+    private boolean checkConnection() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnected();
     }
 }

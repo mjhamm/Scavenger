@@ -29,12 +29,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.card.MaterialCardView;
@@ -45,7 +42,6 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -104,16 +100,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     public void onBindViewHolder(@NonNull SearchAdapter.ViewHolder holder, int position) {
         RecipeItem item = mRecipeItems.get(position);
 
-        // Data from the recipe api
-        String imageURL = item.getmImageUrl();
-        int servings_int = item.getmServings();
-        int calories_int = item.getmCalories();
-        int carbs_int = item.getmCarbs();
-        int fat_int = item.getmFat();
-        int protein_int  = item.getmProtein();
-        ArrayList<String> ingredients_list = item.getmIngredients();
-        ArrayList<String> attributes_list = item.getmRecipeAttributes();
-
         if (item.isClicked()) {
             holder.mRelativeLayout.setVisibility(View.VISIBLE);
         } else {
@@ -128,46 +114,22 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             holder.favorite_button.setImageResource(R.mipmap.heart_icon_outline_white);
         }
 
-        TextView name = holder.recipeName;
-        TextView source = holder.recipeSource;
-        ImageView image = holder.recipeImage;
-        TextView servings = holder.recipeServings;
-        TextView calories = holder.recipeCalories;
-        TextView carbs = holder.recipeCarbs;
-        TextView fat = holder.recipeFat;
-        TextView protein = holder.recipeProtein;
-        TextView ingredients = holder.recipeIngredients;
-        TextView attributes = holder.recipeAttributes;
-
-        String servings_string = String.format(mContext.getString(R.string.servings_text),servings_int);
-        String calories_string = String.format(Locale.getDefault(), "%d", calories_int);
-        String carbs_string = String.format(Locale.getDefault(),"%d", carbs_int);
-        String fat_string = String.format(Locale.getDefault(),"%d", fat_int);
-        String protein_string = String.format(Locale.getDefault(),"%d", protein_int);
-
-        //Setting all items in each recipe item ------------
-//        GlideApp.with(mContext)
-//                .load(imageURL)
-//                .skipMemoryCache(true)
-//                .centerCrop()
-//                .diskCacheStrategy(DiskCacheStrategy.NONE)
-//                .into(image);
-
         Picasso.get()
-                .load(imageURL)
+                .load(item.getmImageUrl())
                 .fit()
                 .memoryPolicy(MemoryPolicy.NO_CACHE,MemoryPolicy.NO_STORE)
-                .into(image);
+                .into(holder.recipeImage);
 
-        name.setText(item.getmRecipeName());
-        source.setText(item.getmSourceName());
-        servings.setText(servings_string);
-        calories.setText(calories_string);
-        carbs.setText(carbs_string);
-        fat.setText(fat_string);
-        protein.setText(protein_string);
-        ingredients.setText(TextUtils.join("", ingredients_list));
-        attributes.setText(TextUtils.join("", attributes_list));
+        holder.recipeName.setText(item.getmRecipeName());
+        holder.recipeSource.setText(item.getmSourceName());
+        holder.recipeServings.setText(String.format(mContext.getString(R.string.servings_text),item.getmServings()));
+
+        holder.recipeCalories.setText(String.valueOf(item.getmCalories()));
+        holder.recipeCarbs.setText(String.valueOf(item.getmCarbs()));
+        holder.recipeFat.setText(String.valueOf(item.getmFat()));
+        holder.recipeProtein.setText(String.valueOf(item.getmProtein()));
+        holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
+        holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
     }
 
     private void saveDataToFirebase(String itemId, String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
@@ -237,7 +199,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         private ImageView recipeImage;
         private MaterialCardView mNutritionCard, mViewRecipe;
         private RelativeLayout mRelativeLayout;
-        private RelativeLayout mConstraintLayout;
         private RecipeItem item;
         private ImageButton more_button, favorite_button;
         private String reportReason = null;
@@ -249,6 +210,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             recipeName = itemView.findViewById(R.id.recipe_name);
             recipeSource = itemView.findViewById(R.id.recipe_source);
             recipeImage = itemView.findViewById(R.id.recipe_image);
+            favorite_button = itemView.findViewById(R.id.recipe_favorite);
+            more_button = itemView.findViewById(R.id.more_button);
+            mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
+            mRelativeLayout = itemView.findViewById(R.id.ingredients_relativeLayout);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
             recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
@@ -257,11 +222,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             recipeProtein = itemView.findViewById(R.id.protein_amount);
             mNutritionCard = itemView.findViewById(R.id.facts_cardView);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
-            favorite_button = itemView.findViewById(R.id.recipe_favorite);
-            mRelativeLayout = itemView.findViewById(R.id.ingredients_relativeLayout);
-            mConstraintLayout = itemView.findViewById(R.id.card_constraintLayout);
-            more_button = itemView.findViewById(R.id.more_button);
-            mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
+
             itemView.setOnClickListener(this);
 
             // Recipe Image Click Listener

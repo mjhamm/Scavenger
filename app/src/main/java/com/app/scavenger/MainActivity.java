@@ -4,29 +4,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
-import android.view.View;
 import android.widget.Toast;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity { // Account.SendDataToMain {
 
@@ -74,7 +63,6 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -86,8 +74,8 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
             Toast.makeText(this, "Match ingredients is On", Toast.LENGTH_SHORT).show();
         }
 
-        fragment1 = SearchFragment.newInstance(userId, logged);
-        fragment2 = FavoritesFragment.newInstance(userId, logged);
+        fragment1 = SearchFragment.newInstance();
+        fragment2 = FavoritesFragment.newInstance();
         fragment3 = new SettingsFragment();
         active = fragment1;
 
@@ -126,7 +114,7 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         match = sharedPreferences.getBoolean("match", false);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
@@ -137,7 +125,7 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("actualNumLikes", 0);
         editor.apply();

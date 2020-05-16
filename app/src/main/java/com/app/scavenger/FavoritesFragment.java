@@ -90,11 +90,9 @@ public class FavoritesFragment extends Fragment {
     }
 
     // Create a new instance of Favorites Fragment
-    static FavoritesFragment newInstance(String userId, boolean logged) {
+    static FavoritesFragment newInstance() {
         FavoritesFragment favoritesFragment = new FavoritesFragment();
         Bundle args = new Bundle();
-        args.putString("userId", userId);
-        args.putBoolean("logged", logged);
         favoritesFragment.setArguments(args);
         return favoritesFragment;
     }
@@ -157,37 +155,36 @@ public class FavoritesFragment extends Fragment {
         mFavoriteRecyclerView.setItemViewCacheSize(6);
         mFavoriteRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
 
-        mFavoriteSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
-                return false;
-            }
-        });
-
         return view;
     }
 
-    private void retryConnectionInfo() {
-        try {
-            // Reload the fragment
-            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-            ft.detach(this).attach(this).commit();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            Log.d(TAG, e.toString());
-        }
-    }
+//    private void retryConnectionInfo() {
+//        try {
+//            // Reload the fragment
+//            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+//            ft.detach(this).attach(this).commit();
+//        } catch (NullPointerException e) {
+//            e.printStackTrace();
+//            Log.d(TAG, e.toString());
+//        }
+//    }
 
     private void retrieveLikesFromFirebase() {
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
         favoritesRef.orderBy("Timestamp", Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    String itemId;
+                    String name;
+                    String source;
+                    String image;
+                    String url;
+                    int serves = 0;
+                    int cals = 0;
+                    int carb = 1;
+                    int fat = 1;
+                    int protein = 1;
+                    ArrayList<String> att = new ArrayList<>();
+                    ArrayList<String> ingr = new ArrayList<>();
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (queryDocumentSnapshots.isEmpty()) {
@@ -201,16 +198,11 @@ public class FavoritesFragment extends Fragment {
                             favorite_message.setVisibility(View.GONE);
                             for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                                 RecipeItem item = new RecipeItem();
-                                String itemId = documentSnapshot.getString(ITEM_ID);
-                                String name = documentSnapshot.getString(ITEM_NAME);
-                                String source = documentSnapshot.getString(ITEM_SOURCE);
-                                String image = documentSnapshot.getString(ITEM_IMAGE);
-                                String url = documentSnapshot.getString(ITEM_URL);
-                                int serves = 0;
-                                int cals = 0;
-                                int carb = 1;
-                                int fat = 1;
-                                int protein = 1;
+                                itemId = documentSnapshot.getString(ITEM_ID);
+                                name = documentSnapshot.getString(ITEM_NAME);
+                                source = documentSnapshot.getString(ITEM_SOURCE);
+                                image = documentSnapshot.getString(ITEM_IMAGE);
+                                url = documentSnapshot.getString(ITEM_URL);
                                 if (documentSnapshot.getLong(ITEM_YIELD) != null) {
                                     serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
                                 }
@@ -226,8 +218,6 @@ public class FavoritesFragment extends Fragment {
                                 if (documentSnapshot.getLong(ITEM_PROTEIN) != null) {
                                     protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
                                 }
-                                ArrayList<String> att = new ArrayList<>();
-                                ArrayList<String> ingr = new ArrayList<>();
                                 if (documentSnapshot.exists()) {
                                     att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
                                     ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
@@ -249,7 +239,6 @@ public class FavoritesFragment extends Fragment {
                                     recipeItemList.add(item);
                                 }
                             }
-
                         }
                         SharedPreferences.Editor editor = sharedPreferences.edit(); // added
                         editor.putInt("actualNumLikes", queryDocumentSnapshots.size()); // added
@@ -264,11 +253,11 @@ public class FavoritesFragment extends Fragment {
     }
 
     //boolean that returns true if you are connected to internet and false if not
-    private boolean checkConnection() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnected();
-    }
+//    private boolean checkConnection() {
+//        ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+//        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+//        return activeNetwork != null && activeNetwork.isConnected();
+//    }
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {

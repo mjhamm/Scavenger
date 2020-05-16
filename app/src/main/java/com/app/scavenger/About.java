@@ -40,7 +40,7 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
         adapter.setClickListener(this);
         aboutRecycler.setAdapter(adapter);
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(aboutRecycler.getContext(), layoutManager.getOrientation());
         aboutRecycler.addItemDecoration(dividerItemDecoration);
 

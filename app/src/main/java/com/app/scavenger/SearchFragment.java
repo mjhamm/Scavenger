@@ -5,43 +5,26 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SimpleItemAnimator;
-import androidx.transition.TransitionManager;
-
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.ListPreloader;
-import com.bumptech.glide.integration.recyclerview.RecyclerViewPreloader;
-import com.bumptech.glide.util.FixedPreloadSizeProvider;
-import com.bumptech.glide.util.ViewPreloadSizeProvider;
 import com.facebook.shimmer.ShimmerFrameLayout;
-import com.google.android.material.internal.ParcelableSparseArray;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 import retrofit2.Call;
@@ -81,11 +64,9 @@ public class SearchFragment extends Fragment {
         // Required empty public constructor
     }
 
-    static SearchFragment newInstance(String userId, boolean logged) {
+    static SearchFragment newInstance() {
         SearchFragment searchFragment = new SearchFragment();
         Bundle args = new Bundle();
-        args.putString("userId", userId);
-        args.putBoolean("logged", logged);
         searchFragment.setArguments(args);
         return searchFragment;
     }
@@ -94,11 +75,7 @@ public class SearchFragment extends Fragment {
     public void onStart() {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            logged = true;
-        } else {
-            logged = false;
-        }
+        logged = currentUser != null;
     }
 
     @Override
@@ -156,7 +133,7 @@ public class SearchFragment extends Fragment {
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
         mSearchRecyclerView.setHasFixedSize(true);
         mSearchRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mSearchRecyclerView.setItemViewCacheSize(1);
+        mSearchRecyclerView.setItemViewCacheSize(10);
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -286,11 +263,28 @@ public class SearchFragment extends Fragment {
             JSONObject obj = new JSONObject(response);
             JSONArray dataArray = obj.getJSONArray("hits");
 
-            for (int i = 0; i < dataArray.length(); i++) {
+            JSONObject hits;
+            JSONObject recipes;
+            JSONObject ing;
+            JSONObject totalNutrients;
+            JSONObject carbs;
+            JSONObject fat;
+            JSONObject protein;
 
+            JSONArray dietLabelsArray;
+            JSONArray healthLabelsArray;
+            JSONArray ingredientsArray;
+
+            ArrayList<String> list_healthLabels;
+            ArrayList<String> list_ingredients;
+
+            String labels;
+            String total_ing;
+
+            for (int i = 0; i < dataArray.length(); i++) {
                 RecipeItem item = new RecipeItem();
-                JSONObject hits = dataArray.getJSONObject(i);
-                JSONObject recipes = hits.getJSONObject("recipe");
+                hits = dataArray.getJSONObject(i);
+                recipes = hits.getJSONObject("recipe");
                 item.setmImageUrl(recipes.getString("image"));
                 item.setmRecipeName(recipes.getString("label"));
                 item.setmSourceName(recipes.getString("source"));
@@ -298,16 +292,14 @@ public class SearchFragment extends Fragment {
                 item.setmServings(recipes.getInt("yield"));
                 item.setmCalories(recipes.getInt("calories"));
 
-                ArrayList<String> list_healthLabels = new ArrayList<>();
-
-                JSONArray dietLabelsArray = recipes.getJSONArray("dietLabels");
+                dietLabelsArray = recipes.getJSONArray("dietLabels");
+                list_healthLabels = new ArrayList<>();
                 for (int j = 0; j < dietLabelsArray.length(); j++) {
                     String diets = dietLabelsArray.getString(j);
                     list_healthLabels.add("\n\u2022 " + diets + "\n");
                 }
 
-                JSONArray healthLabelsArray = recipes.getJSONArray("healthLabels");
-                String labels;
+                healthLabelsArray = recipes.getJSONArray("healthLabels");
                 for (int k = 0; k < healthLabelsArray.length(); k++) {
                     if (healthLabelsArray.length() <= 3) {
                         labels = healthLabelsArray.getString(k);
@@ -317,25 +309,37 @@ public class SearchFragment extends Fragment {
                 item.setmRecipeAttributes(list_healthLabels);
 
                 //Ingredients
-                JSONArray ingredientsArray = recipes.getJSONArray("ingredients");
-                ArrayList<String> list_ingredients = new ArrayList<>();
+                ingredientsArray = recipes.getJSONArray("ingredients");
+                list_ingredients = new ArrayList<>();
                 for (int m = 0; m < ingredientsArray.length(); m++) {
-                    JSONObject ing = ingredientsArray.getJSONObject(m);
-                    String total_ing = ing.getString("text");
+                    ing = ingredientsArray.getJSONObject(m);
+                    total_ing = ing.getString("text");
                     list_ingredients.add("\n\u2022 " + total_ing + "\n");
                     item.setmIngredients(list_ingredients);
                 }
 
-                JSONObject totalNutrients = recipes.getJSONObject("totalNutrients");
+                totalNutrients = recipes.getJSONObject("totalNutrients");
                 //Carbs
-                JSONObject carbs = totalNutrients.getJSONObject("CHOCDF");
-                item.setmCarbs(carbs.getInt("quantity"));
+                carbs = totalNutrients.getJSONObject("CHOCDF");
+                if (carbs.getInt("quantity") > 0 && carbs.getInt("quantity") < 1) {
+                    item.setmCarbs(1);
+                } else {
+                    item.setmCarbs(carbs.getInt("quantity"));
+                }
                 //Fat
-                JSONObject fat = totalNutrients.getJSONObject("FAT");
-                item.setmFat(fat.getInt("quantity"));
+                fat = totalNutrients.getJSONObject("FAT");
+                if (fat.getInt("quantity") > 0 && fat.getInt("quantity") < 1) {
+                    item.setmFat(1);
+                } else {
+                    item.setmFat(fat.getInt("quantity"));
+                }
                 //Protein
-                JSONObject protein = totalNutrients.getJSONObject("PROCNT");
-                item.setmProtein(protein.getInt("quantity"));
+                protein = totalNutrients.getJSONObject("PROCNT");
+                if (protein.getInt("quantity") > 0 && protein.getInt("quantity") < 1) {
+                    item.setmProtein(1);
+                } else {
+                    item.setmProtein(protein.getInt("quantity"));
+                }
 
                 item.setItemId(randomItemId(item));
 

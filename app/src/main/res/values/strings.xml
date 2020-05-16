@@ -57,5 +57,11 @@
     <string name="submit">Submit</string>
     <string name="send_feedback">Send Feedback</string>
     <string name="feedback_edittext">What would you like us to improve?</string>
+    <string name="calories">Calories</string>
+    <string name="carbs">Carbs</string>
+    <string name="fat">Fat</string>
+    <string name="protein">Protein</string>
+    <string name="ingredients">Ingredients</string>
+    <string name="nutrition_facts">Nutrition Facts</string>
 
 </resources>
