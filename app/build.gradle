@@ -47,10 +47,17 @@ dependencies {
 
 
     //GLIDE
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
-    implementation('com.github.bumptech.glide:glide:4.11.0') {
-        exclude group: "com.android.support"
-    }
+//    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+//    implementation('com.github.bumptech.glide:glide:4.11.0') {
+//        exclude group: "com.android.support"
+//    }
+//
+//    implementation ("com.github.bumptech.glide:recyclerview-integration:4.11.0") {
+//        // Excludes the support library because it's already included by Glide.
+//        transitive = false
+//    }
+
+    implementation 'com.squareup.picasso:picasso:2.71828'
     //SHIMMER
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
     //RETROFIT

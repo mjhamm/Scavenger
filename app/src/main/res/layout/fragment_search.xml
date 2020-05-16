@@ -99,10 +99,11 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:fontFamily="@font/roboto_condensed_regular"
-        android:textSize="24sp"
+        android:textSize="22dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:textColor="@android:color/black"
-        android:gravity="center"
-        android:text="Startup Message"/>
+        android:gravity="center"/>
 
     <TextView
         android:id="@+id/match_message"
@@ -111,6 +112,8 @@
         android:layout_below="@id/startup_message"
         android:fontFamily="@font/roboto_condensed_regular"
         android:textSize="18sp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:textColor="@android:color/black"
         android:layout_centerInParent="true"
         android:visibility="gone"

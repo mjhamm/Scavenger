@@ -140,6 +140,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             mGoogleSignInClient.signOut();
         }
 
+        // CHECK: Let search fragment know to reload on sign out
+
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("logged", false);
         editor.putString("name", null);

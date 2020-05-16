@@ -40,6 +40,8 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -135,11 +137,17 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         String fat_string = String.format(Locale.getDefault(),"%d", fat_int);
         String protein_string = String.format(Locale.getDefault(),"%d", protein_int);
 
-        Glide.with(mContext)
+//        Glide.with(mContext)
+//                .load(imageURL)
+//                .skipMemoryCache(false)
+//                .centerCrop()
+//                .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                .into(image);
+
+        Picasso.get()
                 .load(imageURL)
-                .skipMemoryCache(false)
-                .centerCrop()
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .fit()
+                .memoryPolicy(MemoryPolicy.NO_CACHE,MemoryPolicy.NO_STORE)
                 .into(image);
 
         name.setText(item.getmRecipeName());
@@ -407,6 +415,8 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "Successfully removed favorite");
 
+                        // Alert Favorites Fragment to refresh data.
+                        // If list is empty, show message that no likes
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

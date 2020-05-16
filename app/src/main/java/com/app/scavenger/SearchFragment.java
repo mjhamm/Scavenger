@@ -26,6 +26,12 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.ListPreloader;
+import com.bumptech.glide.integration.recyclerview.RecyclerViewPreloader;
+import com.bumptech.glide.util.FixedPreloadSizeProvider;
+import com.bumptech.glide.util.ViewPreloadSizeProvider;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.material.internal.ParcelableSparseArray;
 import com.google.firebase.auth.FirebaseAuth;
@@ -149,7 +155,8 @@ public class SearchFragment extends Fragment {
 
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
         mSearchRecyclerView.setHasFixedSize(true);
-        mSearchRecyclerView.setItemViewCacheSize(6);
+        mSearchRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mSearchRecyclerView.setItemViewCacheSize(1);
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -170,11 +177,6 @@ public class SearchFragment extends Fragment {
         });
 
         return view;
-    }
-
-    void getData(String userId, boolean logged) {
-        this.userId = userId;
-        this.logged = logged;
     }
 
     @Override
@@ -265,8 +267,18 @@ public class SearchFragment extends Fragment {
     }
 
     private String randomItemId(RecipeItem item) {
-        return item.getmRecipeName() + item.getmSourceName() + item.getmCalories();
+        String updateRecipeName = item.getmRecipeName();
+        String updateRecipeSource = item.getmSourceName();
+        if (item.getmRecipeName().contains("/")) {
+            updateRecipeName = item.getmRecipeName().replace("/", "");
+        }
+        if (item.getmSourceName().contains("/")) {
+            updateRecipeSource = item.getmSourceName().replace("/", "");
+        }
+        return updateRecipeName + updateRecipeSource + item.getmCalories();
     }
+
+
 
     private void writeRecycler(String response) {
         recipeItemArrayList.clear();
@@ -338,8 +350,7 @@ public class SearchFragment extends Fragment {
 
             if (recipeItemArrayList.isEmpty()) {
                 startup_message.setVisibility(View.VISIBLE);
-                startup_message.setText("We Couldn't Find Any Recipes :(\n" +
-                        "Sorry About That!");
+                startup_message.setText("We Couldn't Find Any Recipes :(\n" + "Sorry About That!");
                 matchMessage.setVisibility(View.VISIBLE);
             }
         } catch (JSONException e) {

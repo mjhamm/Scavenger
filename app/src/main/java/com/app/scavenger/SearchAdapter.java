@@ -1,5 +1,7 @@
 package com.app.scavenger;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -41,6 +43,8 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -142,11 +146,17 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         String protein_string = String.format(Locale.getDefault(),"%d", protein_int);
 
         //Setting all items in each recipe item ------------
-        GlideApp.with(mContext)
+//        GlideApp.with(mContext)
+//                .load(imageURL)
+//                .skipMemoryCache(true)
+//                .centerCrop()
+//                .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                .into(image);
+
+        Picasso.get()
                 .load(imageURL)
-                .skipMemoryCache(false)
-                .centerCrop()
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .fit()
+                .memoryPolicy(MemoryPolicy.NO_CACHE,MemoryPolicy.NO_STORE)
                 .into(image);
 
         name.setText(item.getmRecipeName());
@@ -258,11 +268,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             recipeImage.setOnClickListener(v -> {
                 int position = getAdapterPosition();
 
-                final Animation animationUp;
-                final Animation animationDown;
-
-                animationUp = AnimationUtils.loadAnimation(mContext, R.anim.slide_up);
-                animationDown = AnimationUtils.loadAnimation(mContext, R.anim.slide_down);
+//                final Animation animationUp;
+//                final Animation animationDown;
+//
+//                animationUp = AnimationUtils.loadAnimation(mContext, R.anim.slide_up);
+//                animationDown = AnimationUtils.loadAnimation(mContext, R.anim.slide_down);
 
 
                 // Adapter Position
@@ -271,19 +281,21 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 // Checks if the item is clicked
                 // Sets the layout visible/gone
                 if (item.isClicked()) {
+                    viewGoneAnimator(mRelativeLayout);
                     //mRelativeLayout.startAnimation(animationUp);
-                    mRelativeLayout.setVisibility(View.GONE);
-                    mRelativeLayout.startAnimation(animationUp);
+                    //mRelativeLayout.setVisibility(View.GONE);
+                    //mRelativeLayout.startAnimation(animationUp);
                     item.setClicked(false);
-                    //notifyItemChanged(position);
                 } else {
+                    viewVisibleAnimator(mRelativeLayout);
                     //mRelativeLayout.startAnimation(animationDown);
-                    mRelativeLayout.setVisibility(View.VISIBLE);
-                    mRelativeLayout.startAnimation(animationDown);
+                    //mRelativeLayout.setVisibility(View.VISIBLE);
+                    //mRelativeLayout.startAnimation(animationDown);
                     item.setClicked(true);
-                    //notifyItemChanged(position);
                 }
             });
+
+
 
             //Creates animation for Love button - Animation to grow and shrink heart when clicked - light
             Animation scaleAnimation_Favorite = new ScaleAnimation(0, 1, 0, 1, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
@@ -474,6 +486,34 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         private String retrieveRecipeName() {
             return item.getmRecipeName();
         }
+    }
+
+    private void viewGoneAnimator(View view) {
+
+        view.animate()
+                .alpha(0f)
+                .setDuration(500)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        view.setVisibility(View.GONE);
+                    }
+                });
+
+    }
+
+    private void viewVisibleAnimator(View view) {
+
+        view.animate()
+                .alpha(1f)
+                .setDuration(500)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        view.setVisibility(View.VISIBLE);
+                    }
+                });
+
     }
 
     private static void openInDefaultBrowser(Context context, String url) {

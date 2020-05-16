@@ -109,6 +109,8 @@ public class SignInActivity extends AppCompatActivity {
         progressHolder = findViewById(R.id.signIn_progressHolder);
         backButton = findViewById(R.id.signIn_back);
 
+        // CHECK: Let search fragment know to reload on sign in
+
         backButton.setOnClickListener(v -> {
             finish();
         });
