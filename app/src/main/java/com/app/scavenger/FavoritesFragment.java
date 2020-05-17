@@ -14,6 +14,7 @@ import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
@@ -152,7 +153,8 @@ public class FavoritesFragment extends Fragment {
         adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
 
         mFavoriteRecyclerView.setHasFixedSize(true);
-        mFavoriteRecyclerView.setItemViewCacheSize(6);
+        mFavoriteRecyclerView.setItemViewCacheSize(10);
+        mFavoriteRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mFavoriteRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
 
         return view;

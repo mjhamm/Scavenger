@@ -15,23 +15,28 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity { // Account.SendDataToMain {
+public class MainActivity extends AppCompatActivity {
 
     //private static final String TAG = "LOG: ";
 
+    private static final String ITEM_ID = "itemId";
     private static final String USER_COLLECTION = "Users";
     private static final String USER_FAVORITES = "Favorites";
 
     private Fragment fragment1 = null;
     private Fragment fragment2 = null;
     private Fragment fragment3 = null;
-    private final FragmentManager fm = getSupportFragmentManager();//
+    private final FragmentManager fm = getSupportFragmentManager();
     private Fragment active = null;
     private FirebaseAuth mAuth;
+    private DatabaseHelper myDB;
     private SharedPreferences sharedPreferences;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private ArrayList<String> itemIds;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -68,13 +73,17 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
 
         BottomNavigationView mNavView = findViewById(R.id.bottom_nav_view);
 
+        myDB = DatabaseHelper.getInstance(this);
+
+        itemIds = new ArrayList<>();
+
         getInfoFromSharedPrefs();
 
         if (match) {
             Toast.makeText(this, "Match ingredients is On", Toast.LENGTH_SHORT).show();
         }
 
-        fragment1 = SearchFragment.newInstance();
+        fragment1 = SearchFragment.newInstance(itemIds);
         fragment2 = FavoritesFragment.newInstance();
         fragment3 = new SettingsFragment();
         active = fragment1;
@@ -135,8 +144,13 @@ public class MainActivity extends AppCompatActivity { // Account.SendDataToMain 
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
         favoritesRef.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    String itemId;
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            itemId = documentSnapshot.getString(ITEM_ID);
+                            itemIds.add(itemId);
+                        }
                         actualNumLikes = queryDocumentSnapshots.size();
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putInt("actualNumLikes", queryDocumentSnapshots.size());

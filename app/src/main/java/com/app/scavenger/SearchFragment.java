@@ -37,9 +37,10 @@ import retrofit2.http.Query;
 public class SearchFragment extends Fragment {
 
     private static final String TAG = "LOG: ";
+    public static final String ARG_ITEM_IDS = "itemIds";
 
     private RecyclerView mSearchRecyclerView;
-    private ArrayList<RecipeItem> recipeItems;
+    private ArrayList<String> itemIds;
     private SearchAdapter adapter;
     private Context mContext;
     private SearchView mSearchView;
@@ -64,9 +65,10 @@ public class SearchFragment extends Fragment {
         // Required empty public constructor
     }
 
-    static SearchFragment newInstance() {
+    static SearchFragment newInstance(ArrayList<String> itemIds) {
         SearchFragment searchFragment = new SearchFragment();
         Bundle args = new Bundle();
+        args.putStringArrayList(ARG_ITEM_IDS, itemIds);
         searchFragment.setArguments(args);
         return searchFragment;
     }
@@ -83,6 +85,9 @@ public class SearchFragment extends Fragment {
         super.onCreate(savedInstanceState);
         mContext = getContext();
 
+        if (getArguments() != null) {
+            itemIds = getArguments().getStringArrayList(ARG_ITEM_IDS);
+        }
         mAuth = FirebaseAuth.getInstance();
 
     }
@@ -174,8 +179,8 @@ public class SearchFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("query", queryString);
-        outState.putString("userId", userId);
-        outState.putBoolean("logged", logged);
+        //outState.putString("userId", userId);
+        //outState.putBoolean("logged", logged);
     }
 
     @Override
@@ -184,8 +189,8 @@ public class SearchFragment extends Fragment {
 
         if (savedInstanceState != null) {
             queryString = savedInstanceState.getString("query");
-            userId = savedInstanceState.getString("userId");
-            logged = savedInstanceState.getBoolean("logged");
+            //userId = savedInstanceState.getString("userId");
+            //logged = savedInstanceState.getBoolean("logged");
             mSearchView.setQuery(queryString, false);
         }
     }
@@ -342,6 +347,10 @@ public class SearchFragment extends Fragment {
                 }
 
                 item.setItemId(randomItemId(item));
+
+                if (itemIds.contains(item.getItemId())) {
+                    item.setFavorited(true);
+                }
 
                 recipeItemArrayList.add(item);
             }
