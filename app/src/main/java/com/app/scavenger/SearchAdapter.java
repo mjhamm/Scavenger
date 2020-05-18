@@ -77,6 +77,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     private Context mContext;
     private LayoutInflater mInflater;
     private FirebaseAuth mAuth;
+    private DatabaseHelper myDb;
 
     SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId, boolean logged) {
         this.userId = userId;
@@ -93,6 +94,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         getInfoFromSharedPrefs();
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        myDb = DatabaseHelper.getInstance(mContext);
         return new ViewHolder(view);
     }
 
@@ -183,6 +185,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "Successfully removed favorite");
+                        int likes = sharedPreferences.getInt("numLikes", 0);
+                        likes -= 1;
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putInt("numLikes", likes);
+                        editor.apply();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -278,6 +285,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                         item.setFavorited(false);
                         try {
                             removeDataFromFirebase(item);
+                            myDb.removeDataFromView(item.getItemId());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -287,6 +295,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                         try {
                             saveDataToFirebase(item.getItemId(), item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),
                                     item.getmCalories(), item.getmCarbs(), item.getmFat(), item.getmProtein(), item.getmRecipeAttributes(), item.getmIngredients());
+                            myDb.addDataToView(item.getItemId());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

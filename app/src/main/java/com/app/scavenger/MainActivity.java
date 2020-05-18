@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Match ingredients is On", Toast.LENGTH_SHORT).show();
         }
 
-        fragment1 = SearchFragment.newInstance(itemIds);
+        fragment1 = SearchFragment.newInstance();
         fragment2 = FavoritesFragment.newInstance();
         fragment3 = new SettingsFragment();
         active = fragment1;
@@ -147,10 +147,10 @@ public class MainActivity extends AppCompatActivity {
                     String itemId;
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            itemId = documentSnapshot.getString(ITEM_ID);
-                            itemIds.add(itemId);
-                        }
+//                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+//                            itemId = documentSnapshot.getString(ITEM_ID);
+//                            itemIds.add(itemId);
+//                        }
                         actualNumLikes = queryDocumentSnapshots.size();
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putInt("actualNumLikes", queryDocumentSnapshots.size());

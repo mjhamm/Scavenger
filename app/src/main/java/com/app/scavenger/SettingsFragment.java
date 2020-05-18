@@ -28,6 +28,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     private SharedPreferences sharedPreferences;
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
+    private DatabaseHelper myDb;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -58,6 +59,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         mAuth = FirebaseAuth.getInstance();
 
+        myDb = DatabaseHelper.getInstance(mContext);
         //GOOGLE INFORMATION -------------------------------------------------------
         // Requests the information from Google
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -139,6 +141,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         if (GoogleSignIn.getLastSignedInAccount(mContext) != null) {
             mGoogleSignInClient.signOut();
         }
+
+        myDb.clearData();
 
         // CHECK: Let search fragment know to reload on sign out
 

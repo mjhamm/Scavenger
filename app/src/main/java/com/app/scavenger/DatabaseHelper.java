@@ -64,7 +64,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
     //------------------------------ LIST TABLE -------------------------------------------------------------------------------------------
 
     //Retrieve data from Likes Table
-    public Cursor getListContents_View() {
+    Cursor getListContents() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT * FROM " + TABLE_LIKES, null);
     }
@@ -78,7 +78,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     //Add data to Likes Table
-    public void addDataToView(String itemId) {
+    void addDataToView(String itemId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(KEY_ITEM_ID, itemId);
@@ -86,7 +86,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     //Remove item from Likes Table when item is removed from Likes on Firebase
-    public void removeDataFromView(String itemId) {
+    void removeDataFromView(String itemId) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_LIKES, KEY_ITEM_ID + "=?", new String[]{itemId});
     }

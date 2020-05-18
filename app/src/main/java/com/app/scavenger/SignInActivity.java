@@ -38,6 +38,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -47,7 +48,10 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,6 +73,7 @@ public class SignInActivity extends AppCompatActivity {
     private boolean emailEmpty = true, passEmpty = true;
     private String email = null;
     private String pass = null;
+    private DatabaseHelper myDb;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -94,6 +99,7 @@ public class SignInActivity extends AppCompatActivity {
         getInfoFromSharedPrefs();
 
         mAuth = FirebaseAuth.getInstance();
+        myDb = DatabaseHelper.getInstance(this);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -297,6 +303,7 @@ public class SignInActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(getApplicationContext(), "Signed In Successfully", Toast.LENGTH_SHORT).show();
                             if (user != null) {
+                                retrieveLikesFromFirebase(user);
                                 updatePrefInfo(true, user.getUid());
                                 sendDataToFirebase(user);
                             }
@@ -352,5 +359,20 @@ public class SignInActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
+    }
+
+    private void retrieveLikesFromFirebase(FirebaseUser user) {
+        CollectionReference favoritesRef = db.collection("Users").document(user.getUid()).collection("Favorites");
+        favoritesRef.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    String itemId;
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            itemId = documentSnapshot.getString("itemId");
+                            myDb.addDataToView(itemId);
+                        }
+                    }
+                });
     }
 }

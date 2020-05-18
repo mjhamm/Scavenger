@@ -2,6 +2,7 @@ package com.app.scavenger;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -55,6 +56,9 @@ public class SearchFragment extends Fragment {
     private String queryString = null;
     private FirebaseAuth mAuth;
 
+    private DatabaseHelper myDb;
+    private Cursor likesData;
+
     // Shared Preferences Data
     //-----------------------------------------
     private String userId = null;
@@ -65,10 +69,10 @@ public class SearchFragment extends Fragment {
         // Required empty public constructor
     }
 
-    static SearchFragment newInstance(ArrayList<String> itemIds) {
+    static SearchFragment newInstance() {
         SearchFragment searchFragment = new SearchFragment();
         Bundle args = new Bundle();
-        args.putStringArrayList(ARG_ITEM_IDS, itemIds);
+        //args.putStringArrayList(ARG_ITEM_IDS, itemIds);
         searchFragment.setArguments(args);
         return searchFragment;
     }
@@ -85,11 +89,11 @@ public class SearchFragment extends Fragment {
         super.onCreate(savedInstanceState);
         mContext = getContext();
 
-        if (getArguments() != null) {
-            itemIds = getArguments().getStringArrayList(ARG_ITEM_IDS);
-        }
+//        if (getArguments() != null) {
+//            itemIds = getArguments().getStringArrayList(ARG_ITEM_IDS);
+//        }
         mAuth = FirebaseAuth.getInstance();
-
+        myDb = DatabaseHelper.getInstance(mContext);
     }
 
     interface ApiService {
@@ -109,6 +113,7 @@ public class SearchFragment extends Fragment {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         recipeItemArrayList = new ArrayList<>();
+        itemIds = new ArrayList<>();
 
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
 
@@ -179,8 +184,6 @@ public class SearchFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("query", queryString);
-        //outState.putString("userId", userId);
-        //outState.putBoolean("logged", logged);
     }
 
     @Override
@@ -189,8 +192,6 @@ public class SearchFragment extends Fragment {
 
         if (savedInstanceState != null) {
             queryString = savedInstanceState.getString("query");
-            //userId = savedInstanceState.getString("userId");
-            //logged = savedInstanceState.getBoolean("logged");
             mSearchView.setQuery(queryString, false);
         }
     }
@@ -216,6 +217,9 @@ public class SearchFragment extends Fragment {
     private void getIngredients() {
         // Clears the array list holding recipe items. Remove this to add load on more
         //recipeItemArrayList.clear();
+        if (logged) {
+            itemsFromDB();
+        }
         startup_message.setVisibility(View.GONE);
         matchMessage.setVisibility(View.GONE);
         shimmer.setVisibility(View.VISIBLE);
@@ -371,6 +375,17 @@ public class SearchFragment extends Fragment {
         }
         shimmer.stopShimmer();
         shimmer.setVisibility(View.GONE);
+    }
+
+    private void itemsFromDB() {
+        likesData = myDb.getListContents();
+        itemIds.clear();
+        likesData.moveToPosition(-1);
+        while (likesData.moveToNext()) {
+            itemIds.add(likesData.getString(1));
+        }
+        likesData.close();
+        Log.d(TAG, "Number of Likes: " + itemIds.size() + " Item Ids: " + itemIds.toString());
     }
 
     //Gets the input from Searchview and returns it as string
