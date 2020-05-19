@@ -184,7 +184,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "Successfully removed favorite");
+                        Log.d(TAG, "Successfully removed Like");
                         int likes = sharedPreferences.getInt("numLikes", 0);
                         likes -= 1;
                         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -195,7 +195,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.d(TAG, "Failed to remove favorite" + e.toString());
+                        Log.d(TAG, "Failed to remove Like" + e.toString());
                     }
                 });
     }
@@ -303,7 +303,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 } else {
                     new MaterialAlertDialogBuilder(mContext)
                             .setTitle("You need to be Signed In.")
-                            .setMessage("You must sign up or sign in, in order to Favorite recipes.")
+                            .setMessage("You must Sign Up or Sign In, in order to Like recipes.")
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                     public void onClick(DialogInterface dialog, int which) {

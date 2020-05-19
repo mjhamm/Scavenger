@@ -21,12 +21,20 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -40,6 +48,7 @@ import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -47,6 +56,8 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,6 +65,8 @@ public class SignUpActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_UP = 102;
     public static final String TAG = "LOG: ";
+    private static final String EMAIL = "email";
+    private static final String PUBLIC_PROFILE = "public_profile";
 
     // Views from Sign Up activity
     private EditText fullName, emailEdit, passEdit, passConfirmEdit;
@@ -71,6 +84,7 @@ public class SignUpActivity extends AppCompatActivity {
     private DatabaseHelper myDb;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
+    private CallbackManager callbackManager;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -109,6 +123,10 @@ public class SignUpActivity extends AppCompatActivity {
                 .build();
         mGoogleSignUpClient = GoogleSignIn.getClient(this, gso);
 
+        callbackManager = CallbackManager.Factory.create();
+
+        // Facebook Info
+        MaterialButton mFacebookSignIn = findViewById(R.id.facebook_signIn);
 
         fullName = findViewById(R.id.fullName_editText);
         emailEdit = findViewById(R.id.email_editText);
@@ -204,30 +222,78 @@ public class SignUpActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // Sign in with Facebook Button ------------------------------------------------------------
+        facebookSignUpButton.setOnClickListener(v ->{
+            if (!checkConnection()) {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("No Internet Connection")
+                        .setMessage("You don't have an internet connection. Please reconnect and try to Sign In again.")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .create()
+                        .show();
+            } else {
+                if (termsCheck.isChecked()) {
+                    facebookSignUp();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please accept the Terms & Conditions", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        // -----------------------------------------------------------------------------------------
         
         signUpButton.setOnClickListener(v -> {
+            progressHolder.setVisibility(View.VISIBLE);
             name = fullName.getText().toString();
             email = emailEdit.getText().toString();
             pass = passEdit.getText().toString();
-            if (!email.isEmpty() && !pass.isEmpty()) {
                 mAuth.createUserWithEmailAndPassword(email, pass)
                         .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
-                                    Map<String, Object> data = new HashMap<>();
-                                    //data.put("userId", mAuth.getCurrentUser().getIdToken(true));
-                                    data.put("name", name);
-                                    data.put("email", email);
+                                    FirebaseUser user = mAuth.getCurrentUser();
+                                    if (user != null) {
+                                        myDb.clearData();
+                                        retrieveLikesFromFirebase(user);
+                                        updatePrefInfo(true, user.getUid());
+                                        sendDataToFirebase(user);
+                                    }
+                                    finish();
+                                    progressHolder.setVisibility(View.GONE);
                                     // Sign in success
                                 } else {
                                     // Sign in failed
                                     Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                                    Toast.makeText(SignUpActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                                    hideSoftKeyboard(getCurrentFocus());
+                                    new MaterialAlertDialogBuilder(SignUpActivity.this)
+                                            .setTitle("Email Address already in use.")
+                                            .setMessage("This email address is already in use by another account. Please Sign In, or Sign Up with a different email address.")
+                                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    dialog.dismiss();
+                                                    progressHolder.setVisibility(View.GONE);
+                                                    fullName.setText("");
+                                                    passEdit.setText("");
+                                                    passConfirmEdit.setText("");
+                                                    emailEdit.setText("");
+                                                    fullName.requestFocus();
+                                                }
+                                            })
+                                            .create()
+                                            .show();
                                 }
+
+
                             }
                         });
-            }
 
         });
 
@@ -236,8 +302,8 @@ public class SignUpActivity extends AppCompatActivity {
     // Sends user information to Firebase
     private void sendDataToFirebase(FirebaseUser user) {
         Map<String, Object> data = new HashMap<>();
-        data.put("name", user.getDisplayName());
-        data.put("email", user.getEmail());
+        data.put("name", name);
+        data.put("email", email);
         db.collection("Users").whereEqualTo("userId", user.getUid()).get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -269,6 +335,8 @@ public class SignUpActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "Signed Up Successfully", Toast.LENGTH_SHORT).show();
                             if (user != null) {
                                 myDb.clearData();
+                                name = user.getDisplayName();
+                                email = user.getEmail();
                                 retrieveLikesFromFirebase(user);
                                 updatePrefInfo(true, user.getUid());
                                 sendDataToFirebase(user);
@@ -285,10 +353,74 @@ public class SignUpActivity extends AppCompatActivity {
                 });
     }
 
+    // Facebook Sign In information and Methods -----------------------------------------------------------------------------------------------------------------
+
+    private void facebookSignUp() {
+        callbackManager = CallbackManager.Factory.create();
+
+        // Set Permissions
+        LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList(EMAIL, PUBLIC_PROFILE));
+
+        LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Log.d(TAG, "facebook:onSuccess:" + loginResult);
+                progressHolder.setVisibility(View.VISIBLE);
+                handleFacebookAccessToken(loginResult.getAccessToken());
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+
+            }
+        });
+    }
+
+    private void handleFacebookAccessToken(AccessToken token) {
+        Log.d(TAG, "handleFacebookAccessToken:" + token);
+
+        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signInWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            Toast.makeText(SignUpActivity.this, "Signed Up Successfully", Toast.LENGTH_SHORT).show();
+                            if (user != null) {
+                                myDb.clearData();
+                                name = user.getDisplayName();
+                                email = user.getEmail();
+                                retrieveLikesFromFirebase(user);
+                                updatePrefInfo(true, user.getUid());
+                                sendDataToFirebase(user);
+                            }
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            Toast.makeText(SignUpActivity.this, "Authentication Failed.", Toast.LENGTH_SHORT).show();
+                        }
+                        finish();
+                        progressHolder.setVisibility(View.GONE);
+                    }
+                });
+    }
+
+
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        callbackManager.onActivityResult(requestCode, resultCode,data);
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SIGN_UP) {
@@ -384,5 +516,12 @@ public class SignUpActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    private void hideSoftKeyboard(View view) {
+        InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (inputMethodManager != null) {
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

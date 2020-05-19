@@ -25,6 +25,7 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -172,6 +173,7 @@ public class SignInActivity extends AppCompatActivity {
 
         // Sign in with email button ---------------------------------------------------------------
         signInButton.setOnClickListener(v -> {
+            progressHolder.setVisibility(View.VISIBLE);
             email = emailEdit.getText().toString();
             pass = passEdit.getText().toString();
             mAuth.signInWithEmailAndPassword(email, pass)
@@ -181,9 +183,24 @@ public class SignInActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 FirebaseUser user = mAuth.getCurrentUser();
                                 Toast.makeText(getApplicationContext(), "Sign In Successful", Toast.LENGTH_SHORT).show();
+                                finish();
+                                progressHolder.setVisibility(View.GONE);
                             } else {
                                 Log.w(TAG, "SignInWithEmail:failure", task.getException());
-                                Toast.makeText(getApplicationContext(), "Sign in Failed", Toast.LENGTH_SHORT).show();
+                                hideSoftKeyboard(getCurrentFocus());
+                                new MaterialAlertDialogBuilder(SignInActivity.this)
+                                        .setTitle("Invalid Email or Password.")
+                                        .setMessage("The Email Address or Password that you have used is invalid. Please check typing and try again. If you continue to have issues, please reach out to Scavenger Support at support@thescavengerapp.com.")
+                                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.dismiss();
+                                                progressHolder.setVisibility(View.GONE);
+                                                emailEdit.requestFocus();
+                                            }
+                                        })
+                                        .create()
+                                        .show();
                             }
                         }
                     });
@@ -454,4 +471,11 @@ public class SignInActivity extends AppCompatActivity {
 
         }
     };
+
+    private void hideSoftKeyboard(View view) {
+        InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (inputMethodManager != null) {
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
 }

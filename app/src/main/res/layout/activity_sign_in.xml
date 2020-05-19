@@ -214,6 +214,8 @@
         android:layout_alignParentBottom="true"
         android:animateLayoutChanges="true"
         android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
         android:elevation="12dp"
         android:background="#90000000">
 
