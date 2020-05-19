@@ -116,7 +116,6 @@ public class FavoritesFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        Log.d(TAG, "HIDDEN CHANGED");
         if (!hidden) {
             getInfoFromSharedPrefs();
             /* Added */

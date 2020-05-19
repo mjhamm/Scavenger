@@ -22,6 +22,7 @@
         <activity android:name=".SignUpActivity" />
         <activity android:name=".Legal" />
         <activity android:name=".Help" />
+        <activity android:name=".About" />
         <activity
             android:name=".MainActivity"
             android:configChanges="screenSize|orientation|screenLayout"

@@ -3,34 +3,37 @@ package com.app.scavenger;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.preference.PreferenceManager;
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextPaint;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
@@ -40,7 +43,10 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,25 +55,27 @@ public class SignUpActivity extends AppCompatActivity {
     private static final int RC_SIGN_UP = 102;
     public static final String TAG = "LOG: ";
 
-    private GoogleSignInClient mGoogleSignUpClient;
-    private SharedPreferences sharedPreferences;
+    // Views from Sign Up activity
     private EditText fullName, emailEdit, passEdit, passConfirmEdit;
-    private TextView passNoMatch;
+    private TextView passNoMatch, termsTextView;
     private MaterialCheckBox termsCheck;
-    private FirebaseAuth mAuth;
     private FrameLayout progressHolder;
     private MaterialButton signUpButton, googleSignUpButton, facebookSignUpButton;
     private ImageButton backButton;
+
     private boolean nameEmpty = true, emailEmpty = true, passEmpty = true, passConfirmEmpty = true;
-    private String name = null;
-    private String email = null;
-    private String pass = null;
+    private String name = null, email = null, pass = null;
+
+    private SharedPreferences sharedPreferences;
+    private GoogleSignInClient mGoogleSignUpClient;
+    private DatabaseHelper myDb;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseAuth mAuth;
 
     // Shared Preferences Data
     //-----------------------------------------
-    private boolean logged = false;
-    private String userId = null;
+//    private boolean logged = false;
+//    private String userId = null;
     //------------------------------------------
 
     @Override
@@ -89,8 +97,11 @@ public class SignUpActivity extends AppCompatActivity {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        getInfoFromSharedPrefs();
+        //getInfoFromSharedPrefs();
 
+        myDb = DatabaseHelper.getInstance(this);
+
+        // Google information
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.clientId_web_googleSignIn))
                 .requestProfile()
@@ -104,7 +115,8 @@ public class SignUpActivity extends AppCompatActivity {
         passEdit = findViewById(R.id.password_editText);
         passConfirmEdit = findViewById(R.id.passwordConfirm_editText);
         passNoMatch = findViewById(R.id.passNoMatch);
-        termsCheck = findViewById(R.id.signUpTerms);
+        termsTextView = findViewById(R.id.signUpTerms);
+        termsCheck = findViewById(R.id.signUpCheckbox);
         signUpButton = findViewById(R.id.signUp_Button);
         facebookSignUpButton = findViewById(R.id.facebook_signUp);
         googleSignUpButton = findViewById(R.id.google_signUp);
@@ -115,116 +127,61 @@ public class SignUpActivity extends AppCompatActivity {
             finish();
         });
 
+        termsCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                checkFieldsForEmpty();
+            }
+        });
+
+        String termsText = "By Signing Up, you agree to Scavenger's Terms & Conditions and Privacy Policy.";
+        SpannableString termsSS = new SpannableString(termsText);
+
+        ClickableSpan clickableSpanTerms = new ClickableSpan() {
+            @Override
+            public void onClick(@NonNull View widget) {
+                Toast.makeText(getApplicationContext(), "Terms & Conditions", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void updateDrawState(@NonNull TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setColor(Color.BLUE);
+                ds.setUnderlineText(false);
+            }
+        };
+
+        ClickableSpan clickableSpanPrivacy = new ClickableSpan() {
+            @Override
+            public void onClick(@NonNull View widget) {
+                Toast.makeText(getApplicationContext(), "Privacy Policy", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void updateDrawState(@NonNull TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setColor(Color.BLUE);
+                ds.setUnderlineText(false);
+            }
+        };
+
+        termsSS.setSpan(clickableSpanTerms, 39, 58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(clickableSpanPrivacy, 62, 77, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        termsTextView.setText(termsSS);
+        termsTextView.setMovementMethod(LinkMovementMethod.getInstance());
+
         // Edit Text fields for sign up
         // ------------------------------------------------------------------------------------------------------
-        fullName.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().trim().length() == 0) {
-                    nameEmpty = true;
-                } else {
-                    nameEmpty = false;
-                }
-                checkFieldsForEmpty();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                checkFieldsForEmpty();
-            }
-        });
-
-        emailEdit.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().trim().length() == 0) {
-                    emailEmpty = true;
-                } else {
-                    emailEmpty = false;
-//                    if (!s.toString().trim().contains("@")) {
-//                        emailEmpty = true;
-//                    } else {
-//                        emailEmpty = false;
-//
-//                    }
-                }
-                checkFieldsForEmpty();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-
-        passEdit.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().trim().length() == 0) {
-                    passEmpty = true;
-                } else {
-                    if (!passEdit.getText().toString().equals(passConfirmEdit.getText().toString())) {
-                        passEmpty = true;
-                        passNoMatch.setVisibility(View.VISIBLE);
-                    } else {
-                        passEmpty = false;
-                        passNoMatch.setVisibility(View.GONE);
-                    }
-                }
-                checkFieldsForEmpty();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-
-        passConfirmEdit.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().trim().length() == 0) {
-                    passConfirmEmpty = true;
-                } else {
-                    if (!passEdit.getText().toString().equals(passConfirmEdit.getText().toString())) {
-                        passConfirmEmpty = true;
-                        passNoMatch.setVisibility(View.VISIBLE);
-                    } else {
-                        passConfirmEmpty = false;
-                        passNoMatch.setVisibility(View.GONE);
-                    }
-                }
-                checkFieldsForEmpty();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-
+        // Full Name
+        fullName.addTextChangedListener(signUpTextWatcher);
+        // Email
+        emailEdit.addTextChangedListener(signUpTextWatcher);
+        // Password
+        passEdit.addTextChangedListener(signUpTextWatcher);
+        // Password Confirm
+        passConfirmEdit.addTextChangedListener(signUpTextWatcher);
         // ------------------------------------------------------------------------------------------------------
-
 
         googleSignUpButton.setOnClickListener(v -> {
             if (!checkConnection()) {
@@ -311,6 +268,8 @@ public class SignUpActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(getApplicationContext(), "Signed Up Successfully", Toast.LENGTH_SHORT).show();
                             if (user != null) {
+                                myDb.clearData();
+                                retrieveLikesFromFirebase(user);
                                 updatePrefInfo(true, user.getUid());
                                 sendDataToFirebase(user);
                             }
@@ -346,6 +305,23 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }
 
+    private TextWatcher signUpTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            checkFieldsForEmpty();
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
+    };
+
     private void updatePrefInfo(boolean logged, String userId) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("logged", logged);
@@ -354,24 +330,35 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     // Sets all variables related to logged status and user info
-    private void getInfoFromSharedPrefs() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        logged = sharedPreferences.getBoolean("logged", false);
-        userId = sharedPreferences.getString("userId", null);
-    }
+//    private void getInfoFromSharedPrefs() {
+//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+//        logged = sharedPreferences.getBoolean("logged", false);
+//        userId = sharedPreferences.getString("userId", null);
+//    }
 
     private void checkFieldsForEmpty() {
-        if (!nameEmpty && !emailEmpty && !passEmpty && !passConfirmEmpty) {
-            if (!emailEdit.getText().toString().contains("@")) {
+        if (!passConfirmEdit.getText().toString().trim().equals(passEdit.getText().toString().trim())) {
+            passNoMatch.setVisibility(View.VISIBLE);
+            signUpButton.setEnabled(false);
+        } else {
+            passNoMatch.setVisibility(View.GONE);
+        }
+        if (!fullName.getText().toString().trim().isEmpty() && !emailEdit.getText().toString().trim().isEmpty() && !passEdit.getText().toString().trim().isEmpty() && !passConfirmEdit.getText().toString().trim().isEmpty()) {
+            if (!emailEdit.getText().toString().trim().contains("@")) {
                 signUpButton.setEnabled(false);
             } else {
-                signUpButton.setEnabled(true);
+                if (!termsCheck.isChecked()) {
+                    signUpButton.setEnabled(false);
+                } else {
+                    if (!passConfirmEdit.getText().toString().trim().equals(passEdit.getText().toString().trim())) {
+                        passNoMatch.setVisibility(View.VISIBLE);
+                        signUpButton.setEnabled(false);
+                    } else {
+                        passNoMatch.setVisibility(View.GONE);
+                        signUpButton.setEnabled(true);
+                    }
+                }
             }
-//            if (!passEdit.getText().toString().equals(passConfirmEdit.getText().toString())) {
-//                signUpButton.setEnabled(false);
-//            } else {
-//                signUpButton.setEnabled(true);
-//            }
         } else {
             signUpButton.setEnabled(false);
         }
@@ -382,5 +369,20 @@ public class SignUpActivity extends AppCompatActivity {
         ConnectivityManager connectivityManager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected();
+    }
+
+    private void retrieveLikesFromFirebase(FirebaseUser user) {
+        CollectionReference favoritesRef = db.collection("Users").document(user.getUid()).collection("Favorites");
+        favoritesRef.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    String itemId;
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            itemId = documentSnapshot.getString("itemId");
+                            myDb.addDataToView(itemId);
+                        }
+                    }
+                });
     }
 }

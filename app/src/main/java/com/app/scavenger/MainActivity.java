@@ -144,13 +144,8 @@ public class MainActivity extends AppCompatActivity {
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
         favoritesRef.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    String itemId;
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-//                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-//                            itemId = documentSnapshot.getString(ITEM_ID);
-//                            itemIds.add(itemId);
-//                        }
                         actualNumLikes = queryDocumentSnapshots.size();
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putInt("actualNumLikes", queryDocumentSnapshots.size());

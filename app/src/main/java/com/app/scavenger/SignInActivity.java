@@ -31,6 +31,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookActivity;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -45,6 +52,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -53,6 +61,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,25 +69,24 @@ public class SignInActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 101;
     private static final String TAG = "LOG: ";
+    private static final String EMAIL = "email";
 
-    private GoogleSignInClient mGoogleSignInClient;
-    private TextView signUpText, forgotPass, signInTerms;
-    private ImageButton backButton;
     private MaterialButton signInButton;
     private EditText emailEdit, passEdit;
+    private FrameLayout progressHolder;
+
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
-    private FrameLayout progressHolder;
     private SharedPreferences sharedPreferences;
-    private boolean emailEmpty = true, passEmpty = true;
-    private String email = null;
-    private String pass = null;
+    private String email = null, pass = null;
     private DatabaseHelper myDb;
+    private GoogleSignInClient mGoogleSignInClient;
+    private CallbackManager callbackManager;
 
     // Shared Preferences Data
     //-----------------------------------------
-    private String userId = null;
-    private boolean logged = false;
+//    private String userId = null;
+//    private boolean logged = false;
     //------------------------------------------
 
     public SignInActivity() {
@@ -89,6 +97,9 @@ public class SignInActivity extends AppCompatActivity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
+
+        // Google Info
+        MaterialButton mGoogleSignIn = findViewById(R.id.google_signIn);
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestProfile()
                 .requestEmail()
@@ -96,22 +107,25 @@ public class SignInActivity extends AppCompatActivity {
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        getInfoFromSharedPrefs();
+        // Facebook Info
+        MaterialButton mFacebookSignIn = findViewById(R.id.facebook_signIn);
+        callbackManager = CallbackManager.Factory.create();
+        //getInfoFromSharedPrefs();
 
         mAuth = FirebaseAuth.getInstance();
         myDb = DatabaseHelper.getInstance(this);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        AppCompatButton mGoogleSignIn = findViewById(R.id.google_signIn);
         signInButton = findViewById(R.id.signIn_Button);
-        signUpText = findViewById(R.id.signUp_text);
-        forgotPass = findViewById(R.id.forgot_signIn);
+        // Views from Sign In activity
+        TextView signUpText = findViewById(R.id.signUp_text);
+        TextView forgotPass = findViewById(R.id.forgot_signIn);
         emailEdit = findViewById(R.id.email_editText);
         passEdit = findViewById(R.id.password_editText);
-        signInTerms = findViewById(R.id.accept_terms_signin);
+        TextView signInTerms = findViewById(R.id.accept_terms_signin);
         progressHolder = findViewById(R.id.signIn_progressHolder);
-        backButton = findViewById(R.id.signIn_back);
+        ImageButton backButton = findViewById(R.id.signIn_back);
 
         // CHECK: Let search fragment know to reload on sign in
 
@@ -151,11 +165,12 @@ public class SignInActivity extends AppCompatActivity {
         };
 
         termsSS.setSpan(clickableSpanTerms, 39, 58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        termsSS.setSpan(clickableSpanPrivacy, 62, 76, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(clickableSpanPrivacy, 62, 77, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         signInTerms.setText(termsSS);
         signInTerms.setMovementMethod(LinkMovementMethod.getInstance());
-        
+
+        // Sign in with email button ---------------------------------------------------------------
         signInButton.setOnClickListener(v -> {
             email = emailEdit.getText().toString();
             pass = passEdit.getText().toString();
@@ -174,63 +189,11 @@ public class SignInActivity extends AppCompatActivity {
                     });
         });
 
-        emailEdit.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().trim().length() == 0) {
-                    emailEmpty = true;
-                    signInButton.setEnabled(false);
-                } else {
-                    if (!s.toString().trim().contains("@")) {
-                        emailEmpty = true;
-                        signInButton.setEnabled(false);
-                    } else {
-                        emailEmpty = false;
-                        if (!passEmpty) {
-                            signInButton.setEnabled(true);
-                        } else {
-                            signInButton.setEnabled(false);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-
-        passEdit.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().trim().length() == 0) {
-                    passEmpty = true;
-                    signInButton.setEnabled(false);
-                } else {
-                    passEmpty = false;
-                    if (!emailEmpty) {
-                        signInButton.setEnabled(true);
-                    } else {
-                        signInButton.setEnabled(false);
-                    }
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
+        // -----------------------------------------------------------------------------------------
+        // Email Edit Text Watcher
+        emailEdit.addTextChangedListener(signInTextWatcher);
+        // Password Edit Text Watcher
+        passEdit.addTextChangedListener(signInTextWatcher);
 
         // Forgot password activity launch textview
         forgotPass.setOnClickListener(v -> {
@@ -246,7 +209,28 @@ public class SignInActivity extends AppCompatActivity {
             finish();
         });
 
-        // Sign in with google button
+        // Sign in with Facebook Button ------------------------------------------------------------
+        mFacebookSignIn.setOnClickListener(v ->{
+            if (!checkConnection()) {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("No Internet Connection")
+                        .setMessage("You don't have an internet connection. Please reconnect and try to Sign In again.")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .create()
+                        .show();
+            } else {
+                facebookSignIn();
+            }
+        });
+
+        // -----------------------------------------------------------------------------------------
+
+        // Sign in with google button --------------------------------------------------------------
         mGoogleSignIn.setOnClickListener(v -> {
             if (!checkConnection()) {
                 new MaterialAlertDialogBuilder(this)
@@ -264,6 +248,8 @@ public class SignInActivity extends AppCompatActivity {
                 googleSignIn();
             }
         });
+
+        // -----------------------------------------------------------------------------------------
     }
 
     // Sends user information to Firebase
@@ -283,6 +269,66 @@ public class SignInActivity extends AppCompatActivity {
         }
     }
 
+    // Facebook Sign In information and Methods -----------------------------------------------------------------------------------------------------------------
+
+    private void facebookSignIn() {
+        callbackManager = CallbackManager.Factory.create();
+
+        // Set Permissions
+        LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList(EMAIL, "public_profile"));
+
+        LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Log.d(TAG, "facebook:onSuccess:" + loginResult);
+                progressHolder.setVisibility(View.VISIBLE);
+                handleFacebookAccessToken(loginResult.getAccessToken());
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+
+            }
+        });
+    }
+
+    private void handleFacebookAccessToken(AccessToken token) {
+        Log.d(TAG, "handleFacebookAccessToken:" + token);
+
+        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signInWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            Toast.makeText(SignInActivity.this, "Signed In Successfully", Toast.LENGTH_SHORT).show();
+                            if (user != null) {
+                                retrieveLikesFromFirebase(user);
+                                updatePrefInfo(true, user.getUid());
+                                sendDataToFirebase(user);
+                            }
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            Toast.makeText(SignInActivity.this, "Authentication Failed.", Toast.LENGTH_SHORT).show();
+                        }
+                        finish();
+                        progressHolder.setVisibility(View.GONE);
+                    }
+                });
+    }
+
+
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+
     // Google Sign In information and Methods -----------------------------------------------------------------------------------------------------------------
 
     private void googleSignIn() {
@@ -301,7 +347,7 @@ public class SignInActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(getApplicationContext(), "Signed In Successfully", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignInActivity.this, "Signed In Successfully", Toast.LENGTH_SHORT).show();
                             if (user != null) {
                                 retrieveLikesFromFirebase(user);
                                 updatePrefInfo(true, user.getUid());
@@ -324,8 +370,8 @@ public class SignInActivity extends AppCompatActivity {
     // On Activity Result
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        callbackManager.onActivityResult(requestCode, resultCode,data);
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == RC_SIGN_IN) {
             progressHolder.setVisibility(View.VISIBLE);
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
@@ -355,11 +401,11 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     // Sets all variables related to logged status and user info
-    private void getInfoFromSharedPrefs() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        logged = sharedPreferences.getBoolean("logged", false);
-        userId = sharedPreferences.getString("userId", null);
-    }
+//    private void getInfoFromSharedPrefs() {
+//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+//        logged = sharedPreferences.getBoolean("logged", false);
+//        userId = sharedPreferences.getString("userId", null);
+//    }
 
     private void retrieveLikesFromFirebase(FirebaseUser user) {
         CollectionReference favoritesRef = db.collection("Users").document(user.getUid()).collection("Favorites");
@@ -375,4 +421,37 @@ public class SignInActivity extends AppCompatActivity {
                     }
                 });
     }
+
+    private void checkFieldsForValid() {
+        if (emailEdit.getText().toString().trim().isEmpty()) {
+            signInButton.setEnabled(false);
+        } else {
+            if (emailEdit.getText().toString().trim().contains("@")) {
+                if (!passEdit.getText().toString().trim().isEmpty()) {
+                    signInButton.setEnabled(true);
+                } else {
+                    signInButton.setEnabled(false);
+                }
+            } else {
+                signInButton.setEnabled(false);
+            }
+        }
+    }
+
+    private TextWatcher signInTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            checkFieldsForValid();
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
+    };
 }

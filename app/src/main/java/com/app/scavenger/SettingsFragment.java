@@ -14,6 +14,8 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
+import com.facebook.AccessToken;
+import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -29,6 +31,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
     private DatabaseHelper myDb;
+    private AccessToken accessToken;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -70,6 +73,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
 
         //--------------------------------------------------------------------------
+
+        // Facebook Information ----------------------------------------------------
+
+        accessToken = AccessToken.getCurrentAccessToken();
+
+        // -------------------------------------------------------------------------
 
         if (sharedPreferences.getBoolean("logged", false)) {
             signOut.setVisible(true);
@@ -140,6 +149,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         if (GoogleSignIn.getLastSignedInAccount(mContext) != null) {
             mGoogleSignInClient.signOut();
+        }
+
+        if (accessToken != null && !accessToken.isExpired()) {
+            LoginManager.getInstance().logOut();
         }
 
         myDb.clearData();
