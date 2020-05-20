@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
+
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -106,7 +108,7 @@ public class SignUpActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
 
-        //mContext = getApplicationContext();
+        //mContext = SignUpActivity.this;
         mAuth = FirebaseAuth.getInstance();
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -158,7 +160,7 @@ public class SignUpActivity extends AppCompatActivity {
         ClickableSpan clickableSpanTerms = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                Toast.makeText(getApplicationContext(), "Terms & Conditions", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SignUpActivity.this, "Terms & Conditions", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -172,7 +174,7 @@ public class SignUpActivity extends AppCompatActivity {
         ClickableSpan clickableSpanPrivacy = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                Toast.makeText(getApplicationContext(), "Privacy Policy", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SignUpActivity.this, "Privacy Policy", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -218,7 +220,7 @@ public class SignUpActivity extends AppCompatActivity {
                 if (termsCheck.isChecked()) {
                     googleSignUp();
                 } else {
-                    Toast.makeText(getApplicationContext(), "Please accept the Terms & Conditions", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignUpActivity.this, "Please accept the Terms & Conditions", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -241,7 +243,7 @@ public class SignUpActivity extends AppCompatActivity {
                 if (termsCheck.isChecked()) {
                     facebookSignUp();
                 } else {
-                    Toast.makeText(getApplicationContext(), "Please accept the Terms & Conditions", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignUpActivity.this, "Please accept the Terms & Conditions", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -259,6 +261,7 @@ public class SignUpActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
                                     FirebaseUser user = mAuth.getCurrentUser();
+                                    Toast.makeText(SignUpActivity.this, "Signed Up Successfully", Toast.LENGTH_SHORT).show();
                                     if (user != null) {
                                         myDb.clearData();
                                         retrieveLikesFromFirebase(user);
@@ -271,7 +274,7 @@ public class SignUpActivity extends AppCompatActivity {
                                 } else {
                                     // Sign in failed
                                     Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                                    hideSoftKeyboard(getCurrentFocus());
+                                    hideKeyboard(SignUpActivity.this);
                                     new MaterialAlertDialogBuilder(SignUpActivity.this)
                                             .setTitle("Email Address already in use.")
                                             .setMessage("This email address is already in use by another account. Please Sign In, or Sign Up with a different email address.")
@@ -332,7 +335,7 @@ public class SignUpActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signUpWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(getApplicationContext(), "Signed Up Successfully", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignUpActivity.this, "Signed Up Successfully", Toast.LENGTH_SHORT).show();
                             if (user != null) {
                                 myDb.clearData();
                                 name = user.getDisplayName();
@@ -344,7 +347,7 @@ public class SignUpActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signUpWithCredential:failure", task.getException());
-                            Toast.makeText(getApplicationContext(), "Authentication Failed. Please try again or reach out to Help", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignUpActivity.this, "Authentication Failed. Please try again or reach out to Help", Toast.LENGTH_SHORT).show();
                         }
 
                         finish();
@@ -518,10 +521,17 @@ public class SignUpActivity extends AppCompatActivity {
                 });
     }
 
-    private void hideSoftKeyboard(View view) {
-        InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (inputMethodManager != null) {
-            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
         }
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+        view.clearFocus();
     }
 }

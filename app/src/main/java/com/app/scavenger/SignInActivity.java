@@ -1,5 +1,6 @@
 package com.app.scavenger;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -140,7 +141,7 @@ public class SignInActivity extends AppCompatActivity {
         ClickableSpan clickableSpanTerms = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                Toast.makeText(getApplicationContext(), "Terms & Conditions", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SignInActivity.this, "Terms & Conditions", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -154,7 +155,7 @@ public class SignInActivity extends AppCompatActivity {
         ClickableSpan clickableSpanPrivacy = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                Toast.makeText(getApplicationContext(), "Privacy Policy", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SignInActivity.this, "Privacy Policy", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -173,6 +174,7 @@ public class SignInActivity extends AppCompatActivity {
 
         // Sign in with email button ---------------------------------------------------------------
         signInButton.setOnClickListener(v -> {
+            hideKeyboard(SignInActivity.this);
             progressHolder.setVisibility(View.VISIBLE);
             email = emailEdit.getText().toString();
             pass = passEdit.getText().toString();
@@ -182,12 +184,16 @@ public class SignInActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                Toast.makeText(getApplicationContext(), "Sign In Successful", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(SignInActivity.this, "Sign In Successful", Toast.LENGTH_SHORT).show();
+                                if (user != null) {
+                                    retrieveLikesFromFirebase(user);
+                                    updatePrefInfo(true, user.getUid());
+                                    sendDataToFirebase(user);
+                                }
                                 finish();
                                 progressHolder.setVisibility(View.GONE);
                             } else {
                                 Log.w(TAG, "SignInWithEmail:failure", task.getException());
-                                hideSoftKeyboard(getCurrentFocus());
                                 new MaterialAlertDialogBuilder(SignInActivity.this)
                                         .setTitle("Invalid Email or Password.")
                                         .setMessage("The Email Address or Password that you have used is invalid. Please check typing and try again. If you continue to have issues, please reach out to Scavenger Support at support@thescavengerapp.com.")
@@ -373,7 +379,7 @@ public class SignInActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(getApplicationContext(), "Authentication Failed. Please try again or reach out to Help", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignInActivity.this, "Authentication Failed. Please try again or reach out to Help", Toast.LENGTH_SHORT).show();
                         }
 
                         finish();
@@ -472,10 +478,17 @@ public class SignInActivity extends AppCompatActivity {
         }
     };
 
-    private void hideSoftKeyboard(View view) {
-        InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (inputMethodManager != null) {
-            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
         }
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+        view.clearFocus();
     }
 }

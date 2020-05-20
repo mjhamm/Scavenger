@@ -1,19 +1,29 @@
 package com.app.scavenger;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class ForgotPassword extends AppCompatActivity {
+
+    private static final String TAG = "FORGOT_PASSWORD";
 
     private EditText forgot_editText;
     private MaterialButton forgot_pass_button;
@@ -64,12 +74,21 @@ public class ForgotPassword extends AppCompatActivity {
 
             new MaterialAlertDialogBuilder(this, R.style.ReportAlertTheme)
                     .setTitle("Reset instructions have been sent.")
-                    .setMessage("If there is an account with the email entered, you will receive reset instructions in 5 - 10 minutes.")
+                    .setMessage("If there is an account with the Email Address provided, you will receive reset instructions in 2 - 5 minutes.")
                     .setCancelable(false)
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            hideSoftKeyboard(getCurrentFocus());
+                            hideKeyboard(ForgotPassword.this);
+                            FirebaseAuth.getInstance().sendPasswordResetEmail(forgot_editText.getText().toString().trim())
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                Log.d(TAG, "Reset password email sent.");
+                                            }
+                                        }
+                                    });
                             finish();
                         }
                     })
@@ -78,10 +97,17 @@ public class ForgotPassword extends AppCompatActivity {
         });
     }
 
-    public void hideSoftKeyboard(View view) {
-        InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (inputMethodManager != null) {
-            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
         }
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+        view.clearFocus();
     }
 }
