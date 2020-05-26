@@ -31,9 +31,10 @@
             android:id="@+id/recipe_image"
             android:layout_width="match_parent"
             android:layout_height="280dp"
+            android:tint="#50000000"
+            android:background="#50000000"
             android:contentDescription="@string/recipe_image_content_descr"
-            android:src="@mipmap/ic_launcher"
-            android:foreground="@drawable/image_overlay"/>
+            android:src="@mipmap/ic_launcher" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -144,6 +145,8 @@
                 android:layout_marginTop="40dp"
                 android:layout_marginBottom="6dp"
                 android:layout_alignParentTop="true"
+                android:layout_toStartOf="@id/servings_total"
+                android:layout_alignParentStart="true"
                 android:gravity="start"
                 android:fontFamily="@font/roboto_condensed_regular"
                 android:text="@string/nutrition_facts"
@@ -380,7 +383,7 @@
                     android:layout_marginBottom="4dp"
                     android:gravity="center"
                     android:fontFamily="@font/roboto_condensed_regular"
-                    android:text="View Recipe"
+                    android:text="@string/view_recipe"
                     android:textColor="@android:color/white"
                     android:textSize="18sp" />
 

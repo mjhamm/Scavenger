@@ -50,7 +50,7 @@ import java.util.Map;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
-    public static final String TAG = "LOG: ";
+    public static final String TAG = "SEARCH_ADAPTER";
 
     // Firestore Labels ----------------------------------------------------------
     private static final String ITEM_ID = "itemId";
@@ -71,6 +71,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     private String userId = null;
     private boolean logged = false;
     private boolean expanded = false;
+    private ConnectionDetector con;
     private SharedPreferences sharedPreferences;
     /*private CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");*/
     private ArrayList<RecipeItem> mRecipeItems;
@@ -90,11 +91,18 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     @NonNull
     @Override
     public SearchAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.row_card_item, parent, false);
+        View view;
+        try {
+            view = mInflater.inflate(R.layout.row_card_item, parent, false);
+        } catch (Exception e) {
+            Log.d(TAG, "onCreateView", e);
+            throw  e;
+        }
         getInfoFromSharedPrefs();
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         myDb = DatabaseHelper.getInstance(mContext);
+        con = new ConnectionDetector(mContext);
         return new ViewHolder(view);
     }
 
@@ -235,14 +243,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             // Recipe Image Click Listener
             recipeImage.setOnClickListener(v -> {
                 int position = getAdapterPosition();
-
-//                final Animation animationUp;
-//                final Animation animationDown;
-//
-//                animationUp = AnimationUtils.loadAnimation(mContext, R.anim.slide_up);
-//                animationDown = AnimationUtils.loadAnimation(mContext, R.anim.slide_down);
-
-
                 // Adapter Position
                 // Gets the item at the position
                 item = mRecipeItems.get(position);
@@ -250,15 +250,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 // Sets the layout visible/gone
                 if (item.isClicked()) {
                     viewGoneAnimator(mRelativeLayout);
-                    //mRelativeLayout.startAnimation(animationUp);
-                    //mRelativeLayout.setVisibility(View.GONE);
-                    //mRelativeLayout.startAnimation(animationUp);
                     item.setClicked(false);
                 } else {
                     viewVisibleAnimator(mRelativeLayout);
-                    //mRelativeLayout.startAnimation(animationDown);
-                    //mRelativeLayout.setVisibility(View.VISIBLE);
-                    //mRelativeLayout.startAnimation(animationDown);
                     item.setClicked(true);
                 }
             });
@@ -271,49 +265,63 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             OvershootInterpolator overshootInterpolator_Favorite = new OvershootInterpolator(4);
             scaleAnimation_Favorite.setInterpolator(overshootInterpolator_Favorite);
             favorite_button.setOnClickListener(v -> {
-                getInfoFromSharedPrefs();
-                item = mRecipeItems.get(getAdapterPosition());
-                v.getTag();
-                if (SystemClock.elapsedRealtime() - mLastClickTime < 1500) {
-                    return;
-                }
-                mLastClickTime = SystemClock.elapsedRealtime();
-                if (logged) {
-                    v.startAnimation(scaleAnimation_Favorite);
-                    if (item.isFavorited()) {
-                        favorite_button.setImageResource(R.mipmap.heart_icon_outline_white);
-                        item.setFavorited(false);
-                        try {
-                            removeDataFromFirebase(item);
-                            myDb.removeDataFromView(item.getItemId());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        favorite_button.setImageResource(R.mipmap.heart_icon_filled);
-                        item.setFavorited(true);
-                        try {
-                            saveDataToFirebase(item.getItemId(), item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),
-                                    item.getmCalories(), item.getmCarbs(), item.getmFat(), item.getmProtein(), item.getmRecipeAttributes(), item.getmIngredients());
-                            myDb.addDataToView(item.getItemId());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                } else {
+                if (!con.isConnectingToInternet()) {
                     new MaterialAlertDialogBuilder(mContext)
-                            .setTitle("You need to be Signed In.")
-                            .setMessage("You must Sign Up or Sign In, in order to Like recipes.")
+                            .setTitle("No Internet connection found.")
+                            .setMessage("You don't have an Internet connection. Please reconnect and try again.")
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
                                 }
                             })
                             .create()
                             .show();
-                }
-            });
+                } else {
+                    getInfoFromSharedPrefs();
+                    item = mRecipeItems.get(getAdapterPosition());
+                    v.getTag();
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 1500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
+                    if (logged) {
+                        v.startAnimation(scaleAnimation_Favorite);
+                        if (item.isFavorited()) {
+                            favorite_button.setImageResource(R.mipmap.heart_icon_outline_white);
+                            item.setFavorited(false);
+                            try {
+                                removeDataFromFirebase(item);
+                                myDb.removeDataFromView(item.getItemId());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            favorite_button.setImageResource(R.mipmap.heart_icon_filled);
+                            item.setFavorited(true);
+                            try {
+                                saveDataToFirebase(item.getItemId(), item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),
+                                        item.getmCalories(), item.getmCarbs(), item.getmFat(), item.getmProtein(), item.getmRecipeAttributes(), item.getmIngredients());
+                                myDb.addDataToView(item.getItemId());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } else {
+                        new MaterialAlertDialogBuilder(mContext)
+                                .setTitle("You need to be Signed In.")
+                                .setMessage("You must Sign Up or Sign In, in order to Like recipes.")
+                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                })
+                                .create()
+                                .show();
+                            }
+                        }
+                    });
 
             more_button.setOnClickListener(v -> {
                 Animation cw = AnimationUtils.loadAnimation(mContext, R.anim.menu_clockwise);
@@ -396,29 +404,43 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         }
 
         private void reportRecipe() {
-            final CharSequence[] listItems = {"Inappropriate Image","Inappropriate Website","Profanity"};
-            new MaterialAlertDialogBuilder(mContext)
-                    .setTitle("Why are you reporting this?")
-                    .setSingleChoiceItems(listItems, -1, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            switch (which) {
-                                case 0:
-                                    reportReason = "Inappropriate Image";
-                                    break;
-                                case 1:
-                                    reportReason = "Inappropriate Website";
-                                    break;
-                                case 2:
-                                    reportReason = "Profanity";
-                                    break;
+            if (!con.isConnectingToInternet()) {
+                new MaterialAlertDialogBuilder(mContext)
+                        .setTitle("No Internet connection found.")
+                        .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
                             }
-                        }
-                    })
-                    .setPositiveButton("Report",(dialog, which) -> Toast.makeText(mContext, "Reported for " + reportReason + ". Thank you.", Toast.LENGTH_SHORT).show())
-                    .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
-                    .create()
-                    .show();
+                        })
+                        .create()
+                        .show();
+            } else {
+                final CharSequence[] listItems = {"Inappropriate Image","Inappropriate Website","Profanity"};
+                new MaterialAlertDialogBuilder(mContext)
+                        .setTitle("Why are you reporting this?")
+                        .setSingleChoiceItems(listItems, -1, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case 0:
+                                        reportReason = "Inappropriate Image";
+                                        break;
+                                    case 1:
+                                        reportReason = "Inappropriate Website";
+                                        break;
+                                    case 2:
+                                        reportReason = "Profanity";
+                                        break;
+                                }
+                            }
+                        })
+                        .setPositiveButton("Report",(dialog, which) -> Toast.makeText(mContext, "Reported for " + reportReason + ". Thank you.", Toast.LENGTH_SHORT).show())
+                        .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
+                        .create()
+                        .show();
+            }
         }
 
         private void copyRecipe() {
@@ -446,14 +468,17 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         }
 
         private String retrieveRecipeUrl() {
+            item = mRecipeItems.get(getAdapterPosition());
             return item.getmRecipeURL();
         }
 
         private String retrieveRecipeSource() {
+            item = mRecipeItems.get(getAdapterPosition());
             return item.getmSourceName();
         }
 
         private String retrieveRecipeName() {
+            item = mRecipeItems.get(getAdapterPosition());
             return item.getmRecipeName();
         }
     }

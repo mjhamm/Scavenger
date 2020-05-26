@@ -43,6 +43,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
@@ -76,11 +77,10 @@ public class SignUpActivity extends AppCompatActivity {
     private MaterialCheckBox termsCheck;
     private FrameLayout progressHolder;
     private MaterialButton signUpButton, googleSignUpButton, facebookSignUpButton;
-    private ImageButton backButton;
 
-    private boolean nameEmpty = true, emailEmpty = true, passEmpty = true, passConfirmEmpty = true;
     private String name = null, email = null, pass = null;
 
+    private ConnectionDetector con;
     private SharedPreferences sharedPreferences;
     private GoogleSignInClient mGoogleSignUpClient;
     private DatabaseHelper myDb;
@@ -116,6 +116,7 @@ public class SignUpActivity extends AppCompatActivity {
         //getInfoFromSharedPrefs();
 
         myDb = DatabaseHelper.getInstance(this);
+        con = new ConnectionDetector(this);
 
         // Google information
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -141,7 +142,7 @@ public class SignUpActivity extends AppCompatActivity {
         facebookSignUpButton = findViewById(R.id.facebook_signUp);
         googleSignUpButton = findViewById(R.id.google_signUp);
         progressHolder = findViewById(R.id.signUp_progressHolder);
-        backButton = findViewById(R.id.signUp_back);
+        ImageButton backButton = findViewById(R.id.signUp_back);
 
         backButton.setOnClickListener(v -> {
             finish();
@@ -204,10 +205,10 @@ public class SignUpActivity extends AppCompatActivity {
         // ------------------------------------------------------------------------------------------------------
 
         googleSignUpButton.setOnClickListener(v -> {
-            if (!checkConnection()) {
+            if (!con.isConnectingToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet Connection")
-                        .setMessage("You don't have an internet connection. Please reconnect and try to Sign In again.")
+                        .setTitle("No Internet connection found.")
+                        .setMessage("You don't have an Internet connection. Please reconnect and try to Sign Up again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -227,10 +228,10 @@ public class SignUpActivity extends AppCompatActivity {
 
         // Sign in with Facebook Button ------------------------------------------------------------
         facebookSignUpButton.setOnClickListener(v ->{
-            if (!checkConnection()) {
+            if (!con.isConnectingToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet Connection")
-                        .setMessage("You don't have an internet connection. Please reconnect and try to Sign In again.")
+                        .setTitle("No Internet connection found.")
+                        .setMessage("You don't have an Internet connection. Please reconnect and try to Sign Up again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -251,10 +252,23 @@ public class SignUpActivity extends AppCompatActivity {
         // -----------------------------------------------------------------------------------------
         
         signUpButton.setOnClickListener(v -> {
-            progressHolder.setVisibility(View.VISIBLE);
-            name = fullName.getText().toString();
-            email = emailEdit.getText().toString();
-            pass = passEdit.getText().toString();
+            if (!con.isConnectingToInternet()) {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("No Internet connection found.")
+                        .setMessage("You don't have an Internet connection. Please reconnect and try to Sign Up again.")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .create()
+                        .show();
+            } else {
+                progressHolder.setVisibility(View.VISIBLE);
+                name = fullName.getText().toString();
+                email = emailEdit.getText().toString();
+                pass = passEdit.getText().toString();
                 mAuth.createUserWithEmailAndPassword(email, pass)
                         .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                             @Override
@@ -293,13 +307,10 @@ public class SignUpActivity extends AppCompatActivity {
                                             .create()
                                             .show();
                                 }
-
-
                             }
                         });
-
+            }
         });
-
     }
 
     // Sends user information to Firebase
@@ -347,7 +358,7 @@ public class SignUpActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signUpWithCredential:failure", task.getException());
-                            Toast.makeText(SignUpActivity.this, "Authentication Failed. Please try again or reach out to Help", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignUpActivity.this, "Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance.", Toast.LENGTH_SHORT).show();
                         }
 
                         finish();
@@ -464,13 +475,6 @@ public class SignUpActivity extends AppCompatActivity {
         editor.apply();
     }
 
-    // Sets all variables related to logged status and user info
-//    private void getInfoFromSharedPrefs() {
-//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-//        logged = sharedPreferences.getBoolean("logged", false);
-//        userId = sharedPreferences.getString("userId", null);
-//    }
-
     private void checkFieldsForEmpty() {
         if (!passConfirmEdit.getText().toString().trim().equals(passEdit.getText().toString().trim())) {
             passNoMatch.setVisibility(View.VISIBLE);
@@ -497,13 +501,6 @@ public class SignUpActivity extends AppCompatActivity {
         } else {
             signUpButton.setEnabled(false);
         }
-    }
-
-    //boolean that returns true if you are connected to internet and false if not
-    private boolean checkConnection() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnected();
     }
 
     private void retrieveLikesFromFirebase(FirebaseUser user) {

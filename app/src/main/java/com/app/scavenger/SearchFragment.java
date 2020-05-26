@@ -23,6 +23,8 @@ import android.widget.Toast;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,7 +39,7 @@ import retrofit2.http.Query;
 
 public class SearchFragment extends Fragment {
 
-    private static final String TAG = "LOG: ";
+    private static final String TAG = "SEARCH_FRAGMENT: ";
     public static final String ARG_ITEM_IDS = "itemIds";
 
     private RecyclerView mSearchRecyclerView;
@@ -102,8 +104,14 @@ public class SearchFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_search, container, false);
+    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view;
+        try {
+            view = inflater.inflate(R.layout.fragment_search, container, false);
+        } catch (Exception e) {
+            Log.d(TAG, "onCreateView", e);
+            throw  e;
+        }
 
         startup_message = view.findViewById(R.id.startup_message);
         mSearchView = view.findViewById(R.id.search_searchView);

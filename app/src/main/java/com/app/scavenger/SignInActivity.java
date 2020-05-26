@@ -8,15 +8,11 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.nfc.Tag;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.preference.PreferenceManager;
-
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -32,15 +28,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
-import com.facebook.FacebookActivity;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -51,7 +44,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
@@ -62,7 +54,6 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,7 +61,7 @@ import java.util.Map;
 public class SignInActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 101;
-    private static final String TAG = "LOG: ";
+    private static final String TAG = "SIGN_IN_ACTIVITY: ";
     private static final String EMAIL = "email";
 
     private MaterialButton signInButton;
@@ -84,6 +75,7 @@ public class SignInActivity extends AppCompatActivity {
     private DatabaseHelper myDb;
     private GoogleSignInClient mGoogleSignInClient;
     private CallbackManager callbackManager;
+    private ConnectionDetector con;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -112,6 +104,8 @@ public class SignInActivity extends AppCompatActivity {
         // Facebook Info
         MaterialButton mFacebookSignIn = findViewById(R.id.facebook_signIn);
         callbackManager = CallbackManager.Factory.create();
+
+        con = new ConnectionDetector(this);
         //getInfoFromSharedPrefs();
 
         mAuth = FirebaseAuth.getInstance();
@@ -175,41 +169,55 @@ public class SignInActivity extends AppCompatActivity {
         // Sign in with email button ---------------------------------------------------------------
         signInButton.setOnClickListener(v -> {
             hideKeyboard(SignInActivity.this);
-            progressHolder.setVisibility(View.VISIBLE);
-            email = emailEdit.getText().toString();
-            pass = passEdit.getText().toString();
-            mAuth.signInWithEmailAndPassword(email, pass)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                FirebaseUser user = mAuth.getCurrentUser();
-                                Toast.makeText(SignInActivity.this, "Sign In Successful", Toast.LENGTH_SHORT).show();
-                                if (user != null) {
-                                    retrieveLikesFromFirebase(user);
-                                    updatePrefInfo(true, user.getUid());
-                                    sendDataToFirebase(user);
-                                }
-                                finish();
-                                progressHolder.setVisibility(View.GONE);
-                            } else {
-                                Log.w(TAG, "SignInWithEmail:failure", task.getException());
-                                new MaterialAlertDialogBuilder(SignInActivity.this)
-                                        .setTitle("Invalid Email or Password.")
-                                        .setMessage("The Email Address or Password that you have used is invalid. Please check typing and try again. If you continue to have issues, please reach out to Scavenger Support at support@thescavengerapp.com.")
-                                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                dialog.dismiss();
-                                                progressHolder.setVisibility(View.GONE);
-                                                emailEdit.requestFocus();
-                                            }
-                                        })
-                                        .create()
-                                        .show();
+            if (!con.isConnectingToInternet()) {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("No Internet connection found.")
+                        .setMessage("You don't have an Internet connection. Please reconnect and try to Sign In again.")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
                             }
-                        }
-                    });
+                        })
+                        .create()
+                        .show();
+            } else {
+                progressHolder.setVisibility(View.VISIBLE);
+                email = emailEdit.getText().toString();
+                pass = passEdit.getText().toString();
+                mAuth.signInWithEmailAndPassword(email, pass)
+                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
+                                    FirebaseUser user = mAuth.getCurrentUser();
+                                    Toast.makeText(SignInActivity.this, "Sign In Successful", Toast.LENGTH_SHORT).show();
+                                    if (user != null) {
+                                        retrieveLikesFromFirebase(user);
+                                        updatePrefInfo(true, user.getUid());
+                                        sendDataToFirebase(user);
+                                    }
+                                    finish();
+                                    progressHolder.setVisibility(View.GONE);
+                                } else {
+                                    Log.w(TAG, "SignInWithEmail:failure", task.getException());
+                                    new MaterialAlertDialogBuilder(SignInActivity.this)
+                                            .setTitle("Invalid Email or Password.")
+                                            .setMessage("The Email Address or Password that you have used is invalid. Please check typing and try again. If you continue to have issues, please reach out to Scavenger Support at support@thescavengerapp.com.")
+                                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    dialog.dismiss();
+                                                    progressHolder.setVisibility(View.GONE);
+                                                    emailEdit.requestFocus();
+                                                }
+                                            })
+                                            .create()
+                                            .show();
+                                }
+                            }
+                        });
+            }
         });
 
         // -----------------------------------------------------------------------------------------
@@ -234,10 +242,10 @@ public class SignInActivity extends AppCompatActivity {
 
         // Sign in with Facebook Button ------------------------------------------------------------
         mFacebookSignIn.setOnClickListener(v ->{
-            if (!checkConnection()) {
+            if (!con.isConnectingToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet Connection")
-                        .setMessage("You don't have an internet connection. Please reconnect and try to Sign In again.")
+                        .setTitle("No Internet connection found.")
+                        .setMessage("You don't have an Internet connection. Please reconnect and try to Sign In again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -255,10 +263,10 @@ public class SignInActivity extends AppCompatActivity {
 
         // Sign in with google button --------------------------------------------------------------
         mGoogleSignIn.setOnClickListener(v -> {
-            if (!checkConnection()) {
+            if (!con.isConnectingToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet Connection")
-                        .setMessage("You don't have an internet connection. Please reconnect and try to Sign In again.")
+                        .setTitle("No Internet connection found.")
+                        .setMessage("You don't have an Internet connection. Please reconnect and try to Sign In again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -341,7 +349,7 @@ public class SignInActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(SignInActivity.this, "Authentication Failed.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignInActivity.this, "Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance.", Toast.LENGTH_SHORT).show();
                         }
                         finish();
                         progressHolder.setVisibility(View.GONE);
@@ -379,9 +387,8 @@ public class SignInActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(SignInActivity.this, "Authentication Failed. Please try again or reach out to Help", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignInActivity.this, "Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance.", Toast.LENGTH_SHORT).show();
                         }
-
                         finish();
                         progressHolder.setVisibility(View.GONE);
                     }
@@ -409,26 +416,12 @@ public class SignInActivity extends AppCompatActivity {
         }
     }
 
-    //boolean that returns true if you are connected to internet and false if not
-    private boolean checkConnection() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnected();
-    }
-
     private void updatePrefInfo(boolean logged, String userId) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("logged", logged);
         editor.putString("userId", userId);
         editor.apply();
     }
-
-    // Sets all variables related to logged status and user info
-//    private void getInfoFromSharedPrefs() {
-//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-//        logged = sharedPreferences.getBoolean("logged", false);
-//        userId = sharedPreferences.getString("userId", null);
-//    }
 
     private void retrieveLikesFromFirebase(FirebaseUser user) {
         CollectionReference favoritesRef = db.collection("Users").document(user.getUid()).collection("Favorites");
