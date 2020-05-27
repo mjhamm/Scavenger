@@ -3,8 +3,6 @@ package com.app.scavenger;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,11 +17,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 import com.facebook.shimmer.ShimmerFrameLayout;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,15 +45,14 @@ public class SearchFragment extends Fragment {
     private Context mContext;
     private SearchView mSearchView;
     private TextView startup_message, matchMessage;
-    private SharedPreferences sharedPreferences;
     private ShimmerFrameLayout shimmer;
-    private boolean matchOn = false;
     private int fromIngr = 0;
     private int toIngr = 10;
     private LinearLayoutManager mLayoutManager;
     private ArrayList<RecipeItem> recipeItemArrayList;
     private String queryString = null;
     private FirebaseAuth mAuth;
+    private ConnectionDetector con;
 
     private DatabaseHelper myDb;
     private Cursor likesData;
@@ -91,9 +87,6 @@ public class SearchFragment extends Fragment {
         super.onCreate(savedInstanceState);
         mContext = getContext();
 
-//        if (getArguments() != null) {
-//            itemIds = getArguments().getStringArrayList(ARG_ITEM_IDS);
-//        }
         mAuth = FirebaseAuth.getInstance();
         myDb = DatabaseHelper.getInstance(mContext);
     }
@@ -119,7 +112,8 @@ public class SearchFragment extends Fragment {
         shimmer = view.findViewById(R.id.search_shimmerLayout);
         matchMessage = view.findViewById(R.id.match_message);
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        con = new ConnectionDetector(mContext);
+
         recipeItemArrayList = new ArrayList<>();
         itemIds = new ArrayList<>();
 
@@ -156,11 +150,9 @@ public class SearchFragment extends Fragment {
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                if (checkConnection()) {
-                    mSearchView.clearFocus();
-                    mSearchView.setImeOptions(6);
-                    getIngredients();
-                }
+                mSearchView.clearFocus();
+                mSearchView.setImeOptions(6);
+                getIngredients();
                 return false;
             }
 
@@ -223,41 +215,46 @@ public class SearchFragment extends Fragment {
     }
 
     private void getIngredients() {
-        // Clears the array list holding recipe items. Remove this to add load on more
-        //recipeItemArrayList.clear();
-        if (logged) {
-            itemsFromDB();
-        }
-        startup_message.setVisibility(View.GONE);
-        matchMessage.setVisibility(View.GONE);
-        shimmer.setVisibility(View.VISIBLE);
-        shimmer.startShimmer();
-        Retrofit retrofit = NetworkClient.getRetrofitClient();
+        if (!con.isConnectingToInternet()) {
+            new MaterialAlertDialogBuilder(mContext)
+                    .setTitle("No Internet connection found.")
+                    .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                    .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                    .create()
+                    .show();
+        } else {
+            if (logged) {
+                itemsFromDB();
+            }
+            startup_message.setVisibility(View.GONE);
+            matchMessage.setVisibility(View.GONE);
+            shimmer.setVisibility(View.VISIBLE);
+            shimmer.startShimmer();
+            Retrofit retrofit = NetworkClient.getRetrofitClient();
 
-        ApiService apiService = retrofit.create(ApiService.class);
+            ApiService apiService = retrofit.create(ApiService.class);
 
 
-        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), "bd790cc2", "56fdf6a5593ad5199e8040a29b9fbfd6", checkNumIngredients(), fromIngr, toIngr);
-        queryString = getIngredientsSearch();
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        String result = response.body();
-                        writeRecycler(result);
-                        //Log.i("onSuccess", result);
-                    } else {
-                        Log.i("onEmptyResponse", "Returned Empty Response");
+            Call<String> call = apiService.getRecipeData(getIngredientsSearch(), "bd790cc2", "56fdf6a5593ad5199e8040a29b9fbfd6", checkNumIngredients(), fromIngr, toIngr);
+            queryString = getIngredientsSearch();
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(@NotNull Call<String> call, @NotNull Response<String> response) {
+                    if (response.isSuccessful()) {
+                        if (response.body() != null) {
+                            String result = response.body();
+                            writeRecycler(result);
+                            //Log.i("onSuccess", result);
+                        } else {
+                            Log.i("onEmptyResponse", "Returned Empty Response");
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void onFailure(Call call, Throwable t) {
-
-            }
-        });
+                @Override
+                public void onFailure(@NotNull Call call, @NotNull Throwable t) {}
+            });
+        }
     }
 
     private String randomItemId(RecipeItem item) {
@@ -401,17 +398,10 @@ public class SearchFragment extends Fragment {
         return mSearchView.getQuery().toString();
     }
 
-    //boolean that returns true if you are connected to internet and false if not
-    private boolean checkConnection() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnected();
-    }
-
     //method for creating a Toast
-    private void toastMessage(String message) {
-        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
-    }
+//    private void toastMessage(String message) {
+//        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+//    }
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {

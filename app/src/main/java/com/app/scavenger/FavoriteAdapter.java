@@ -69,6 +69,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     private Context mContext;
     private LayoutInflater mInflater;
     private SharedPreferences sharedPreferences;
+    private ConnectionDetector con;
 
     private boolean refresh = false;
 
@@ -86,6 +87,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     @Override
     public FavoriteAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.row_card_item, parent, false);
+        con = new ConnectionDetector(mContext);
         return new ViewHolder(view);
     }
 
@@ -186,39 +188,51 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
             favorite_button.setOnClickListener(v -> {
                 // Gets the item at the position
-                recipeItem = mRecipeItems.get(getAdapterPosition());
-                new MaterialAlertDialogBuilder(mContext)
-                        .setTitle("Remove this recipe from your Likes?")
-                        .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
-                        .setCancelable(false)
-                        .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                try {
-                                    removeDataFromFirebase(recipeItem);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
+                if (!con.isConnectingToInternet()) {
+                    new MaterialAlertDialogBuilder(mContext)
+                            .setTitle("No Internet connection found.")
+                            .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
                                 }
-                                // CHECK - Let fragment know to reload
-                                mRecipeItems.remove(getAdapterPosition());
-                                int actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
-                                actualNumLikes -= 1;
-                                SharedPreferences.Editor editor = sharedPreferences.edit();
-                                editor.putInt("actualNumLikes", actualNumLikes);
-                                editor.apply();
-                                notifyDataSetChanged();
-                            }
-                        })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
-                        .create()
-                        .show();
-
-
+                            })
+                            .create()
+                            .show();
+                } else {
+                    recipeItem = mRecipeItems.get(getAdapterPosition());
+                    new MaterialAlertDialogBuilder(mContext)
+                            .setTitle("Remove this recipe from your Likes?")
+                            .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
+                            .setCancelable(false)
+                            .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    try {
+                                        removeDataFromFirebase(recipeItem);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                    // CHECK - Let fragment know to reload
+                                    mRecipeItems.remove(getAdapterPosition());
+                                    int actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
+                                    actualNumLikes -= 1;
+                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                    editor.putInt("actualNumLikes", actualNumLikes);
+                                    editor.apply();
+                                    notifyDataSetChanged();
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .create()
+                            .show();
+                }
             });
 
             more_button.setOnClickListener(v -> {
@@ -306,29 +320,43 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         }
 
         private void reportRecipe() {
-            final CharSequence[] listItems = {"Inappropriate Image","Inappropriate Website","Profanity"};
-            new MaterialAlertDialogBuilder(mContext)
-                    .setTitle("Why are you reporting this?")
-                    .setSingleChoiceItems(listItems, -1, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            switch (which) {
-                                case 0:
-                                    reportReason = "Inappropriate Image";
-                                    break;
-                                case 1:
-                                    reportReason = "Inappropriate Website";
-                                    break;
-                                case 2:
-                                    reportReason = "Profanity";
-                                    break;
+            if (!con.isConnectingToInternet()) {
+                new MaterialAlertDialogBuilder(mContext)
+                        .setTitle("No Internet connection found.")
+                        .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
                             }
-                        }
-                    })
-                    .setPositiveButton("Report",(dialog, which) -> Toast.makeText(mContext, "Reported for " + reportReason + ". Thank you.", Toast.LENGTH_SHORT).show())
-                    .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
-                    .create()
-                    .show();
+                        })
+                        .create()
+                        .show();
+            } else {
+                final CharSequence[] listItems = {"Inappropriate Image","Inappropriate Website","Profanity"};
+                new MaterialAlertDialogBuilder(mContext)
+                        .setTitle("Why are you reporting this?")
+                        .setSingleChoiceItems(listItems, -1, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case 0:
+                                        reportReason = "Inappropriate Image";
+                                        break;
+                                    case 1:
+                                        reportReason = "Inappropriate Website";
+                                        break;
+                                    case 2:
+                                        reportReason = "Profanity";
+                                        break;
+                                }
+                            }
+                        })
+                        .setPositiveButton("Report",(dialog, which) -> Toast.makeText(mContext, "Reported for " + reportReason + ". Thank you.", Toast.LENGTH_SHORT).show())
+                        .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
+                        .create()
+                        .show();
+            }
         }
 
         private void copyRecipe() {
@@ -351,14 +379,17 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         }
 
         private String retrieveRecipeUrl() {
+            recipeItem = mRecipeItems.get(getAdapterPosition());
             return recipeItem.getmRecipeURL();
         }
 
         private String retrieveRecipeSource() {
+            recipeItem = mRecipeItems.get(getAdapterPosition());
             return recipeItem.getmSourceName();
         }
 
         private String retrieveRecipeName() {
+            recipeItem = mRecipeItems.get(getAdapterPosition());
             return recipeItem.getmRecipeName();
         }
 

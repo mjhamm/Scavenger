@@ -1,6 +1,9 @@
 package com.app.scavenger;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -23,13 +26,17 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -37,6 +44,8 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
+
+import static android.content.Context.INPUT_METHOD_SERVICE;
 
 public class FavoritesFragment extends Fragment {
 
@@ -81,6 +90,7 @@ public class FavoritesFragment extends Fragment {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private SharedPreferences sharedPreferences;
+    private ConnectionDetector con;
 
     // Liked Items
     private ArrayList<RecipeItem> recipeItemList = new ArrayList<>();
@@ -108,8 +118,15 @@ public class FavoritesFragment extends Fragment {
     public void onStart() {
         super.onStart();
         getInfoFromSharedPrefs();
-        if (logged) {
-            retrieveLikesFromFirebase();
+        if (!con.isConnectingToInternet()) {
+            favorite_message.setText("You are not connected to the Internet. Your Likes will be loaded when you reconnect.");
+            favorite_message.setVisibility(View.VISIBLE);
+            retryConButton.setVisibility(View.VISIBLE);
+        } else {
+            retryConButton.setVisibility(View.GONE);
+            if (logged) {
+                retrieveLikesFromFirebase();
+            }
         }
     }
 
@@ -118,15 +135,22 @@ public class FavoritesFragment extends Fragment {
         super.onHiddenChanged(hidden);
         if (!hidden) {
             getInfoFromSharedPrefs();
-            /* Added */
-            if (!logged) {
-                recipeItemList.clear();
-                if (adapter != null) {
-                    adapter.clearList();
-                }
-                mFavoriteRecyclerView.setAdapter(adapter);
+            if (!con.isConnectingToInternet()) {
+                favorite_message.setText("You are not connected to the Internet. Your Likes will be loaded when you reconnect.");
                 favorite_message.setVisibility(View.VISIBLE);
-                favorite_message.setText(R.string.not_signed_in);
+                retryConButton.setVisibility(View.VISIBLE);
+            } else {
+                retryConButton.setVisibility(View.GONE);
+                /* Added */
+                if (!logged) {
+                    recipeItemList.clear();
+                    if (adapter != null) {
+                        adapter.clearList();
+                    }
+                    mFavoriteRecyclerView.setAdapter(adapter);
+                    favorite_message.setVisibility(View.VISIBLE);
+                    favorite_message.setText(R.string.not_signed_in);
+                }
             }
         }
     }
@@ -136,6 +160,7 @@ public class FavoritesFragment extends Fragment {
         super.onResume();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_favorites, container, false);
@@ -148,8 +173,13 @@ public class FavoritesFragment extends Fragment {
         progressHolder = view.findViewById(R.id.likes_progressHolder);
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        con = new ConnectionDetector(mContext);
 
         adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
+
+        retryConButton.setOnClickListener(v -> {
+            retryConnection();
+        });
 
         mFavoriteRecyclerView.setHasFixedSize(true);
         mFavoriteRecyclerView.setItemViewCacheSize(10);
@@ -159,16 +189,30 @@ public class FavoritesFragment extends Fragment {
         return view;
     }
 
-//    private void retryConnectionInfo() {
-//        try {
-//            // Reload the fragment
-//            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-//            ft.detach(this).attach(this).commit();
-//        } catch (NullPointerException e) {
-//            e.printStackTrace();
-//            Log.d(TAG, e.toString());
-//        }
-//    }
+    private void retryConnection() {
+        try {
+            // Reload the fragment
+            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+            ft.detach(this).attach(this).commit();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            Log.d(TAG, e.toString());
+        }
+    }
+
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
+        }
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+        view.clearFocus();
+    }
 
     private void retrieveLikesFromFirebase() {
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
@@ -252,13 +296,6 @@ public class FavoritesFragment extends Fragment {
         adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
         mFavoriteRecyclerView.setAdapter(adapter);
     }
-
-    //boolean that returns true if you are connected to internet and false if not
-//    private boolean checkConnection() {
-//        ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-//        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-//        return activeNetwork != null && activeNetwork.isConnected();
-//    }
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {

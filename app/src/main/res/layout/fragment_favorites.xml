@@ -20,7 +20,7 @@
             android:id="@+id/favorites_searchView"
             android:layout_width="match_parent"
             android:layout_height="?android:attr/actionBarSize"
-            app:queryHint="Search Favorites"
+            app:queryHint="Search Likes"
             app:iconifiedByDefault="false"
             app:queryBackground="@android:color/transparent"
             android:elevation="8dp"/>
@@ -42,11 +42,15 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/fav_retry_con_button"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:elevation="6dp"
         android:text="Retry Connection"
         android:layout_below="@id/favorite_message"
         android:layout_centerHorizontal="true"
+        android:textColor="@android:color/white"
+        android:textAllCaps="false"
+        android:textSize="14sp"
+        android:fontFamily="@font/roboto_medium"
         android:layout_marginTop="8dp"
         android:visibility="gone"/>
 
