@@ -8,10 +8,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,7 +58,7 @@ public class SearchFragment extends Fragment {
     private ConnectionDetector con;
 
     private DatabaseHelper myDb;
-    private Cursor likesData;
+    private Cursor likesData, removedData;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -144,7 +147,10 @@ public class SearchFragment extends Fragment {
 
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
         mSearchRecyclerView.setHasFixedSize(true);
-        mSearchRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        RecyclerView.ItemAnimator animator = mSearchRecyclerView.getItemAnimator();
+        if (animator instanceof SimpleItemAnimator) {
+            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+        }
         mSearchRecyclerView.setItemViewCacheSize(10);
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -174,10 +180,6 @@ public class SearchFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        getInfoFromSharedPrefs();
-        if (adapter != null) {
-            mSearchRecyclerView.setAdapter(adapter);
-        }
     }
 
     @Override
@@ -194,6 +196,10 @@ public class SearchFragment extends Fragment {
             queryString = savedInstanceState.getString("query");
             mSearchView.setQuery(queryString, false);
         }
+    }
+
+    public void refreshFrag() {
+        Log.d(TAG, "REFRESH");
     }
 
     private int checkNumIngredients() {
@@ -258,15 +264,16 @@ public class SearchFragment extends Fragment {
     }
 
     private String randomItemId(RecipeItem item) {
-        String updateRecipeName = item.getmRecipeName();
-        String updateRecipeSource = item.getmSourceName();
-        if (item.getmRecipeName().contains("/")) {
-            updateRecipeName = item.getmRecipeName().replace("/", "");
-        }
-        if (item.getmSourceName().contains("/")) {
-            updateRecipeSource = item.getmSourceName().replace("/", "");
-        }
-        return updateRecipeName + updateRecipeSource + item.getmCalories();
+        return item.getmRecipeURL().replace("/", "");
+//        String updateRecipeName = item.getmRecipeName();
+//        String updateRecipeSource = item.getmSourceName();
+//        if (item.getmRecipeName().contains("/")) {
+//            updateRecipeName = item.getmRecipeName().replace("/", "");
+//        }
+//        if (item.getmSourceName().contains("/")) {
+//            updateRecipeSource = item.getmSourceName().replace("/", "");
+//        }
+//        return updateRecipeName + updateRecipeSource + item.getmCalories();
     }
 
 
@@ -357,6 +364,7 @@ public class SearchFragment extends Fragment {
 
                 item.setItemId(randomItemId(item));
 
+                Log.d(TAG, "ItemId: " + item.getItemId());
                 if (itemIds.contains(item.getItemId())) {
                     item.setFavorited(true);
                 }

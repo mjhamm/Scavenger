@@ -136,9 +136,11 @@ public class FavoritesFragment extends Fragment {
         if (!hidden) {
             getInfoFromSharedPrefs();
             if (!con.isConnectingToInternet()) {
-                favorite_message.setText("You are not connected to the Internet. Your Likes will be loaded when you reconnect.");
-                favorite_message.setVisibility(View.VISIBLE);
-                retryConButton.setVisibility(View.VISIBLE);
+                if (adapter == null) {
+                    favorite_message.setText("You are not connected to the Internet. Your Likes will be loaded when you reconnect.");
+                    favorite_message.setVisibility(View.VISIBLE);
+                    retryConButton.setVisibility(View.VISIBLE);
+                }
             } else {
                 retryConButton.setVisibility(View.GONE);
                 /* Added */
@@ -180,6 +182,10 @@ public class FavoritesFragment extends Fragment {
         retryConButton.setOnClickListener(v -> {
             retryConnection();
         });
+
+        if (!logged) {
+            favorite_message.setText(R.string.not_signed_in);
+        }
 
         mFavoriteRecyclerView.setHasFixedSize(true);
         mFavoriteRecyclerView.setItemViewCacheSize(10);

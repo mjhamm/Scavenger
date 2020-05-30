@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -33,6 +34,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     private DatabaseHelper myDb;
     private AccessToken accessToken;
 
+    private RefreshFragments mCallback;
+
     // Shared Preferences Data
     //-----------------------------------------
     private String userId = null;
@@ -40,6 +43,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     private String name = null;
     private String email = null;
     //------------------------------------------
+
+    interface RefreshFragments {
+        void refreshSearch();
+    }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -145,6 +152,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     private void signOut() {
+        refresh();
         mAuth.signOut();
 
         if (GoogleSignIn.getLastSignedInAccount(mContext) != null) {
@@ -206,6 +214,23 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        try {
+            mCallback = (RefreshFragments) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString());
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        mCallback = null;
+        super.onDetach();
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
@@ -224,5 +249,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         userId = sharedPreferences.getString("userId", null);
         email = sharedPreferences.getString("email", null);
         name = sharedPreferences.getString("name", null);
+    }
+
+    public void refresh() {
+        mCallback.refreshSearch();
+
     }
 }

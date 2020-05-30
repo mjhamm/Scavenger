@@ -29,6 +29,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -111,9 +112,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         RecipeItem item = mRecipeItems.get(position);
 
         if (item.isClicked()) {
-            holder.mRelativeLayout.setVisibility(View.VISIBLE);
+            holder.bottomCard.setVisibility(View.VISIBLE);
         } else {
-            holder.mRelativeLayout.setVisibility(View.GONE);
+            holder.bottomCard.setVisibility(View.GONE);
         }
 
         if (item.isFavorited()) {
@@ -212,7 +213,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
         private TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
         private ImageView recipeImage;
-        private MaterialCardView mNutritionCard, mViewRecipe;
+        private MaterialCardView mNutritionCard, mViewRecipe, bottomCard;
         private RelativeLayout mRelativeLayout;
         private RecipeItem item;
         private ImageButton more_button, favorite_button;
@@ -228,6 +229,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             favorite_button = itemView.findViewById(R.id.recipe_favorite);
             more_button = itemView.findViewById(R.id.more_button);
             mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
+            bottomCard = itemView.findViewById(R.id.bottomCardView);
             mRelativeLayout = itemView.findViewById(R.id.ingredients_relativeLayout);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
@@ -249,15 +251,16 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 // Checks if the item is clicked
                 // Sets the layout visible/gone
                 if (item.isClicked()) {
-                    viewGoneAnimator(mRelativeLayout);
+                    //viewGoneAnimator(mRelativeLayout);
                     item.setClicked(false);
+                    bottomCard.setVisibility(View.GONE);
                 } else {
-                    viewVisibleAnimator(mRelativeLayout);
+                    //viewVisibleAnimator(mRelativeLayout);
                     item.setClicked(true);
+                    bottomCard.setVisibility(View.VISIBLE);
+
                 }
             });
-
-
 
             //Creates animation for Love button - Animation to grow and shrink heart when clicked - light
             Animation scaleAnimation_Favorite = new ScaleAnimation(0, 1, 0, 1, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
@@ -544,8 +547,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
     @Override
     public long getItemId(int position) {
-        //RecipeItem item = mRecipeItems.get(position);
-        return position;
+        return mRecipeItems.get(position).getItemId().hashCode();
     }
 
     // Sets all variables related to logged status and user info

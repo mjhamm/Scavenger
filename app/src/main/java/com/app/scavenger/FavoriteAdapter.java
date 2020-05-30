@@ -28,6 +28,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -61,6 +62,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     //-----------------------------------------------------------------------------
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private DatabaseHelper myDb;
 
     private String userId = null;
 
@@ -88,6 +90,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     public FavoriteAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.row_card_item, parent, false);
         con = new ConnectionDetector(mContext);
+        myDb = DatabaseHelper.getInstance(mContext);
         return new ViewHolder(view);
     }
 
@@ -214,6 +217,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
+                                    myDb.removeDataFromView(recipeItem.getItemId());
                                     // CHECK - Let fragment know to reload
                                     mRecipeItems.remove(getAdapterPosition());
                                     int actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
@@ -409,6 +413,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "Successfully removed favorite");
 
+
                         // Alert Favorites Fragment to refresh data.
                         // If list is empty, show message that no likes
                     }
@@ -446,13 +451,6 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         }
     }
 
-    //boolean that returns true if you are connected to internet and false if not
-    private boolean checkConnection() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnected();
-    }
-
     public void clearList() {
         //int size = mRecipeItems.size();
         mRecipeItems.clear();
@@ -474,39 +472,4 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     public int getItemViewType(int position) {
         return position;
     }
-
-//    @Override
-//    public Filter getFilter() {
-//        return itemsFilter;
-//    }
-//
-//    private Filter itemsFilter = new Filter() {
-//        @Override
-//        protected FilterResults performFiltering(CharSequence constraint) {
-//            ArrayList<RecipeItem> filteredList = new ArrayList<>();
-//
-//            if (constraint == null || constraint.length() == 0) {
-//                filteredList.addAll(mRecipeItemsFull);
-//            } else {
-//                String filterPattern = constraint.toString().toLowerCase().trim();
-//
-//                for (RecipeItem item : mRecipeItemsFull) {
-//                    if (item.getmRecipeName().toLowerCase().contains(filterPattern)) {
-//                        filteredList.add(item);
-//                    }
-//                }
-//            }
-//            FilterResults results = new FilterResults();
-//            results.values = filteredList;
-//
-//            return results;
-//        }
-//
-//        @Override
-//        protected void publishResults(CharSequence constraint, FilterResults results) {
-//            mRecipeItems.clear();
-//            mRecipeItems.addAll((ArrayList) results.values);
-//            notifyDataSetChanged();
-//        }
-//    };
 }
