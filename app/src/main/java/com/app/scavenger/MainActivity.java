@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,7 +14,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 
@@ -58,10 +56,10 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         }
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-    }
+//    @Override
+//    protected void onNewIntent(Intent intent) {
+//        super.onNewIntent(intent);
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,5 +162,9 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     @Override
     public void refreshSearch() {
         //Refresh Search Fragment Here
+        if (fragment1 != null) {
+            SearchFragment searchFragment = (SearchFragment) fragment1;
+            searchFragment.refreshFrag();
+        }
     }
 }

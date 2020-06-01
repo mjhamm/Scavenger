@@ -4,17 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
-
 import com.facebook.AccessToken;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -166,6 +163,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         myDb.clearData();
 
         // CHECK: Let search fragment know to reload on sign out
+        refresh();
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("logged", false);
@@ -253,6 +251,5 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     public void refresh() {
         mCallback.refreshSearch();
-
     }
 }

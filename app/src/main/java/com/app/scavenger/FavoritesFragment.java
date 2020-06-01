@@ -177,7 +177,7 @@ public class FavoritesFragment extends Fragment {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         con = new ConnectionDetector(mContext);
 
-        adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
+//        adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
 
         retryConButton.setOnClickListener(v -> {
             retryConnection();

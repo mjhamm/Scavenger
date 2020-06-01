@@ -217,6 +217,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
+
                                     myDb.removeDataFromView(recipeItem.getItemId());
                                     // CHECK - Let fragment know to reload
                                     mRecipeItems.remove(getAdapterPosition());

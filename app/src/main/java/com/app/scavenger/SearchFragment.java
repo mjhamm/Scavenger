@@ -83,21 +83,29 @@ public class SearchFragment extends Fragment {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         logged = currentUser != null;
+
+        myDb.removeAllItemsFromRemoveTable();
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getContext();
-
         mAuth = FirebaseAuth.getInstance();
         myDb = DatabaseHelper.getInstance(mContext);
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
     }
 
     interface ApiService {
         @GET("/search?")
         Call<String> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients, @Query("from") int fromIngr, @Query("to") int toIngr);
     }
+
+
 
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -200,6 +208,17 @@ public class SearchFragment extends Fragment {
 
     public void refreshFrag() {
         Log.d(TAG, "REFRESH");
+        try {
+            // Reload the fragment
+            mSearchView.setQuery("", false);
+            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+            adapter = null;
+            mSearchRecyclerView = null;
+            ft.detach(this).attach(this).commit();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            Log.d(TAG, e.toString());
+        }
     }
 
     private int checkNumIngredients() {
