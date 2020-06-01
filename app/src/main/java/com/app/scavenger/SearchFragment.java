@@ -37,7 +37,7 @@ import retrofit2.Retrofit;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
-public class SearchFragment extends Fragment {
+public class SearchFragment extends Fragment implements SignInActivity.RefreshSearchFrag {
 
     private static final String TAG = "SEARCH_FRAGMENT: ";
     public static final String ARG_ITEM_IDS = "itemIds";
@@ -98,6 +98,22 @@ public class SearchFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
+    }
+
+    @Override
+    public void refreshSearchFrag() {
+        Log.d(TAG, "REFRESH - SIGN IN");
+        try {
+            // Reload the fragment
+            mSearchView.setQuery("", false);
+            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+            adapter = null;
+            mSearchRecyclerView = null;
+            ft.detach(this).attach(this).commit();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            Log.d(TAG, e.toString());
+        }
     }
 
     interface ApiService {
@@ -194,6 +210,21 @@ public class SearchFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("query", queryString);
+    }
+
+    public void testMethod() {
+        Log.d(TAG, "TEST METHOD");
+        try {
+            // Reload the fragment
+            mSearchView.setQuery("", false);
+            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+            adapter = null;
+            mSearchRecyclerView = null;
+            ft.detach(this).attach(this).commit();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            Log.d(TAG, e.toString());
+        }
     }
 
     @Override

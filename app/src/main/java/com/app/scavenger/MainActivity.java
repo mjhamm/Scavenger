@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     private boolean match = false;
     private int numLikes = 0;
     private int actualNumLikes = 0;
+    private boolean refresh = false;
     //------------------------------------------
 
     @Override
@@ -94,6 +95,16 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
             getInfoFromSharedPrefs();
             switch(item.getItemId()) {
                 case R.id.action_search:
+                    if (refresh) {
+                        if (fragment1 != null) {
+                            SearchFragment searchFragment = (SearchFragment) fragment1;
+                            searchFragment.refreshFrag();
+                        }
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putBoolean("refresh", false);
+                        editor.apply();
+                    }
                     fm.beginTransaction().hide(active).show(fragment1).commit();
                     if (match) {
                         Toast.makeText(this, "Match Ingredients is On", Toast.LENGTH_SHORT).show();
@@ -127,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         userId = sharedPreferences.getString("userId", null);
         numLikes = sharedPreferences.getInt("numLikes", 0);
         actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
+        refresh = sharedPreferences.getBoolean("refresh", false);
     }
 
     @Override

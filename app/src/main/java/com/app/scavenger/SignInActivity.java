@@ -425,6 +425,7 @@ public class SignInActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("logged", logged);
         editor.putString("userId", userId);
+        editor.putBoolean("refresh", true);
         editor.apply();
     }
 

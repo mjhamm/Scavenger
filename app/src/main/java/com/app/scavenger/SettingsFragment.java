@@ -170,6 +170,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         editor.putString("name", null);
         editor.putString("email", null);
         editor.putString("userId", null);
+        editor.putBoolean("refresh", false);
         editor.apply();
         logged = false;
         name = null;
