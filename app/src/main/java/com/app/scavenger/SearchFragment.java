@@ -66,10 +66,15 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
     private boolean logged = false;
     //------------------------------------------
 
-    public SearchFragment() {
-        // Required empty public constructor
+    interface ApiService {
+        @GET("/search?")
+        Call<String> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients, @Query("from") int fromIngr, @Query("to") int toIngr);
     }
 
+    // Required empty public constructor
+    public SearchFragment() {}
+
+    // Create a new instance of Search Fragment
     static SearchFragment newInstance() {
         SearchFragment searchFragment = new SearchFragment();
         Bundle args = new Bundle();
@@ -83,7 +88,6 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         logged = currentUser != null;
-
         myDb.removeAllItemsFromRemoveTable();
     }
 
@@ -96,32 +100,9 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
     }
 
     @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
+    public void onResume() {
+        super.onResume();
     }
-
-    @Override
-    public void refreshSearchFrag() {
-        Log.d(TAG, "REFRESH - SIGN IN");
-        try {
-            // Reload the fragment
-            mSearchView.setQuery("", false);
-            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-            adapter = null;
-            mSearchRecyclerView = null;
-            ft.detach(this).attach(this).commit();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            Log.d(TAG, e.toString());
-        }
-    }
-
-    interface ApiService {
-        @GET("/search?")
-        Call<String> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients, @Query("from") int fromIngr, @Query("to") int toIngr);
-    }
-
-
 
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -153,19 +134,19 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
 
         switch (start_message_int) {
             case 0:
-                startup_message.setText("Scavenge For Recipes!");
+                startup_message.setText(R.string.startup_message_1);
                 break;
             case 1:
-                startup_message.setText("Find Recipes You'll Love!");
+                startup_message.setText(R.string.startup_message_2);
                 break;
             case 2:
-                startup_message.setText("Add Up All The\nThyme You Can Save!");
+                startup_message.setText(R.string.startup_message_3);
                 break;
             case 3:
-                startup_message.setText("Break An Egg, Make An Omelet!");
+                startup_message.setText(R.string.startup_message_4);
                 break;
             case 4:
-                startup_message.setText("Check The Way Back Of The Cabinet!");
+                startup_message.setText(R.string.startup_message_5);
                 break;
         }
 
@@ -197,13 +178,13 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-    }
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
-    @Override
-    public void onResume() {
-        super.onResume();
+        if (savedInstanceState != null) {
+            queryString = savedInstanceState.getString("query");
+            mSearchView.setQuery(queryString, false);
+        }
     }
 
     @Override
@@ -212,8 +193,10 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
         outState.putString("query", queryString);
     }
 
-    public void testMethod() {
-        Log.d(TAG, "TEST METHOD");
+    // Interface Override Method
+    @Override
+    public void refreshSearchFrag() {
+        Log.d(TAG, "REFRESH - SIGN IN");
         try {
             // Reload the fragment
             mSearchView.setQuery("", false);
@@ -224,16 +207,6 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
         } catch (NullPointerException e) {
             e.printStackTrace();
             Log.d(TAG, e.toString());
-        }
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        if (savedInstanceState != null) {
-            queryString = savedInstanceState.getString("query");
-            mSearchView.setQuery(queryString, false);
         }
     }
 
@@ -300,7 +273,6 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
                         if (response.body() != null) {
                             String result = response.body();
                             writeRecycler(result);
-                            //Log.i("onSuccess", result);
                         } else {
                             Log.i("onEmptyResponse", "Returned Empty Response");
                         }
@@ -315,18 +287,7 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
 
     private String randomItemId(RecipeItem item) {
         return item.getmRecipeURL().replace("/", "");
-//        String updateRecipeName = item.getmRecipeName();
-//        String updateRecipeSource = item.getmSourceName();
-//        if (item.getmRecipeName().contains("/")) {
-//            updateRecipeName = item.getmRecipeName().replace("/", "");
-//        }
-//        if (item.getmSourceName().contains("/")) {
-//            updateRecipeSource = item.getmSourceName().replace("/", "");
-//        }
-//        return updateRecipeName + updateRecipeSource + item.getmCalories();
     }
-
-
 
     private void writeRecycler(String response) {
         recipeItemArrayList.clear();
@@ -424,7 +385,6 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
 
             adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
             adapter.setHasStableIds(true);
-            mSearchRecyclerView.setItemAnimator(new DefaultItemAnimator());
             mSearchRecyclerView.setAdapter(adapter);
             mSearchRecyclerView.setLayoutManager(mLayoutManager);
 

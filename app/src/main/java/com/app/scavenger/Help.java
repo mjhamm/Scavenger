@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.instabug.bug.BugReporting;
+
 import java.util.ArrayList;
 
 public class Help extends AppCompatActivity implements HelpAdapter.ItemClickListener {

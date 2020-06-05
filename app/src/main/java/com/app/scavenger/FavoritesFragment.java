@@ -1,42 +1,30 @@
 package com.app.scavenger;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
-import androidx.core.view.MenuCompat;
-import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
+
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.facebook.shimmer.Shimmer;
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -44,8 +32,6 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
-
-import static android.content.Context.INPUT_METHOD_SERVICE;
 
 public class FavoritesFragment extends Fragment {
 
@@ -85,12 +71,14 @@ public class FavoritesFragment extends Fragment {
     private TextView favorite_message;
     private MaterialButton retryConButton;
     private MaterialCardView progressHolder;
+    private ShimmerFrameLayout shimmer;
     //--------------------------------------------
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private SharedPreferences sharedPreferences;
     private ConnectionDetector con;
+    private LinearLayoutManager mLayoutManager;
 
     // Liked Items
     private ArrayList<RecipeItem> recipeItemList = new ArrayList<>();
@@ -109,25 +97,27 @@ public class FavoritesFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mContext = getContext();
-    }
-
-    @Override
     public void onStart() {
         super.onStart();
         getInfoFromSharedPrefs();
         if (!con.isConnectingToInternet()) {
-            favorite_message.setText("You are not connected to the Internet. Your Likes will be loaded when you reconnect.");
+            favorite_message.setText(R.string.favorites_not_connected);
             favorite_message.setVisibility(View.VISIBLE);
             retryConButton.setVisibility(View.VISIBLE);
         } else {
             retryConButton.setVisibility(View.GONE);
             if (logged) {
+                shimmer.setVisibility(View.VISIBLE);
+                shimmer.startShimmer();
                 retrieveLikesFromFirebase();
             }
         }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mContext = getContext();
     }
 
     @Override
@@ -137,7 +127,7 @@ public class FavoritesFragment extends Fragment {
             getInfoFromSharedPrefs();
             if (!con.isConnectingToInternet()) {
                 if (adapter == null) {
-                    favorite_message.setText("You are not connected to the Internet. Your Likes will be loaded when you reconnect.");
+                    favorite_message.setText(R.string.favorites_not_connected);
                     favorite_message.setVisibility(View.VISIBLE);
                     retryConButton.setVisibility(View.VISIBLE);
                 }
@@ -171,26 +161,27 @@ public class FavoritesFragment extends Fragment {
         mFavoriteSearch = view.findViewById(R.id.favorites_searchView);
         retryConButton = view.findViewById(R.id.fav_retry_con_button);
         mFavoriteSearch.setMaxWidth(Integer.MAX_VALUE);
-        mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
         progressHolder = view.findViewById(R.id.likes_progressHolder);
         mAuth = FirebaseAuth.getInstance();
+        shimmer = view.findViewById(R.id.likes_shimmerLayout);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         con = new ConnectionDetector(mContext);
 
-//        adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
+        mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
 
-        retryConButton.setOnClickListener(v -> {
-            retryConnection();
-        });
+        retryConButton.setOnClickListener(v -> retryConnection());
 
         if (!logged) {
             favorite_message.setText(R.string.not_signed_in);
         }
 
+        mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
         mFavoriteRecyclerView.setHasFixedSize(true);
+        RecyclerView.ItemAnimator animator = mFavoriteRecyclerView.getItemAnimator();
+        if (animator instanceof SimpleItemAnimator) {
+            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+        }
         mFavoriteRecyclerView.setItemViewCacheSize(10);
-        mFavoriteRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mFavoriteRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
 
         return view;
     }
@@ -206,19 +197,19 @@ public class FavoritesFragment extends Fragment {
         }
     }
 
-    public static void hideKeyboard(Activity activity) {
-        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-        //Find the currently focused view, so we can grab the correct window token from it.
-        View view = activity.getCurrentFocus();
-        //If no view currently has focus, create a new one, just so we can grab a window token from it
-        if (view == null) {
-            view = new View(activity);
-        }
-        if (imm != null) {
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
-        view.clearFocus();
-    }
+//    public static void hideKeyboard(Activity activity) {
+//        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+//        //Find the currently focused view, so we can grab the correct window token from it.
+//        View view = activity.getCurrentFocus();
+//        //If no view currently has focus, create a new one, just so we can grab a window token from it
+//        if (view == null) {
+//            view = new View(activity);
+//        }
+//        if (imm != null) {
+//            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+//        }
+//        view.clearFocus();
+//    }
 
     private void retrieveLikesFromFirebase() {
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
@@ -298,9 +289,13 @@ public class FavoritesFragment extends Fragment {
                         Log.d(TAG, "Recipe List Size: " + recipeItemList.size());
                     }
                 });
+        shimmer.stopShimmer();
+        shimmer.setVisibility(View.GONE);
         numLikes = actualNumLikes;
         adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
+        adapter.setHasStableIds(true);
         mFavoriteRecyclerView.setAdapter(adapter);
+        mFavoriteRecyclerView.setLayoutManager(mLayoutManager);
     }
 
     // Sets all variables related to logged status and user info

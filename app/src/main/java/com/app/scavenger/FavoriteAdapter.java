@@ -98,12 +98,12 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     public void onBindViewHolder(@NonNull FavoriteAdapter.ViewHolder holder, int position) {
         RecipeItem item = mRecipeItems.get(position);
 
-        holder.mRelativeLayout.setVisibility(item.isClicked() ? View.VISIBLE : View.GONE);
+        holder.bottomCard.setVisibility(item.isClicked() ? View.VISIBLE : View.GONE);
 
         if (item.isClicked()) {
-            holder.mRelativeLayout.setVisibility(View.VISIBLE);
+            holder.bottomCard.setVisibility(View.VISIBLE);
         } else {
-            holder.mRelativeLayout.setVisibility(View.GONE);
+            holder.bottomCard.setVisibility(View.GONE);
         }
 
         item.setFavorited(true);
@@ -143,7 +143,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         private TextView recipeProtein;
         private TextView recipeAttributes;
         private ImageView recipeImage;
-        private MaterialCardView mNutritionCard;
+        private MaterialCardView mNutritionCard, bottomCard;
         private RelativeLayout mRelativeLayout;
         private RecipeItem recipeItem;
         private ImageButton more_button, favorite_button;
@@ -162,6 +162,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
             mRelativeLayout = itemView.findViewById(R.id.ingredients_relativeLayout);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
+            bottomCard = itemView.findViewById(R.id.bottomCardView);
             recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
             recipeCarbs = itemView.findViewById(R.id.carbs_amount);
             recipeFat = itemView.findViewById(R.id.fat_amount);
@@ -181,11 +182,11 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                 // Checks if the item is clicked
                 // Sets the layout visible/gone
                 if (recipeItem.isClicked()) {
-                    mRelativeLayout.setVisibility(View.GONE);
                     recipeItem.setClicked(false);
+                    bottomCard.setVisibility(View.GONE);
                 } else {
-                    mRelativeLayout.setVisibility(View.VISIBLE);
                     recipeItem.setClicked(true);
+                    bottomCard.setVisibility(View.VISIBLE);
                 }
             });
 

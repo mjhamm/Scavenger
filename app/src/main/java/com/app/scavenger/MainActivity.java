@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
@@ -15,6 +16,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.instabug.library.Instabug;
+import com.instabug.library.invocation.InstabugInvocationEvent;
+
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments {
@@ -36,6 +40,16 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private ArrayList<String> itemIds;
 
+    private boolean doubleBackToExitPressedOnce;
+    private Handler mHandler = new Handler();
+
+    private final Runnable mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            doubleBackToExitPressedOnce = false;
+        }
+    };
+
     // Shared Preferences Data
     //-----------------------------------------
     private String userId = null;
@@ -56,11 +70,6 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
             numLikes = actualNumLikes;
         }
     }
-
-//    @Override
-//    protected void onNewIntent(Intent intent) {
-//        super.onNewIntent(intent);
-//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,6 +157,21 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("actualNumLikes", 0);
         editor.apply();
+
+        if (mHandler != null) { mHandler.removeCallbacks(mRunnable); }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Back one more time to exit.", Toast.LENGTH_SHORT).show();
+
+        mHandler.postDelayed(mRunnable, 2000);
     }
 
     private void retrieveLikesFromFirebase() {

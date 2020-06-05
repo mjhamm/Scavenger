@@ -64,5 +64,11 @@
     <string name="ingredients">Ingredients</string>
     <string name="nutrition_facts">Nutrition Facts</string>
     <string name="view_recipe">View Recipe</string>
+    <string name="startup_message_1">Scavenge For Recipes!</string>
+    <string name="startup_message_2">Find Recipes You\'ll Love!</string>
+    <string name="startup_message_3">Add Up All The\nThyme You Can Save!</string>
+    <string name="startup_message_4">Break An Egg, Make An Omelet!</string>
+    <string name="startup_message_5">Check The Way Back Of The Cabinet!</string>
+    <string name="favorites_not_connected">You are not connected to the Internet. Your Likes will be loaded when you reconnect.</string>
 
 </resources>
