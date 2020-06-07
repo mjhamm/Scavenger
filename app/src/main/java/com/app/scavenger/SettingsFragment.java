@@ -187,7 +187,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         if (key.equals("match")) {
             if (sharedPreferences.getBoolean("match", false)) {
                 new MaterialAlertDialogBuilder(mContext, R.style.ReminderAlertTheme)
-                        .setTitle("Just a Quick Thing")
+                        .setTitle("Just a quick thing")
                         .setMessage("In order to get the best results with Match Ingredients, separate your ingredients with a comma (',')")
                         .setCancelable(false)
                         .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()

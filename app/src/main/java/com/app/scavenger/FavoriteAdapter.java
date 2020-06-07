@@ -41,9 +41,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 
-public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHolder> {
+public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHolder> implements Filterable {
 
     private static final String TAG = "LOG: ";
 
@@ -66,8 +68,8 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
     private String userId = null;
 
-    private ArrayList<RecipeItem> mRecipeItems;
     private ArrayList<RecipeItem> mRecipeItemsFull;
+    private ArrayList<RecipeItem> mRecipeItems;
     private Context mContext;
     private LayoutInflater mInflater;
     private SharedPreferences sharedPreferences;
@@ -80,8 +82,8 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         this.mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
         this.userId = userId;
-        mRecipeItemsFull = new ArrayList<>(mRecipeItems);
-
+        this.mRecipeItemsFull = recipeItems;
+        Log.d(TAG, "1. FULL LIST: " + mRecipeItemsFull.toString());
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
 
@@ -90,6 +92,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     public FavoriteAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.row_card_item, parent, false);
         con = new ConnectionDetector(mContext);
+        Log.d(TAG, "2. FULL LIST: " + mRecipeItemsFull.toString());
         myDb = DatabaseHelper.getInstance(mContext);
         return new ViewHolder(view);
     }
@@ -129,9 +132,37 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    @Override
+    public Filter getFilter() {
+        return likeFilter;
+    }
 
-        public static final String TAG = "LOG: ";
+    private Filter likeFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            List<RecipeItem> filteredList = new ArrayList<>();
+            Log.d(TAG, "3. FULL LIST: " + mRecipeItemsFull.toString());
+            if (charSequence.toString().isEmpty()) {
+                filteredList.addAll(mRecipeItemsFull);
+            } else {
+                for (RecipeItem item : mRecipeItemsFull) {
+                    if (item.getmRecipeName().toLowerCase().contains(charSequence.toString().toLowerCase())) {
+                        filteredList.add(item);
+                    }
+                }
+            }
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+            return results;
+        }
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            mRecipeItems = (ArrayList<RecipeItem>) results.values;
+            notifyDataSetChanged();
+        }
+    };
+
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView recipeName;
         private TextView recipeSource;
@@ -144,13 +175,11 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         private TextView recipeAttributes;
         private ImageView recipeImage;
         private MaterialCardView mNutritionCard, bottomCard;
-        private RelativeLayout mRelativeLayout;
         private RecipeItem recipeItem;
         private ImageButton more_button, favorite_button;
         private MaterialCardView mViewRecipe;
         private String reportReason = null;
         private boolean rotated;
-        private long mLastClickTime = 0;
 
         ViewHolder( @NonNull View itemView) {
             super(itemView);
@@ -159,7 +188,6 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
             recipeImage = itemView.findViewById(R.id.recipe_image);
             favorite_button = itemView.findViewById(R.id.recipe_favorite);
             more_button = itemView.findViewById(R.id.more_button);
-            mRelativeLayout = itemView.findViewById(R.id.ingredients_relativeLayout);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
             bottomCard = itemView.findViewById(R.id.bottomCardView);

@@ -4,23 +4,25 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
-
-import com.facebook.shimmer.Shimmer;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
@@ -78,6 +80,7 @@ public class FavoritesFragment extends Fragment {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private SharedPreferences sharedPreferences;
     private ConnectionDetector con;
+    private String queryString = null;
     private LinearLayoutManager mLayoutManager;
 
     // Liked Items
@@ -148,6 +151,23 @@ public class FavoritesFragment extends Fragment {
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            queryString = savedInstanceState.getString("query");
+            mFavoriteSearch.setQuery("", true);
+            mFavoriteSearch.setQuery(queryString, true);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("query", queryString);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
     }
@@ -175,6 +195,20 @@ public class FavoritesFragment extends Fragment {
             favorite_message.setText(R.string.not_signed_in);
         }
 
+        mFavoriteSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
+                queryString = newText;
+                return false;
+            }
+        });
+
         mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
         mFavoriteRecyclerView.setHasFixedSize(true);
         RecyclerView.ItemAnimator animator = mFavoriteRecyclerView.getItemAnimator();
@@ -182,6 +216,14 @@ public class FavoritesFragment extends Fragment {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
         mFavoriteRecyclerView.setItemViewCacheSize(10);
+
+        mFavoriteRecyclerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                mFavoriteSearch.clearFocus();
+                return false;
+            }
+        });
 
         return view;
     }

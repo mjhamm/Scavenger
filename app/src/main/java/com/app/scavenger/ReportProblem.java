@@ -9,6 +9,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -16,8 +17,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 public class ReportProblem extends AppCompatActivity {
 
     private EditText reportEditText;
-    private MaterialButton reportSubmitButton;
     private ImageButton backButton;
+    private TextView submit_buttonText;
     private ConnectionDetector con;
 
     @Override
@@ -26,12 +27,12 @@ public class ReportProblem extends AppCompatActivity {
         setContentView(R.layout.activity_report_problem);
 
         reportEditText = findViewById(R.id.report_editText);
-        reportSubmitButton = findViewById(R.id.report_submit);
+        submit_buttonText = findViewById(R.id.report_textButton);
         backButton = findViewById(R.id.reportProblem_back);
 
-        reportSubmitButton.setEnabled(false);
-        reportSubmitButton.setTextColor(Color.GRAY);
-        reportSubmitButton.setBackgroundColor(Color.WHITE);
+        submit_buttonText.setEnabled(false);
+        submit_buttonText.setTextColor(Color.GRAY);
+        submit_buttonText.setBackgroundColor(Color.WHITE);
 
         con = new ConnectionDetector(this);
 
@@ -49,14 +50,13 @@ public class ReportProblem extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.toString().trim().length() != 0) {
-                    reportSubmitButton.setEnabled(true);
-                    reportSubmitButton.setTextColor(Color.BLUE);
-                    reportSubmitButton.setBackgroundColor(Color.WHITE);
+                    submit_buttonText.setEnabled(true);
+                    submit_buttonText.setTextColor(Color.BLUE);
                 } else {
-                    reportSubmitButton.setEnabled(false);
-                    reportSubmitButton.setTextColor(Color.GRAY);
-                    reportSubmitButton.setBackgroundColor(Color.WHITE);
+                    submit_buttonText.setEnabled(false);
+                    submit_buttonText.setTextColor(Color.GRAY);
                 }
+                submit_buttonText.setBackgroundColor(Color.WHITE);
             }
 
             @Override
@@ -66,7 +66,7 @@ public class ReportProblem extends AppCompatActivity {
         });
 
         // Submits Report
-        reportSubmitButton.setOnClickListener(v -> {
+        submit_buttonText.setOnClickListener(v -> {
             if (!con.isConnectingToInternet()) {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("No Internet connection found")

@@ -9,6 +9,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
@@ -17,7 +18,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 public class SendFeedback extends AppCompatActivity {
 
     private EditText feedbackEditText;
-    private MaterialButton feedbackSubmitButton;
+    private TextView submit_textButton;
     private ImageButton backButton;
     private ConnectionDetector con;
 
@@ -27,12 +28,12 @@ public class SendFeedback extends AppCompatActivity {
         setContentView(R.layout.activity_send_feedback);
 
         feedbackEditText = findViewById(R.id.feedback_editText);
-        feedbackSubmitButton = findViewById(R.id.feedback_submit);
+        submit_textButton = findViewById(R.id.submitFeedback_textButton);
         backButton = findViewById(R.id.feedback_back);
 
-        feedbackSubmitButton.setEnabled(false);
-        feedbackSubmitButton.setTextColor(Color.GRAY);
-        feedbackSubmitButton.setBackgroundColor(Color.WHITE);
+        submit_textButton.setEnabled(false);
+        submit_textButton.setTextColor(Color.GRAY);
+        submit_textButton.setBackgroundColor(Color.WHITE);
 
         con = new ConnectionDetector(this);
 
@@ -50,14 +51,13 @@ public class SendFeedback extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.toString().trim().length() != 0) {
-                    feedbackSubmitButton.setEnabled(true);
-                    feedbackSubmitButton.setTextColor(Color.BLUE);
-                    feedbackSubmitButton.setBackgroundColor(Color.WHITE);
+                    submit_textButton.setEnabled(true);
+                    submit_textButton.setTextColor(Color.BLUE);
                 } else {
-                    feedbackSubmitButton.setEnabled(false);
-                    feedbackSubmitButton.setTextColor(Color.GRAY);
-                    feedbackSubmitButton.setBackgroundColor(Color.WHITE);
+                    submit_textButton.setEnabled(false);
+                    submit_textButton.setTextColor(Color.GRAY);
                 }
+                submit_textButton.setBackgroundColor(Color.WHITE);
             }
 
             @Override
@@ -67,7 +67,7 @@ public class SendFeedback extends AppCompatActivity {
         });
 
         // Submits Feedback
-        feedbackSubmitButton.setOnClickListener(v -> {
+        submit_textButton.setOnClickListener(v -> {
             if (!con.isConnectingToInternet()) {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("No Internet connection found")

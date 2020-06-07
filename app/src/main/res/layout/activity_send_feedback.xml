@@ -32,20 +32,16 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="8dp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/feedback_submit"
+        <TextView
+            android:id="@+id/submitFeedback_textButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/submit"
-            android:textAllCaps="false"
-            android:layout_gravity="end|center_vertical"
-            android:layout_marginEnd="8dp"
+            android:padding="8dp"
             android:fontFamily="@font/roboto_medium"
-            android:backgroundTint="@android:color/white"
             android:textColor="@color/dark_gray"
-            app:elevation="0dp"
-            app:strokeColor="@android:color/transparent"
-            app:strokeWidth="0dp"/>
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="16dp"/>
 
     </com.google.android.material.card.MaterialCardView>
 

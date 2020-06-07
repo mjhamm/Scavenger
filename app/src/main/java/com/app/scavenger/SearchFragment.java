@@ -1,5 +1,6 @@
 package com.app.scavenger;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -104,6 +106,7 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
         super.onResume();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view;
@@ -157,6 +160,11 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
         mSearchRecyclerView.setItemViewCacheSize(10);
+
+        mSearchRecyclerView.setOnTouchListener((v, event) -> {
+            mSearchView.clearFocus();
+            return false;
+        });
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
