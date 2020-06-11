@@ -11,7 +11,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.google.android.material.button.MaterialButton;
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class ReportProblem extends AppCompatActivity {
@@ -67,7 +67,7 @@ public class ReportProblem extends AppCompatActivity {
 
         // Submits Report
         submit_buttonText.setOnClickListener(v -> {
-            if (!con.isConnectingToInternet()) {
+            if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect in order to Report a Problem.")

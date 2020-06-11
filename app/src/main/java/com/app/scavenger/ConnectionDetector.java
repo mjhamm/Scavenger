@@ -12,17 +12,15 @@ class ConnectionDetector {
         this.context = context;
     }
 
-    boolean isConnectingToInternet(){
+    boolean connectedToInternet(){
         ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivity != null)
-        {
+        if (connectivity != null) {
             NetworkInfo[] info = connectivity.getAllNetworkInfo();
-            if (info != null)
-                for (NetworkInfo networkInfo : info)
-                    if (networkInfo.getState() == NetworkInfo.State.CONNECTED) {
-                        return true;
-                    }
-
+            for (NetworkInfo networkInfo : info) {
+                if (networkInfo.getState() == NetworkInfo.State.CONNECTED) {
+                    return true;
+                }
+            }
         }
         return false;
     }

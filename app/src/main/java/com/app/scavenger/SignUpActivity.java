@@ -6,13 +6,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
@@ -43,7 +40,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
@@ -205,9 +201,9 @@ public class SignUpActivity extends AppCompatActivity {
         // ------------------------------------------------------------------------------------------------------
 
         googleSignUpButton.setOnClickListener(v -> {
-            if (!con.isConnectingToInternet()) {
+            if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found.")
+                        .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try to Sign Up again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
@@ -228,9 +224,9 @@ public class SignUpActivity extends AppCompatActivity {
 
         // Sign in with Facebook Button ------------------------------------------------------------
         facebookSignUpButton.setOnClickListener(v ->{
-            if (!con.isConnectingToInternet()) {
+            if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found.")
+                        .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try to Sign Up again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
@@ -252,9 +248,9 @@ public class SignUpActivity extends AppCompatActivity {
         // -----------------------------------------------------------------------------------------
         
         signUpButton.setOnClickListener(v -> {
-            if (!con.isConnectingToInternet()) {
+            if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found.")
+                        .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try to Sign Up again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override

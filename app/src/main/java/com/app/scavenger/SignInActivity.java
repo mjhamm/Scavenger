@@ -9,8 +9,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.SpannableString;
@@ -174,9 +172,9 @@ public class SignInActivity extends AppCompatActivity {
         // Sign in with email button ---------------------------------------------------------------
         signInButton.setOnClickListener(v -> {
             hideKeyboard(SignInActivity.this);
-            if (!con.isConnectingToInternet()) {
+            if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found.")
+                        .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try to Sign In again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
@@ -247,9 +245,9 @@ public class SignInActivity extends AppCompatActivity {
 
         // Sign in with Facebook Button ------------------------------------------------------------
         mFacebookSignIn.setOnClickListener(v ->{
-            if (!con.isConnectingToInternet()) {
+            if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found.")
+                        .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try to Sign In again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
@@ -268,9 +266,9 @@ public class SignInActivity extends AppCompatActivity {
 
         // Sign in with google button --------------------------------------------------------------
         mGoogleSignIn.setOnClickListener(v -> {
-            if (!con.isConnectingToInternet()) {
+            if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found.")
+                        .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try to Sign In again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override

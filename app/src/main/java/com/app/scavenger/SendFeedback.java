@@ -12,7 +12,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class SendFeedback extends AppCompatActivity {
@@ -68,7 +67,7 @@ public class SendFeedback extends AppCompatActivity {
 
         // Submits Feedback
         submit_textButton.setOnClickListener(v -> {
-            if (!con.isConnectingToInternet()) {
+            if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect in order to Submit Feedback.")

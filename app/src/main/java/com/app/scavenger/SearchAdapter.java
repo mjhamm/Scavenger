@@ -29,7 +29,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -46,7 +45,6 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
@@ -268,9 +266,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             OvershootInterpolator overshootInterpolator_Favorite = new OvershootInterpolator(4);
             scaleAnimation_Favorite.setInterpolator(overshootInterpolator_Favorite);
             favorite_button.setOnClickListener(v -> {
-                if (!con.isConnectingToInternet()) {
+                if (!con.connectedToInternet()) {
                     new MaterialAlertDialogBuilder(mContext)
-                            .setTitle("No Internet connection found.")
+                            .setTitle("No Internet connection found")
                             .setMessage("You don't have an Internet connection. Please reconnect and try again.")
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
@@ -312,7 +310,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                         }
                     } else {
                         new MaterialAlertDialogBuilder(mContext)
-                                .setTitle("You need to be Signed In.")
+                                .setTitle("You need to be Signed In")
                                 .setMessage("You must Sign Up or Sign In, in order to Like recipes.")
                                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                     @Override
@@ -407,9 +405,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         }
 
         private void reportRecipe() {
-            if (!con.isConnectingToInternet()) {
+            if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(mContext)
-                        .setTitle("No Internet connection found.")
+                        .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override

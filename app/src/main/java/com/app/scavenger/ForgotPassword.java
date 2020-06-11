@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
@@ -73,7 +72,7 @@ public class ForgotPassword extends AppCompatActivity {
         });
 
         forgot_pass_button.setOnClickListener(v -> {
-            if (!con.isConnectingToInternet()) {
+            if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("No Internet Connection")
                         .setMessage("You don't have an internet connection. Please reconnect and try to Sign In again.")
@@ -92,7 +91,7 @@ public class ForgotPassword extends AppCompatActivity {
                             public void onFailure(@NonNull Exception e) {
                                 Log.d(TAG, "Email send failure");
                                 new MaterialAlertDialogBuilder(ForgotPassword.this, R.style.ReportAlertTheme)
-                                        .setTitle("Account not found.")
+                                        .setTitle("Account not found")
                                         .setMessage("The email that you have entered does not belong to an account. If this issue persists, please contact support at support@theScavengerApp.com")
                                         .setCancelable(false)
                                         .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -109,7 +108,7 @@ public class ForgotPassword extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if (task.isSuccessful()) {
-                                    Log.d(TAG, "Reset password email sent.");
+                                    Log.d(TAG, "Reset password email sent");
                                     new MaterialAlertDialogBuilder(ForgotPassword.this, R.style.ReportAlertTheme)
                                             .setTitle("Reset instructions have been sent.")
                                             .setMessage("You will receive reset instructions in 2-5 minutes.")

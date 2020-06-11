@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
@@ -15,13 +14,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
-import android.text.TextUtils;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -103,16 +101,25 @@ public class FavoritesFragment extends Fragment {
     public void onStart() {
         super.onStart();
         getInfoFromSharedPrefs();
-        if (!con.isConnectingToInternet()) {
-            favorite_message.setText(R.string.favorites_not_connected);
-            favorite_message.setVisibility(View.VISIBLE);
-            retryConButton.setVisibility(View.VISIBLE);
+        if (!con.connectedToInternet()) {
+            if (recipeItemList.isEmpty()) {
+                favorite_message.setText(R.string.favorites_not_connected);
+                favorite_message.setVisibility(View.VISIBLE);
+                retryConButton.setVisibility(View.VISIBLE);
+            } else {
+                favorite_message.setVisibility(View.GONE);
+                retryConButton.setVisibility(View.GONE);
+            }
+
         } else {
+            Log.d(TAG, "1. CHECK FOR ADAPTER CLEAR AND RESET");
             retryConButton.setVisibility(View.GONE);
             if (logged) {
-                shimmer.setVisibility(View.VISIBLE);
-                shimmer.startShimmer();
-                retrieveLikesFromFirebase();
+                if (recipeItemList.isEmpty()) {
+                    shimmer.setVisibility(View.VISIBLE);
+                    shimmer.startShimmer();
+                    retrieveLikesFromFirebase();
+                }
             }
         }
     }
@@ -126,13 +133,16 @@ public class FavoritesFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
+        getInfoFromSharedPrefs();
         if (!hidden) {
-            getInfoFromSharedPrefs();
-            if (!con.isConnectingToInternet()) {
-                if (adapter == null) {
+            if (!con.connectedToInternet()) {
+                if (recipeItemList.isEmpty()) {
                     favorite_message.setText(R.string.favorites_not_connected);
                     favorite_message.setVisibility(View.VISIBLE);
                     retryConButton.setVisibility(View.VISIBLE);
+                } else {
+                    favorite_message.setVisibility(View.GONE);
+                    retryConButton.setVisibility(View.GONE);
                 }
             } else {
                 retryConButton.setVisibility(View.GONE);
@@ -148,23 +158,6 @@ public class FavoritesFragment extends Fragment {
                 }
             }
         }
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        if (savedInstanceState != null) {
-            queryString = savedInstanceState.getString("query");
-            mFavoriteSearch.setQuery("", true);
-            mFavoriteSearch.setQuery(queryString, true);
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString("query", queryString);
     }
 
     @Override
@@ -186,6 +179,7 @@ public class FavoritesFragment extends Fragment {
         shimmer = view.findViewById(R.id.likes_shimmerLayout);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         con = new ConnectionDetector(mContext);
+        adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
 
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
 
@@ -203,8 +197,10 @@ public class FavoritesFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
-                queryString = newText;
+                if (logged) {
+                    queryString = newText;
+                    adapter.getFilter().filter(newText);
+                }
                 return false;
             }
         });
@@ -238,20 +234,6 @@ public class FavoritesFragment extends Fragment {
             Log.d(TAG, e.toString());
         }
     }
-
-//    public static void hideKeyboard(Activity activity) {
-//        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-//        //Find the currently focused view, so we can grab the correct window token from it.
-//        View view = activity.getCurrentFocus();
-//        //If no view currently has focus, create a new one, just so we can grab a window token from it
-//        if (view == null) {
-//            view = new View(activity);
-//        }
-//        if (imm != null) {
-//            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-//        }
-//        view.clearFocus();
-//    }
 
     private void retrieveLikesFromFirebase() {
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);

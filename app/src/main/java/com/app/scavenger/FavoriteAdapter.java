@@ -7,8 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
@@ -22,13 +20,11 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -41,9 +37,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 
 public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHolder> implements Filterable {
 
@@ -74,6 +68,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     private LayoutInflater mInflater;
     private SharedPreferences sharedPreferences;
     private ConnectionDetector con;
+    private int filterCount;
 
     private boolean refresh = false;
 
@@ -83,7 +78,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         this.mRecipeItems = recipeItems;
         this.userId = userId;
         this.mRecipeItemsFull = recipeItems;
-        Log.d(TAG, "1. FULL LIST: " + mRecipeItemsFull.toString());
+        filterCount = mRecipeItemsFull.size();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
 
@@ -92,7 +87,6 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     public FavoriteAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.row_card_item, parent, false);
         con = new ConnectionDetector(mContext);
-        Log.d(TAG, "2. FULL LIST: " + mRecipeItemsFull.toString());
         myDb = DatabaseHelper.getInstance(mContext);
         return new ViewHolder(view);
     }
@@ -141,26 +135,32 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
             List<RecipeItem> filteredList = new ArrayList<>();
-            Log.d(TAG, "3. FULL LIST: " + mRecipeItemsFull.toString());
             if (charSequence.toString().isEmpty()) {
                 filteredList.addAll(mRecipeItemsFull);
             } else {
                 for (RecipeItem item : mRecipeItemsFull) {
-                    if (item.getmRecipeName().toLowerCase().contains(charSequence.toString().toLowerCase())) {
+                    if (item.getmRecipeName().toLowerCase().contains(charSequence.toString().toLowerCase()) || item.getmSourceName().toLowerCase().contains(charSequence.toString().toLowerCase()) || item.getmIngredients().toString().toLowerCase().contains(charSequence.toString().toLowerCase())) {
                         filteredList.add(item);
                     }
                 }
             }
+            Log.d(TAG, "1. filterCount: " + filterCount);
             FilterResults results = new FilterResults();
             results.values = filteredList;
             return results;
         }
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
+            Log.d(TAG, "2. filterCount: " + filterCount);
+            filterCount = results.count;
             mRecipeItems = (ArrayList<RecipeItem>) results.values;
             notifyDataSetChanged();
         }
     };
+
+    public int getFilterItemCount() {
+        return filterCount;
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -220,9 +220,9 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
             favorite_button.setOnClickListener(v -> {
                 // Gets the item at the position
-                if (!con.isConnectingToInternet()) {
+                if (!con.connectedToInternet()) {
                     new MaterialAlertDialogBuilder(mContext)
-                            .setTitle("No Internet connection found.")
+                            .setTitle("No Internet connection found")
                             .setMessage("You don't have an Internet connection. Please reconnect and try again.")
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
@@ -354,9 +354,9 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         }
 
         private void reportRecipe() {
-            if (!con.isConnectingToInternet()) {
+            if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(mContext)
-                        .setTitle("No Internet connection found.")
+                        .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try again.")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
@@ -483,7 +483,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
     public void clearList() {
         //int size = mRecipeItems.size();
-        mRecipeItems.clear();
+        mRecipeItemsFull.clear();
         notifyDataSetChanged();
     }
 

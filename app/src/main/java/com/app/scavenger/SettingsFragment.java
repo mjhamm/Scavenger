@@ -1,6 +1,7 @@
 package com.app.scavenger;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -30,6 +31,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     private FirebaseAuth mAuth;
     private DatabaseHelper myDb;
     private AccessToken accessToken;
+    private ConnectionDetector con;
 
     private RefreshFragments mCallback;
 
@@ -67,6 +69,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         mAuth = FirebaseAuth.getInstance();
 
         myDb = DatabaseHelper.getInstance(mContext);
+        con = new ConnectionDetector(mContext);
         //GOOGLE INFORMATION -------------------------------------------------------
         // Requests the information from Google
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -108,7 +111,21 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         });
 
         signOut.setOnPreferenceClickListener(v -> {
-            logoutDialog();
+            if (!con.connectedToInternet()) {
+                new MaterialAlertDialogBuilder(mContext)
+                        .setTitle("No Internet connection found")
+                        .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .create()
+                        .show();
+            } else {
+                logoutDialog();
+            }
             return false;
         });
 
@@ -149,36 +166,36 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     private void signOut() {
-        refresh();
-        mAuth.signOut();
+            refresh();
+            mAuth.signOut();
 
-        if (GoogleSignIn.getLastSignedInAccount(mContext) != null) {
-            mGoogleSignInClient.signOut();
-        }
+            if (GoogleSignIn.getLastSignedInAccount(mContext) != null) {
+                mGoogleSignInClient.signOut();
+            }
 
-        if (accessToken != null && !accessToken.isExpired()) {
-            LoginManager.getInstance().logOut();
-        }
+            if (accessToken != null && !accessToken.isExpired()) {
+                LoginManager.getInstance().logOut();
+            }
 
-        myDb.clearData();
+            myDb.clearData();
 
-        // CHECK: Let search fragment know to reload on sign out
-        refresh();
+            // CHECK: Let search fragment know to reload on sign out
+            refresh();
 
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("logged", false);
-        editor.putString("name", null);
-        editor.putString("email", null);
-        editor.putString("userId", null);
-        editor.putBoolean("refresh", false);
-        editor.apply();
-        logged = false;
-        name = null;
-        email = null;
-        userId = null;
-        Toast.makeText(mContext, "Successfully Signed Out", Toast.LENGTH_SHORT).show();
-        signOut.setVisible(false);
-        signIn.setVisible(true);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("logged", false);
+            editor.putString("name", null);
+            editor.putString("email", null);
+            editor.putString("userId", null);
+            editor.putBoolean("refresh", false);
+            editor.apply();
+            logged = false;
+            name = null;
+            email = null;
+            userId = null;
+            Toast.makeText(mContext, "Successfully Signed Out", Toast.LENGTH_SHORT).show();
+            signOut.setVisible(false);
+            signIn.setVisible(true);
     }
 
     @Override

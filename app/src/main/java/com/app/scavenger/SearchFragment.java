@@ -11,14 +11,12 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -252,9 +250,9 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
     }
 
     private void getIngredients() {
-        if (!con.isConnectingToInternet()) {
+        if (!con.connectedToInternet()) {
             new MaterialAlertDialogBuilder(mContext)
-                    .setTitle("No Internet connection found.")
+                    .setTitle("No Internet connection found")
                     .setMessage("You don't have an Internet connection. Please reconnect and try again.")
                     .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                     .create()
