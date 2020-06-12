@@ -21,7 +21,7 @@ import com.instabug.library.invocation.InstabugInvocationEvent;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments {
+public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, FavoriteAdapter.UpdateSearch {
 
     //private static final String TAG = "LOG: ";
 
@@ -201,6 +201,15 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         if (fragment1 != null) {
             SearchFragment searchFragment = (SearchFragment) fragment1;
             searchFragment.refreshFrag();
+        }
+    }
+
+    @Override
+    public void updateSearch() {
+        //Update Search Fragment Here
+        if (fragment1 != null) {
+            SearchFragment searchFragment = (SearchFragment) fragment1;
+            searchFragment.updateSearchFrag();
         }
     }
 }

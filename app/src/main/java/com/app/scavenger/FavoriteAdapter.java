@@ -61,6 +61,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     private DatabaseHelper myDb;
 
     private String userId = null;
+    private UpdateSearch mCallback;
 
     private ArrayList<RecipeItem> mRecipeItemsFull;
     private ArrayList<RecipeItem> mRecipeItems;
@@ -71,6 +72,10 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     private int filterCount;
 
     private boolean refresh = false;
+
+    interface UpdateSearch {
+        void updateSearch();
+    }
 
     FavoriteAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId) {
         this.mContext = context;
@@ -88,6 +93,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         View view = mInflater.inflate(R.layout.row_card_item, parent, false);
         con = new ConnectionDetector(mContext);
         myDb = DatabaseHelper.getInstance(mContext);
+        mCallback = (UpdateSearch) mContext;
         return new ViewHolder(view);
     }
 
@@ -248,6 +254,8 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                                     }
 
                                     myDb.removeDataFromView(recipeItem.getItemId());
+                                    myDb.addRemovedItem(recipeItem.getItemId());
+                                    update();
                                     // CHECK - Let fragment know to reload
                                     mRecipeItems.remove(getAdapterPosition());
                                     int actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
@@ -491,6 +499,10 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     @Override
     public int getItemCount() {
         return mRecipeItems.size();
+    }
+
+    public void update() {
+        mCallback.updateSearch();
     }
 
     @Override

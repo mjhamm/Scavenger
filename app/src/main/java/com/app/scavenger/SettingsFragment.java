@@ -166,7 +166,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     private void signOut() {
-            refresh();
+            //refresh();
             mAuth.signOut();
 
             if (GoogleSignIn.getLastSignedInAccount(mContext) != null) {

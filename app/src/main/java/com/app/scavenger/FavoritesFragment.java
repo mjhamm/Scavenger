@@ -115,11 +115,11 @@ public class FavoritesFragment extends Fragment {
             Log.d(TAG, "1. CHECK FOR ADAPTER CLEAR AND RESET");
             retryConButton.setVisibility(View.GONE);
             if (logged) {
-                if (recipeItemList.isEmpty()) {
-                    shimmer.setVisibility(View.VISIBLE);
-                    shimmer.startShimmer();
+//                if (recipeItemList.isEmpty()) {
+//                    shimmer.setVisibility(View.VISIBLE);
+//                    shimmer.startShimmer();
                     retrieveLikesFromFirebase();
-                }
+//                }
             }
         }
     }
@@ -146,7 +146,6 @@ public class FavoritesFragment extends Fragment {
                 }
             } else {
                 retryConButton.setVisibility(View.GONE);
-                /* Added */
                 if (!logged) {
                     recipeItemList.clear();
                     if (adapter != null) {

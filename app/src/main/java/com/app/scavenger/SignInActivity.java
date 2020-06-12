@@ -74,7 +74,7 @@ public class SignInActivity extends AppCompatActivity {
     private CallbackManager callbackManager;
     private ConnectionDetector con;
 
-    private RefreshSearchFrag refreshSearchFrag;
+//    private RefreshSearchFrag refreshSearchFrag;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -82,9 +82,9 @@ public class SignInActivity extends AppCompatActivity {
 //    private boolean logged = false;
     //------------------------------------------
 
-    interface RefreshSearchFrag {
-        void refreshSearchFrag();
-    }
+//    interface RefreshSearchFrag {
+//        void refreshSearchFrag();
+//    }
 
     public SignInActivity() {
         // Required empty public constructor

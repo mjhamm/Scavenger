@@ -37,7 +37,7 @@ import retrofit2.Retrofit;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
-public class SearchFragment extends Fragment implements SignInActivity.RefreshSearchFrag {
+public class SearchFragment extends Fragment /*implements SignInActivity.RefreshSearchFrag*/ {
 
     private static final String TAG = "SEARCH_FRAGMENT: ";
     public static final String ARG_ITEM_IDS = "itemIds";
@@ -200,24 +200,40 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
     }
 
     // Interface Override Method
-    @Override
-    public void refreshSearchFrag() {
-        Log.d(TAG, "REFRESH - SIGN IN");
-        try {
-            // Reload the fragment
-            mSearchView.setQuery("", false);
-            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-            adapter = null;
-            mSearchRecyclerView = null;
-            ft.detach(this).attach(this).commit();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            Log.d(TAG, e.toString());
+//    @Override
+//    public void refreshSearchFrag() {
+//        try {
+//            // Reload the fragment
+//            mSearchView.setQuery("", false);
+//            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+//            adapter = null;
+//            mSearchRecyclerView = null;
+//            ft.detach(this).attach(this).commit();
+//        } catch (NullPointerException e) {
+//            e.printStackTrace();
+//            Log.d(TAG, e.toString());
+//        }
+//    }
+
+    public void updateSearchFrag() {
+        if (!recipeItemArrayList.isEmpty()) {
+            Cursor removedItems = myDb.getRemovedItems();
+            while (removedItems.moveToNext()) {
+                for (RecipeItem item : recipeItemArrayList) {
+                    Log.d(TAG, "ITEM ID: " + item.getItemId());
+                    if (item.getItemId().equals(removedItems.getString(1))) {
+                        item.setFavorited(false);
+                    }
+                }
+            }
+            removedItems.close();
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
+            }
         }
     }
 
     public void refreshFrag() {
-        Log.d(TAG, "REFRESH");
         try {
             // Reload the fragment
             mSearchView.setQuery("", false);
@@ -261,6 +277,8 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
             if (logged) {
                 itemsFromDB();
             }
+            recipeItemArrayList.clear();
+            mSearchRecyclerView.removeAllViews();
             startup_message.setVisibility(View.GONE);
             matchMessage.setVisibility(View.GONE);
             shimmer.setVisibility(View.VISIBLE);
@@ -414,7 +432,7 @@ public class SearchFragment extends Fragment implements SignInActivity.RefreshSe
             itemIds.add(likesData.getString(1));
         }
         likesData.close();
-        Log.d(TAG, "Number of Likes: " + itemIds.size() + " Item Ids: " + itemIds.toString());
+        //Log.d(TAG, "Number of Likes: " + itemIds.size() + " Item Ids: " + itemIds.toString());
     }
 
     //Gets the input from Searchview and returns it as string
