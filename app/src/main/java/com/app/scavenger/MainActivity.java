@@ -21,7 +21,7 @@ import com.instabug.library.invocation.InstabugInvocationEvent;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, FavoriteAdapter.UpdateSearch {
+public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, FavoriteAdapter.UpdateSearch, FavoriteAdapter.CheckZeroLikes {
 
     //private static final String TAG = "LOG: ";
 
@@ -210,6 +210,15 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         if (fragment1 != null) {
             SearchFragment searchFragment = (SearchFragment) fragment1;
             searchFragment.updateSearchFrag();
+        }
+    }
+
+    @Override
+    public void checkZeroLikes() {
+        //Update Search Fragment Here
+        if (fragment2 != null) {
+            FavoritesFragment likeFrag = (FavoritesFragment) fragment2;
+            likeFrag.hasZeroLikes();
         }
     }
 }

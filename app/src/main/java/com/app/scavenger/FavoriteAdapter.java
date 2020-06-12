@@ -62,6 +62,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
     private String userId = null;
     private UpdateSearch mCallback;
+    private CheckZeroLikes mZeroLikes;
 
     private ArrayList<RecipeItem> mRecipeItemsFull;
     private ArrayList<RecipeItem> mRecipeItems;
@@ -75,6 +76,10 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
     interface UpdateSearch {
         void updateSearch();
+    }
+
+    interface CheckZeroLikes {
+        void checkZeroLikes();
     }
 
     FavoriteAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId) {
@@ -94,6 +99,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         con = new ConnectionDetector(mContext);
         myDb = DatabaseHelper.getInstance(mContext);
         mCallback = (UpdateSearch) mContext;
+        mZeroLikes = (CheckZeroLikes) mContext;
         return new ViewHolder(view);
     }
 
@@ -258,6 +264,9 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                                     update();
                                     // CHECK - Let fragment know to reload
                                     mRecipeItems.remove(getAdapterPosition());
+                                    if (mRecipeItems.isEmpty()) {
+                                        checkZeroLikes();
+                                    }
                                     int actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
                                     actualNumLikes -= 1;
                                     SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -503,6 +512,10 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
     public void update() {
         mCallback.updateSearch();
+    }
+
+    public void checkZeroLikes() {
+        mZeroLikes.checkZeroLikes();
     }
 
     @Override

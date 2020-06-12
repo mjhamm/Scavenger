@@ -223,10 +223,12 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                     Log.d(TAG, "ITEM ID: " + item.getItemId());
                     if (item.getItemId().equals(removedItems.getString(1))) {
                         item.setFavorited(false);
+                        myDb.removeRemovedItem(item.getItemId());
                     }
                 }
             }
             removedItems.close();
+
             if (adapter != null) {
                 adapter.notifyDataSetChanged();
             }

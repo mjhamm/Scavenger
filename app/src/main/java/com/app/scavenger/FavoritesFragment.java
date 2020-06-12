@@ -110,16 +110,10 @@ public class FavoritesFragment extends Fragment {
                 favorite_message.setVisibility(View.GONE);
                 retryConButton.setVisibility(View.GONE);
             }
-
         } else {
-            Log.d(TAG, "1. CHECK FOR ADAPTER CLEAR AND RESET");
             retryConButton.setVisibility(View.GONE);
             if (logged) {
-//                if (recipeItemList.isEmpty()) {
-//                    shimmer.setVisibility(View.VISIBLE);
-//                    shimmer.startShimmer();
-                    retrieveLikesFromFirebase();
-//                }
+                retrieveLikesFromFirebase();
             }
         }
     }
@@ -221,6 +215,13 @@ public class FavoritesFragment extends Fragment {
         });
 
         return view;
+    }
+
+    public void hasZeroLikes() {
+        if (logged) {
+            favorite_message.setVisibility(View.VISIBLE);
+            favorite_message.setText(R.string.no_favorites);
+        }
     }
 
     private void retryConnection() {
