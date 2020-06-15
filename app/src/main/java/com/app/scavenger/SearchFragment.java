@@ -15,10 +15,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -56,6 +58,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private String queryString = null;
     private FirebaseAuth mAuth;
     private ConnectionDetector con;
+    private boolean isLoading = false;
 
     private DatabaseHelper myDb;
     private Cursor likesData, removedData;
@@ -65,6 +68,9 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private String userId = null;
     private boolean logged = false;
     //------------------------------------------
+
+    private ArrayList<String> att = new ArrayList<>();
+    private ArrayList<String> ing = new ArrayList<>();
 
     interface ApiService {
         @GET("/search?")
@@ -151,6 +157,9 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                 break;
         }
 
+        att.add("Low Fat");
+        ing.add("Milk");
+
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
         mSearchRecyclerView.setHasFixedSize(true);
 
@@ -165,6 +174,8 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             mSearchView.clearFocus();
             return false;
         });
+
+        initScrollListener();
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -244,11 +255,10 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         if (matchIngr) {
             if (mSearchView.getQuery().toString().contains(",")) {
                 ingredientsArray = mSearchView.getQuery().toString().split(",");
-                numIngr = ingredientsArray.length;
             } else {
                 ingredientsArray = mSearchView.getQuery().toString().split(" ");
-                numIngr = ingredientsArray.length;
             }
+            numIngr = ingredientsArray.length;
         }
         return numIngr;
     }
@@ -275,6 +285,8 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
             ApiService apiService = retrofit.create(ApiService.class);
 
+            fromIngr = 0;
+            toIngr = 10;
 
             Call<String> call = apiService.getRecipeData(getIngredientsSearch(), "bd790cc2", "56fdf6a5593ad5199e8040a29b9fbfd6", checkNumIngredients(), fromIngr, toIngr);
             queryString = getIngredientsSearch();
@@ -284,7 +296,18 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                     if (response.isSuccessful()) {
                         if (response.body() != null) {
                             String result = response.body();
+                            recipeItemArrayList.clear();
                             writeRecycler(result);
+
+                            adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
+                            mSearchRecyclerView.setAdapter(adapter);
+                            mSearchRecyclerView.setLayoutManager(mLayoutManager);
+
+                            if (recipeItemArrayList.isEmpty()) {
+                                startup_message.setVisibility(View.VISIBLE);
+                                startup_message.setText("We Couldn't Find Any Recipes :(\n" + "Sorry About That!");
+                                matchMessage.setVisibility(View.VISIBLE);
+                            }
                         } else {
                             Log.i("onEmptyResponse", "Returned Empty Response");
                         }
@@ -302,7 +325,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     }
 
     private void writeRecycler(String response) {
-        recipeItemArrayList.clear();
         try {
             JSONObject obj = new JSONObject(response);
             JSONArray dataArray = obj.getJSONArray("hits");
@@ -394,17 +416,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
                 recipeItemArrayList.add(item);
             }
-
-            adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
-            //adapter.setHasStableIds(true);
-            mSearchRecyclerView.setAdapter(adapter);
-            mSearchRecyclerView.setLayoutManager(mLayoutManager);
-
-            if (recipeItemArrayList.isEmpty()) {
-                startup_message.setVisibility(View.VISIBLE);
-                startup_message.setText("We Couldn't Find Any Recipes :(\n" + "Sorry About That!");
-                matchMessage.setVisibility(View.VISIBLE);
-            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -420,12 +431,103 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             itemIds.add(likesData.getString(1));
         }
         likesData.close();
-        //Log.d(TAG, "Number of Likes: " + itemIds.size() + " Item Ids: " + itemIds.toString());
+    }
+
+    private void initScrollListener() {
+        mSearchRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                if (!isLoading) {
+                    if (mLayoutManager != null && mLayoutManager.findLastCompletelyVisibleItemPosition() == recipeItemArrayList.size() - 1) {
+                        // Bottom of list
+                        loadMoreRecipes();
+                        isLoading = true;
+                    }
+                }
+            }
+        });
     }
 
     //Gets the input from Searchview and returns it as string
     private String getIngredientsSearch() {
         return mSearchView.getQuery().toString();
+    }
+
+    private void loadMoreRecipes() {
+        recipeItemArrayList.add(null);
+        adapter.notifyItemInserted(recipeItemArrayList.size() - 1);
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                recipeItemArrayList.remove(recipeItemArrayList.size() - 1);
+                int scrollPosition = recipeItemArrayList.size();
+                adapter.notifyItemRemoved(scrollPosition);
+
+                getMoreRecipes();
+                /*int currentSize = scrollPosition;
+                int nextLimit = currentSize + 10;
+
+                while (currentSize - 1 < nextLimit) {
+                    RecipeItem item = new RecipeItem();
+                    item.setmServings(1);
+                    item.setmCalories(1000);
+                    item.setmCarbs(10);
+                    item.setmFat(10);
+                    item.setmProtein(10);
+                    item.setmRecipeAttributes(att);
+                    item.setmIngredients(ing);
+                    item.setItemId("itemId");
+                    item.setmRecipeName("name");
+                    item.setmSourceName("source");
+                    item.setmImageUrl("https://www.edamam.com/web-img/417/417cb5d5c104db03142e6cbea430b259.jpg");
+                    item.setmRecipeURL("www.google.com");
+                    item.setmServings(10);
+
+                    recipeItemArrayList.add(item);
+                    currentSize++;
+                }*/
+
+                adapter.notifyDataSetChanged();
+                isLoading = false;
+            }
+        }, 2000);
+
+    }
+
+    private void getMoreRecipes() {
+        fromIngr = toIngr;
+        toIngr = fromIngr + 10;
+        Retrofit retrofit = NetworkClient.getRetrofitClient();
+
+        ApiService apiService = retrofit.create(ApiService.class);
+
+        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), "bd790cc2", "56fdf6a5593ad5199e8040a29b9fbfd6", checkNumIngredients(), fromIngr, toIngr);
+        queryString = getIngredientsSearch();
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(@NotNull Call<String> call, @NotNull Response<String> response) {
+                if (response.isSuccessful()) {
+                    if (response.body() != null) {
+                        String result = response.body();
+                        writeRecycler(result);
+                    } else {
+                        Log.i("onEmptyResponse", "Returned Empty Response");
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull Throwable t) {}
+        });
     }
 
     //method for creating a Toast

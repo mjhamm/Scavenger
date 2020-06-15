@@ -209,12 +209,9 @@ public class FavoritesFragment extends Fragment {
         }
         mFavoriteRecyclerView.setItemViewCacheSize(10);
 
-        mFavoriteRecyclerView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                mFavoriteSearch.clearFocus();
-                return false;
-            }
+        mFavoriteRecyclerView.setOnTouchListener((v, event) -> {
+            mFavoriteSearch.clearFocus();
+            return false;
         });
 
         return view;

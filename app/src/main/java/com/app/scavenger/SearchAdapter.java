@@ -23,6 +23,7 @@ import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,9 +53,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
+public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public static final String TAG = "SEARCH_ADAPTER";
+
+    private final int VIEW_TYPE_ITEM = 0;
+    private final int VIEW_TYPE_LOADING = 1;
 
     // Firestore Labels ----------------------------------------------------------
     private static final String ITEM_ID = "itemId";
@@ -95,24 +99,44 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
     @NonNull
     @Override
-    public SearchAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
-        try {
-            view = mInflater.inflate(R.layout.row_card_item, parent, false);
-        } catch (Exception e) {
-            Log.d(TAG, "onCreateView", e);
-            throw  e;
-        }
         getInfoFromSharedPrefs();
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         myDb = DatabaseHelper.getInstance(mContext);
         con = new ConnectionDetector(mContext);
-        return new ViewHolder(view);
+        if (viewType == VIEW_TYPE_ITEM) {
+            try {
+                view = mInflater.inflate(R.layout.row_card_item, parent, false);
+            } catch (Exception e) {
+                Log.d(TAG, "onCreateView", e);
+                throw  e;
+            }
+            return new ItemViewHolder(view);
+        } else {
+            try {
+                view = mInflater.inflate(R.layout.item_loading, parent, false);
+            } catch (Exception e) {
+                Log.d(TAG, "onCreateView", e);
+                throw  e;
+            }
+            return new LoadingViewHolder(view);
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SearchAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+
+        if (holder instanceof ItemViewHolder) {
+            populateItemData((ItemViewHolder) holder, position);
+        } else if (holder instanceof LoadingViewHolder) {
+            showLoadingView((LoadingViewHolder) holder, position);
+        }
+
+    }
+
+    private void populateItemData(ItemViewHolder holder, int position) {
         RecipeItem item = mRecipeItems.get(position);
 
         boolean isExpanded = mRecipeItems.get(position).isClicked();
@@ -145,6 +169,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         holder.recipeProtein.setText(String.valueOf(item.getmProtein()));
         holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
         holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
+    }
+
+    private void showLoadingView(LoadingViewHolder holder, int position) {
+        // Progress bar for load more is displayed
     }
 
     private void saveDataToFirebase(String itemId, String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
@@ -213,7 +241,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                 });
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
         private ImageView recipeImage;
@@ -226,7 +254,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         private boolean rotated;
         private long mLastClickTime = 0;
 
-        ViewHolder( @NonNull View itemView) {
+        ItemViewHolder( @NonNull View itemView) {
             super(itemView);
             recipeName = itemView.findViewById(R.id.recipe_name);
             recipeSource = itemView.findViewById(R.id.recipe_source);
@@ -484,34 +512,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         }
     }
 
-    private void viewGoneAnimator(View view) {
-
-        view.animate()
-                .alpha(0f)
-                .setDuration(500)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        view.setVisibility(View.GONE);
-                    }
-                });
-
-    }
-
-    private void viewVisibleAnimator(View view) {
-
-        view.animate()
-                .alpha(1f)
-                .setDuration(500)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationStart(Animator animation) {
-                        view.setVisibility(View.VISIBLE);
-                    }
-                });
-
-    }
-
     private static void openInDefaultBrowser(Context context, String url) {
         try {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -540,12 +540,21 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     // Returns the total count of items in the list
     @Override
     public int getItemCount() {
-        return mRecipeItems.size();
+        return mRecipeItems == null ? 0 : mRecipeItems.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return mRecipeItems.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
     }
 
     @Override
     public long getItemId(int position) {
-        return mRecipeItems.get(position).getItemId().hashCode();
+        if (mRecipeItems.get(position) != null) {
+            return mRecipeItems.get(position).getItemId().hashCode();
+        } else {
+            return 0;
+        }
     }
 
     // Sets all variables related to logged status and user info
@@ -553,6 +562,16 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
+    }
+
+    private class LoadingViewHolder extends RecyclerView.ViewHolder {
+
+        private ProgressBar progressBar;
+
+        public LoadingViewHolder(View view) {
+            super(view);
+            progressBar = view.findViewById(R.id.loading_progressBar);
+        }
     }
 }
 
