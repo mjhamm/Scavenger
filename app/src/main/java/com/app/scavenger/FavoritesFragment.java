@@ -10,6 +10,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
@@ -200,7 +201,9 @@ public class FavoritesFragment extends Fragment {
 
         mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
         mFavoriteRecyclerView.setHasFixedSize(true);
+
         RecyclerView.ItemAnimator animator = mFavoriteRecyclerView.getItemAnimator();
+
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
@@ -317,7 +320,7 @@ public class FavoritesFragment extends Fragment {
         shimmer.setVisibility(View.GONE);
         numLikes = actualNumLikes;
         adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
-        adapter.setHasStableIds(true);
+        //adapter.setHasStableIds(true);
         mFavoriteRecyclerView.setAdapter(adapter);
         mFavoriteRecyclerView.setLayoutManager(mLayoutManager);
     }

@@ -153,7 +153,9 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
         mSearchRecyclerView.setHasFixedSize(true);
+
         RecyclerView.ItemAnimator animator = mSearchRecyclerView.getItemAnimator();
+
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
@@ -198,22 +200,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         super.onSaveInstanceState(outState);
         outState.putString("query", queryString);
     }
-
-    // Interface Override Method
-//    @Override
-//    public void refreshSearchFrag() {
-//        try {
-//            // Reload the fragment
-//            mSearchView.setQuery("", false);
-//            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-//            adapter = null;
-//            mSearchRecyclerView = null;
-//            ft.detach(this).attach(this).commit();
-//        } catch (NullPointerException e) {
-//            e.printStackTrace();
-//            Log.d(TAG, e.toString());
-//        }
-//    }
 
     public void updateSearchFrag() {
         if (!recipeItemArrayList.isEmpty()) {
@@ -410,7 +396,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             }
 
             adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
-            adapter.setHasStableIds(true);
+            //adapter.setHasStableIds(true);
             mSearchRecyclerView.setAdapter(adapter);
             mSearchRecyclerView.setLayoutManager(mLayoutManager);
 

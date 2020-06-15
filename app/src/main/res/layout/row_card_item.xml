@@ -6,13 +6,14 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="10dp"
-    android:paddingBottom="24dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="16dp"
+    android:animateLayoutChanges="true"
     android:clipChildren="false"
     android:clipToPadding="false"
     android:background="@android:color/transparent">
 
-    <com.google.android.material.card.MaterialCardView
+    <androidx.cardview.widget.CardView
         android:id="@+id/imageHolder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,7 +25,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        app:cardElevation="10dp"
+        app:cardElevation="6dp"
         app:cardCornerRadius="12dp">
 
         <ImageView
@@ -111,318 +112,325 @@
 
         </RelativeLayout>
 
-    </com.google.android.material.card.MaterialCardView>
+    </androidx.cardview.widget.CardView>
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/bottomCardView"
-        android:layout_width="match_parent"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/expandableLayout"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_below="@id/imageHolder"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@id/imageHolder"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/imageHolder"
-        android:layout_marginTop="-32dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:cardElevation="6dp"
-        app:cardCornerRadius="12dp"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:visibility="gone">
+        android:visibility="visible">
 
-        <RelativeLayout
-            android:id="@+id/ingredients_relativeLayout"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/bottomCardView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_height="match_parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:animateLayoutChanges="true"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="-32dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:cardElevation="4dp"
+            app:cardCornerRadius="12dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
-            <TextView
-                android:id="@+id/nutritionFacts_main_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="40dp"
-                android:layout_marginBottom="6dp"
-                android:layout_toStartOf="@id/servings_total"
-                android:fontFamily="@font/roboto_condensed_regular"
-                android:gravity="start"
-                android:text="@string/nutrition_facts"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textSize="20sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/servings_total"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:layout_gravity="end"
-                android:layout_marginTop="40dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="4dp"
-                android:fontFamily="@font/roboto_condensed_regular"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textSize="14sp"
-                app:layout_constraintStart_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/facts_cardView"
+            <RelativeLayout
+                android:id="@+id/ingredients_relativeLayout"
                 android:layout_width="match_parent"
-                android:layout_height="70dp"
-                android:layout_below="@id/nutritionFacts_main_title"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="8dp"
-                android:background="#FFFFFF"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="8dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/nutritionFacts_main_title">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/constraintLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:textAlignment="center">
-
-                    <androidx.constraintlayout.widget.Guideline
-                        android:id="@+id/middleGuide"
-                        android:layout_width="wrap_content"
-                        android:layout_height="1dp"
-                        android:orientation="horizontal"
-                        app:layout_constraintGuide_percent=".50" />
-
-                    <androidx.constraintlayout.widget.Guideline
-                        android:id="@+id/guide1"
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        app:layout_constraintGuide_percent="0.25" />
-
-                    <androidx.constraintlayout.widget.Guideline
-                        android:id="@+id/guide2"
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        app:layout_constraintGuide_percent="0.50" />
-
-                    <androidx.constraintlayout.widget.Guideline
-                        android:id="@+id/guide3"
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        app:layout_constraintGuide_percent="0.75" />
-
-                    <TextView
-                        android:id="@+id/calories_amount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/roboto_condensed_regular"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
-                        app:layout_constraintBottom_toTopOf="@id/middleGuide"
-                        app:layout_constraintEnd_toStartOf="@id/guide1"
-                        app:layout_constraintStart_toStartOf="parent" />
-
-                    <TextView
-                        android:id="@+id/textView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/roboto_condensed_regular"
-                        android:text="@string/calories"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
-                        app:layout_constraintEnd_toStartOf="@id/guide1"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/middleGuide" />
-
-                    <TextView
-                        android:id="@+id/carbs_amount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="@font/roboto_condensed_regular"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
-                        app:layout_constraintBottom_toTopOf="@id/middleGuide"
-                        app:layout_constraintEnd_toStartOf="@id/guide2"
-                        app:layout_constraintStart_toEndOf="@id/guide1" />
-
-                    <TextView
-                        android:id="@+id/textView2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/roboto_condensed_regular"
-                        android:text="@string/carbs"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
-                        app:layout_constraintEnd_toStartOf="@id/guide2"
-                        app:layout_constraintStart_toEndOf="@id/guide1"
-                        app:layout_constraintTop_toBottomOf="@id/middleGuide" />
-
-                    <TextView
-                        android:id="@+id/fat_amount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="@font/roboto_condensed_regular"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
-                        app:layout_constraintBottom_toTopOf="@id/middleGuide"
-                        app:layout_constraintEnd_toStartOf="@id/guide3"
-                        app:layout_constraintStart_toEndOf="@id/guide2" />
-
-                    <TextView
-                        android:id="@+id/textView3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/roboto_condensed_regular"
-                        android:text="@string/fat"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
-                        app:layout_constraintEnd_toStartOf="@id/guide3"
-                        app:layout_constraintStart_toEndOf="@id/guide2"
-                        app:layout_constraintTop_toBottomOf="@id/middleGuide" />
-
-                    <TextView
-                        android:id="@+id/protein_amount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="@font/roboto_condensed_regular"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
-                        app:layout_constraintBottom_toTopOf="@+id/middleGuide"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/guide3" />
-
-                    <TextView
-                        android:id="@+id/textView4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/roboto_condensed_regular"
-                        android:text="@string/protein"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/guide3"
-                        app:layout_constraintTop_toBottomOf="@id/middleGuide" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-
-            <TextView
-                android:id="@+id/recipe_attributes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/facts_cardView"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="12dp"
-                android:background="@android:color/transparent"
-                android:fontFamily="@font/roboto_condensed_regular"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textSize="14sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/facts_cardView" />
-
-            <View
-                android:id="@+id/ingredientsTop_horizontalBar"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_below="@id/recipe_attributes"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:background="?android:attr/textColorPrimary"
-                app:layout_constraintTop_toBottomOf="@id/recipe_attributes" />
-
-            <TextView
-                android:id="@+id/ingredients_main_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/ingredientsTop_horizontalBar"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="16dp"
-                android:background="@android:color/transparent"
-                android:fontFamily="@font/roboto_condensed_regular"
-                android:text="@string/ingredients"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textSize="20sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/ingredientsTop_horizontalBar" />
-
-            <TextView
-                android:id="@+id/list_of_ingredients"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/ingredients_main_title"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="12dp"
-                android:background="@android:color/transparent"
-                android:fontFamily="@font/roboto_condensed_regular"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textSize="14sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/ingredients_main_title" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/viewRecipe_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/list_of_ingredients"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
-                android:layout_marginBottom="16dp"
-                android:clickable="true"
-                android:focusable="true"
-                app:cardBackgroundColor="@color/colorPrimaryDark"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="10dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/list_of_ingredients"
+                android:animateLayoutChanges="true"
                 app:layout_constraintBottom_toBottomOf="parent">
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:id="@+id/nutritionFacts_main_title"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="40dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_toStartOf="@id/servings_total"
+                    android:fontFamily="@font/roboto_condensed_regular"
+                    android:gravity="start"
+                    android:text="@string/nutrition_facts"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="20sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/servings_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="40dp"
+                    android:layout_marginEnd="16dp"
                     android:layout_marginBottom="4dp"
                     android:fontFamily="@font/roboto_condensed_regular"
-                    android:gravity="center"
-                    android:text="@string/view_recipe"
-                    android:textColor="@android:color/white"
-                    android:textSize="18sp" />
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            </com.google.android.material.card.MaterialCardView>
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/facts_cardView"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_below="@id/nutritionFacts_main_title"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="#FFFFFF"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="4dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/nutritionFacts_main_title">
 
-        </RelativeLayout>
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/constraintLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textAlignment="center">
 
-    </com.google.android.material.card.MaterialCardView>
+                        <androidx.constraintlayout.widget.Guideline
+                            android:id="@+id/middleGuide"
+                            android:layout_width="wrap_content"
+                            android:layout_height="1dp"
+                            android:orientation="horizontal"
+                            app:layout_constraintGuide_percent=".50" />
+
+                        <androidx.constraintlayout.widget.Guideline
+                            android:id="@+id/guide1"
+                            android:layout_width="1dp"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            app:layout_constraintGuide_percent="0.25" />
+
+                        <androidx.constraintlayout.widget.Guideline
+                            android:id="@+id/guide2"
+                            android:layout_width="1dp"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            app:layout_constraintGuide_percent="0.50" />
+
+                        <androidx.constraintlayout.widget.Guideline
+                            android:id="@+id/guide3"
+                            android:layout_width="1dp"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            app:layout_constraintGuide_percent="0.75" />
+
+                        <TextView
+                            android:id="@+id/calories_amount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/roboto_condensed_regular"
+                            android:textColor="@android:color/black"
+                            android:textSize="16sp"
+                            app:layout_constraintBottom_toTopOf="@id/middleGuide"
+                            app:layout_constraintEnd_toStartOf="@id/guide1"
+                            app:layout_constraintStart_toStartOf="parent" />
+
+                        <TextView
+                            android:id="@+id/textView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/roboto_condensed_regular"
+                            android:text="@string/calories"
+                            android:textColor="@android:color/black"
+                            android:textSize="16sp"
+                            app:layout_constraintEnd_toStartOf="@id/guide1"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/middleGuide" />
+
+                        <TextView
+                            android:id="@+id/carbs_amount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:fontFamily="@font/roboto_condensed_regular"
+                            android:textColor="@android:color/black"
+                            android:textSize="16sp"
+                            app:layout_constraintBottom_toTopOf="@id/middleGuide"
+                            app:layout_constraintEnd_toStartOf="@id/guide2"
+                            app:layout_constraintStart_toEndOf="@id/guide1" />
+
+                        <TextView
+                            android:id="@+id/textView2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/roboto_condensed_regular"
+                            android:text="@string/carbs"
+                            android:textColor="@android:color/black"
+                            android:textSize="16sp"
+                            app:layout_constraintEnd_toStartOf="@id/guide2"
+                            app:layout_constraintStart_toEndOf="@id/guide1"
+                            app:layout_constraintTop_toBottomOf="@id/middleGuide" />
+
+                        <TextView
+                            android:id="@+id/fat_amount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:fontFamily="@font/roboto_condensed_regular"
+                            android:textColor="@android:color/black"
+                            android:textSize="16sp"
+                            app:layout_constraintBottom_toTopOf="@id/middleGuide"
+                            app:layout_constraintEnd_toStartOf="@id/guide3"
+                            app:layout_constraintStart_toEndOf="@id/guide2" />
+
+                        <TextView
+                            android:id="@+id/textView3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/roboto_condensed_regular"
+                            android:text="@string/fat"
+                            android:textColor="@android:color/black"
+                            android:textSize="16sp"
+                            app:layout_constraintEnd_toStartOf="@id/guide3"
+                            app:layout_constraintStart_toEndOf="@id/guide2"
+                            app:layout_constraintTop_toBottomOf="@id/middleGuide" />
+
+                        <TextView
+                            android:id="@+id/protein_amount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:fontFamily="@font/roboto_condensed_regular"
+                            android:textColor="@android:color/black"
+                            android:textSize="16sp"
+                            app:layout_constraintBottom_toTopOf="@+id/middleGuide"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/guide3" />
+
+                        <TextView
+                            android:id="@+id/textView4"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/roboto_condensed_regular"
+                            android:text="@string/protein"
+                            android:textColor="@android:color/black"
+                            android:textSize="16sp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/guide3"
+                            app:layout_constraintTop_toBottomOf="@id/middleGuide" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </androidx.cardview.widget.CardView>
+
+
+                <TextView
+                    android:id="@+id/recipe_attributes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/facts_cardView"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="@font/roboto_condensed_regular"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="14sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/facts_cardView" />
+
+                <View
+                    android:id="@+id/ingredientsTop_horizontalBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_below="@id/recipe_attributes"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="?android:attr/textColorPrimary"
+                    app:layout_constraintTop_toBottomOf="@id/recipe_attributes" />
+
+                <TextView
+                    android:id="@+id/ingredients_main_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/ingredientsTop_horizontalBar"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="@font/roboto_condensed_regular"
+                    android:text="@string/ingredients"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="20sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/ingredientsTop_horizontalBar" />
+
+                <TextView
+                    android:id="@+id/list_of_ingredients"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/ingredients_main_title"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="@font/roboto_condensed_regular"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="14sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/ingredients_main_title" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/viewRecipe_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/list_of_ingredients"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginEnd="24dp"
+                    android:layout_marginBottom="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/colorPrimaryDark"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="4dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/list_of_ingredients"
+                    app:layout_constraintBottom_toBottomOf="parent">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="4dp"
+                        android:fontFamily="@font/roboto_condensed_regular"
+                        android:gravity="center"
+                        android:text="@string/view_recipe"
+                        android:textColor="@android:color/white"
+                        android:textSize="18sp" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </RelativeLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </RelativeLayout>

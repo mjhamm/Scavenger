@@ -25,9 +25,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.AutoTransition;
+import androidx.transition.Fade;
+import androidx.transition.Transition;
+import androidx.transition.TransitionManager;
+import androidx.transition.TransitionValues;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.card.MaterialCardView;
@@ -38,6 +46,8 @@ import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
+
+import animations.Animations;
 
 public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHolder> implements Filterable {
 
@@ -89,6 +99,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         this.userId = userId;
         this.mRecipeItemsFull = recipeItems;
         filterCount = mRecipeItemsFull.size();
+        this.setHasStableIds(true);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
 
@@ -107,13 +118,8 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     public void onBindViewHolder(@NonNull FavoriteAdapter.ViewHolder holder, int position) {
         RecipeItem item = mRecipeItems.get(position);
 
-        holder.bottomCard.setVisibility(item.isClicked() ? View.VISIBLE : View.GONE);
-
-        if (item.isClicked()) {
-            holder.bottomCard.setVisibility(View.VISIBLE);
-        } else {
-            holder.bottomCard.setVisibility(View.GONE);
-        }
+        boolean isExpanded = mRecipeItems.get(position).isClicked();
+        holder.expandableLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
 
         item.setFavorited(true);
         holder.favorite_button.setTag(position);
@@ -121,11 +127,15 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
         String servings_string = String.format(mContext.getString(R.string.servings_text),item.getmServings());
 
-        Picasso.get()
-                .load(item.getmImageUrl())
-                .fit()
-                .memoryPolicy(MemoryPolicy.NO_CACHE,MemoryPolicy.NO_STORE)
-                .into(holder.recipeImage);
+        if (item.getmImageUrl() != null) {
+            Picasso.get()
+                    .load(item.getmImageUrl())
+                    .fit()
+                    .into(holder.recipeImage);
+        } else {
+            holder.recipeImage.setImageDrawable(null);
+        }
+
 
         holder.recipeName.setText(item.getmRecipeName());
         holder.recipeSource.setText(item.getmSourceName());
@@ -186,10 +196,11 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         private TextView recipeProtein;
         private TextView recipeAttributes;
         private ImageView recipeImage;
-        private MaterialCardView mNutritionCard, bottomCard;
+        private CardView mNutritionCard, bottomCard;
         private RecipeItem recipeItem;
         private ImageButton more_button, favorite_button;
-        private MaterialCardView mViewRecipe;
+        private ConstraintLayout expandableLayout;
+        private CardView mViewRecipe;
         private String reportReason = null;
         private boolean rotated;
 
@@ -206,6 +217,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
             recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
             recipeCarbs = itemView.findViewById(R.id.carbs_amount);
             recipeFat = itemView.findViewById(R.id.fat_amount);
+            expandableLayout = itemView.findViewById(R.id.expandableLayout);
             recipeProtein = itemView.findViewById(R.id.protein_amount);
             mNutritionCard = itemView.findViewById(R.id.facts_cardView);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
@@ -221,13 +233,8 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                 recipeItem = mRecipeItems.get(position);
                 // Checks if the item is clicked
                 // Sets the layout visible/gone
-                if (recipeItem.isClicked()) {
-                    recipeItem.setClicked(false);
-                    bottomCard.setVisibility(View.GONE);
-                } else {
-                    recipeItem.setClicked(true);
-                    bottomCard.setVisibility(View.VISIBLE);
-                }
+                recipeItem.setClicked(!recipeItem.isClicked());
+                notifyItemChanged(position);
             });
 
             favorite_button.setOnClickListener(v -> {
@@ -520,7 +527,8 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
     @Override
     public long getItemId(int position) {
-        return position;
+        RecipeItem item = mRecipeItems.get(position);
+        return item.hashCode();
     }
 
     @Override

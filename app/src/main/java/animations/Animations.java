@@ -12,11 +12,6 @@ public class Animations {
         view.startAnimation(animation);
     }
 
-    public static void collapse(View view) {
-        Animation animation = collapseAction(view);
-        view.startAnimation(animation);
-    }
-
     private static Animation expandAction(final View view) {
 
         view.measure(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -29,12 +24,10 @@ public class Animations {
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
 
-                if (interpolatedTime == 1) {
-                    view.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                } else {
-                    view.getLayoutParams().height = (int) (actualheight * interpolatedTime);
-                    view.requestLayout();
-                }
+                view.getLayoutParams().height = interpolatedTime == 1
+                        ? ViewGroup.LayoutParams.WRAP_CONTENT
+                        : (int) (actualheight * interpolatedTime);
+                view.requestLayout();
             }
         };
 
@@ -48,9 +41,9 @@ public class Animations {
 
     }
 
-    private static Animation collapseAction(final View view) {
+    public static void collapse(final View view) {
 
-        final int height = view.getMeasuredHeight();
+        final int actualHeight = view.getMeasuredHeight();
 
         Animation animation = new Animation() {
             @Override
@@ -59,15 +52,14 @@ public class Animations {
                 if (interpolatedTime == 1) {
                     view.setVisibility(View.GONE);
                 } else {
-                    view.getLayoutParams().height = height - (int) (height * interpolatedTime);
+                    view.getLayoutParams().height = actualHeight - (int) (actualHeight * interpolatedTime);
                     view.requestLayout();
+
                 }
             }
         };
 
-        animation.setDuration((long) (height/ view.getContext().getResources().getDisplayMetrics().density));
+        animation.setDuration((long) (actualHeight/ view.getContext().getResources().getDisplayMetrics().density));
         view.startAnimation(animation);
-
-        return animation;
     }
 }

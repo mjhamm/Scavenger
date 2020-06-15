@@ -240,7 +240,6 @@ public class SignInActivity extends AppCompatActivity {
         signUpText.setOnClickListener(v -> {
             Intent intent = new Intent(this, SignUpActivity.class);
             startActivity(intent);
-            finish();
         });
 
         // Sign in with Facebook Button ------------------------------------------------------------
