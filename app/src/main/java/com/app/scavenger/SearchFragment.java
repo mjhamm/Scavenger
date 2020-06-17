@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -49,6 +50,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private SearchAdapter adapter;
     private Context mContext;
     private SearchView mSearchView;
+    private ProgressBar mProgressBar;
     private TextView startup_message, matchMessage;
     private ShimmerFrameLayout shimmer;
     private int fromIngr = 0;
@@ -58,19 +60,17 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private String queryString = null;
     private FirebaseAuth mAuth;
     private ConnectionDetector con;
-    private boolean isLoading = false;
+    //private boolean isLoading = false;
+    private EndlessRecyclerViewScrollListener scrollListener;
 
     private DatabaseHelper myDb;
-    private Cursor likesData, removedData;
+    private Cursor likesData;
 
     // Shared Preferences Data
     //-----------------------------------------
     private String userId = null;
     private boolean logged = false;
     //------------------------------------------
-
-    private ArrayList<String> att = new ArrayList<>();
-    private ArrayList<String> ing = new ArrayList<>();
 
     interface ApiService {
         @GET("/search?")
@@ -126,8 +126,11 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         mSearchView.setMaxWidth(Integer.MAX_VALUE);
         shimmer = view.findViewById(R.id.search_shimmerLayout);
         matchMessage = view.findViewById(R.id.match_message);
+        mProgressBar = view.findViewById(R.id.main_progressBar);
 
         con = new ConnectionDetector(mContext);
+
+        mProgressBar.setVisibility(View.GONE);
 
         recipeItemArrayList = new ArrayList<>();
         itemIds = new ArrayList<>();
@@ -157,9 +160,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                 break;
         }
 
-        att.add("Low Fat");
-        ing.add("Milk");
-
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
         mSearchRecyclerView.setHasFixedSize(true);
 
@@ -175,7 +175,16 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             return false;
         });
 
-        initScrollListener();
+        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                getMoreRecipes();
+            }
+        };
+
+        mSearchRecyclerView.addOnScrollListener(scrollListener);
+
+        //initScrollListener();
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -217,7 +226,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             Cursor removedItems = myDb.getRemovedItems();
             while (removedItems.moveToNext()) {
                 for (RecipeItem item : recipeItemArrayList) {
-                    Log.d(TAG, "ITEM ID: " + item.getItemId());
                     if (item.getItemId().equals(removedItems.getString(1))) {
                         item.setFavorited(false);
                         myDb.removeRemovedItem(item.getItemId());
@@ -277,6 +285,13 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             }
             recipeItemArrayList.clear();
             mSearchRecyclerView.removeAllViews();
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
+            }
+
+            // Updates Endless Scroll Listener
+            scrollListener.resetState();
+
             startup_message.setVisibility(View.GONE);
             matchMessage.setVisibility(View.GONE);
             shimmer.setVisibility(View.VISIBLE);
@@ -409,7 +424,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
                 item.setItemId(randomItemId(item));
 
-                Log.d(TAG, "ItemId: " + item.getItemId());
                 if (itemIds.contains(item.getItemId())) {
                     item.setFavorited(true);
                 }
@@ -433,85 +447,74 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         likesData.close();
     }
 
-    private void initScrollListener() {
-        mSearchRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-            }
-
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                if (!isLoading) {
-                    if (mLayoutManager != null && mLayoutManager.findLastCompletelyVisibleItemPosition() == recipeItemArrayList.size() - 1) {
-                        // Bottom of list
-                        loadMoreRecipes();
-                        isLoading = true;
-                    }
-                }
-            }
-        });
-    }
+//    private void initScrollListener() {
+//        mSearchRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            @Override
+//            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+//                super.onScrollStateChanged(recyclerView, newState);
+//            }
+//
+//            @Override
+//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+//                super.onScrolled(recyclerView, dx, dy);
+//
+//                if (!isLoading) {
+//                    if (mLayoutManager != null && mLayoutManager.findLastCompletelyVisibleItemPosition() == recipeItemArrayList.size() - 1) {
+//                        // Bottom of list
+//
+//
+//
+//                        loadMoreRecipes();
+//                        isLoading = true;
+//                    }
+//                }
+//            }
+//        });
+//    }
 
     //Gets the input from Searchview and returns it as string
     private String getIngredientsSearch() {
         return mSearchView.getQuery().toString();
     }
 
-    private void loadMoreRecipes() {
-        recipeItemArrayList.add(null);
-        adapter.notifyItemInserted(recipeItemArrayList.size() - 1);
+//    private void loadMoreRecipes() {
+//
+//        recipeItemArrayList.add(null);
+//
+//        mSearchRecyclerView.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                adapter.notifyItemInserted(recipeItemArrayList.size() - 1);
+//            }
+//        });
+//
+/*        Handler handler = new Handler();
+        handler.postDelayed(() -> {
 
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                recipeItemArrayList.remove(recipeItemArrayList.size() - 1);
-                int scrollPosition = recipeItemArrayList.size();
-                adapter.notifyItemRemoved(scrollPosition);
+            mSearchRecyclerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    recipeItemArrayList.remove(recipeItemArrayList.size() - 1);
+                    int scrollPosition = recipeItemArrayList.size();
+                    adapter.notifyItemRemoved(scrollPosition);
+                }
+            });
 
-                getMoreRecipes();
-                /*int currentSize = scrollPosition;
-                int nextLimit = currentSize + 10;
-
-                while (currentSize - 1 < nextLimit) {
-                    RecipeItem item = new RecipeItem();
-                    item.setmServings(1);
-                    item.setmCalories(1000);
-                    item.setmCarbs(10);
-                    item.setmFat(10);
-                    item.setmProtein(10);
-                    item.setmRecipeAttributes(att);
-                    item.setmIngredients(ing);
-                    item.setItemId("itemId");
-                    item.setmRecipeName("name");
-                    item.setmSourceName("source");
-                    item.setmImageUrl("https://www.edamam.com/web-img/417/417cb5d5c104db03142e6cbea430b259.jpg");
-                    item.setmRecipeURL("www.google.com");
-                    item.setmServings(10);
-
-                    recipeItemArrayList.add(item);
-                    currentSize++;
-                }*/
-
-                adapter.notifyDataSetChanged();
-                isLoading = false;
-            }
-        }, 2000);
-
-    }
+            isLoading = false;
+        }, 1000);*/
+//
+//        getMoreRecipes();
+//    }
 
     private void getMoreRecipes() {
         fromIngr = toIngr;
         toIngr = fromIngr + 10;
+        Log.d(TAG, "from: " + fromIngr + " to: " + toIngr);
         Retrofit retrofit = NetworkClient.getRetrofitClient();
 
         ApiService apiService = retrofit.create(ApiService.class);
 
         Call<String> call = apiService.getRecipeData(getIngredientsSearch(), "bd790cc2", "56fdf6a5593ad5199e8040a29b9fbfd6", checkNumIngredients(), fromIngr, toIngr);
-        queryString = getIngredientsSearch();
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NotNull Call<String> call, @NotNull Response<String> response) {
@@ -519,6 +522,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                     if (response.body() != null) {
                         String result = response.body();
                         writeRecycler(result);
+                        //adapter.notifyDataSetChanged();
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");
                     }

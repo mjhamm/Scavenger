@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Movie;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -59,6 +60,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private final int VIEW_TYPE_ITEM = 0;
     private final int VIEW_TYPE_LOADING = 1;
+    private boolean isLoadingAdded = false;
 
     // Firestore Labels ----------------------------------------------------------
     private static final String ITEM_ID = "itemId";
@@ -76,12 +78,10 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     //-----------------------------------------------------------------------------
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private String userId = null;
-    private boolean logged = false;
-    private boolean expanded = false;
+    private String userId;
+    private boolean logged;
     private ConnectionDetector con;
     private SharedPreferences sharedPreferences;
-    /*private CollectionReference favoritesRef = db.collection("Users").document(mUserId).collection("Favorites");*/
     private ArrayList<RecipeItem> mRecipeItems;
     private Context mContext;
     private LayoutInflater mInflater;
@@ -100,12 +100,28 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        //RecyclerView.ViewHolder viewHolder = null;
         View view;
         getInfoFromSharedPrefs();
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         myDb = DatabaseHelper.getInstance(mContext);
         con = new ConnectionDetector(mContext);
+//        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+//
+//        switch (viewType) {
+//            case VIEW_TYPE_ITEM:
+//                viewHolder = getViewHolder(parent, inflater);
+//                break;
+//            case VIEW_TYPE_LOADING:
+//                View v2 = inflater.inflate(R.layout.item_loading, parent, false);
+//                viewHolder = new LoadingViewHolder(v2);
+//                break;
+//            default:
+//                viewHolder = getViewHolder(parent, inflater);
+//        }
+//        return viewHolder;
+
         if (viewType == VIEW_TYPE_ITEM) {
             try {
                 view = mInflater.inflate(R.layout.row_card_item, parent, false);
@@ -125,16 +141,57 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
+    @NonNull
+    private RecyclerView.ViewHolder getViewHolder(ViewGroup parent, LayoutInflater inflater) {
+        RecyclerView.ViewHolder viewHolder;
+        View v1 = inflater.inflate(R.layout.row_card_item, parent, false);
+        viewHolder = new ItemViewHolder(v1);
+        return viewHolder;
+    }
+
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 
-        if (holder instanceof ItemViewHolder) {
-            populateItemData((ItemViewHolder) holder, position);
-        } else if (holder instanceof LoadingViewHolder) {
-            showLoadingView((LoadingViewHolder) holder, position);
+        switch (getItemViewType(position)) {
+            case VIEW_TYPE_ITEM:
+                populateItemData((ItemViewHolder) holder, position);
+            case VIEW_TYPE_LOADING:
+                break;
         }
 
+
+//        if (holder instanceof ItemViewHolder) {
+//            populateItemData((ItemViewHolder) holder, position);
+//        } else if (holder instanceof LoadingViewHolder) {
+//            showLoadingView((LoadingViewHolder) holder, position);
+//        }
+
     }
+
+    // Returns the total count of items in the list
+    @Override
+    public int getItemCount() {
+        return mRecipeItems == null ? 0 : mRecipeItems.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return mRecipeItems.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
+    }
+
+    @Override
+    public long getItemId(int position) {
+        if (mRecipeItems.get(position) != null) {
+            return mRecipeItems.get(position).getItemId().hashCode();
+        } else {
+            return 0;
+        }
+    }
+
+    /*
+    HELPERS
+    ________________________________________________________________________________________________________________________________________
+     */
 
     private void populateItemData(ItemViewHolder holder, int position) {
         RecipeItem item = mRecipeItems.get(position);
@@ -169,6 +226,13 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         holder.recipeProtein.setText(String.valueOf(item.getmProtein()));
         holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
         holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
+    }
+
+    // Sets all variables related to logged status and user info
+    private void getInfoFromSharedPrefs() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        logged = sharedPreferences.getBoolean("logged", false);
+        userId = sharedPreferences.getString("userId", null);
     }
 
     private void showLoadingView(LoadingViewHolder holder, int position) {
@@ -241,12 +305,42 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 });
     }
 
+    private static void openInDefaultBrowser(Context context, String url) {
+        try {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            context.startActivity(browserIntent);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Log.e("DefaultBrowserError: ", "Activity Error");
+        }
+    }
+
+    private static void openURLInChromeCustomTab(Context context, String url) {
+        try {
+            CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
+            CustomTabsIntent customTabsIntent = builder1.build();
+            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            builder1.setInstantAppsEnabled(true);
+            customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
+            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
+            customTabsIntent.launchUrl(context, Uri.parse(url));
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Log.e("ChromeCustomTabError: ", "Activity Error");
+        }
+    }
+
+    /*
+   VIEW HOLDERS
+   _________________________________________________________________________________________________
+    */
+
+    // ITEM VIEW HOLDER
     public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
         private ImageView recipeImage;
-        private CardView mNutritionCard, mViewRecipe, bottomCard;
-        private RelativeLayout mRelativeLayout;
+        private CardView mNutritionCard, mViewRecipe;
         private RecipeItem item;
         private ImageButton more_button, favorite_button;
         private String reportReason = null;
@@ -262,9 +356,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             favorite_button = itemView.findViewById(R.id.recipe_favorite);
             more_button = itemView.findViewById(R.id.more_button);
             mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
-            bottomCard = itemView.findViewById(R.id.bottomCardView);
             expandableLayout = itemView.findViewById(R.id.expandableLayout);
-            mRelativeLayout = itemView.findViewById(R.id.ingredients_relativeLayout);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
             recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
@@ -348,9 +440,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                                 })
                                 .create()
                                 .show();
-                            }
-                        }
-                    });
+                    }
+                }
+            });
 
             more_button.setOnClickListener(v -> {
                 Animation cw = AnimationUtils.loadAnimation(mContext, R.anim.menu_clockwise);
@@ -401,7 +493,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                                 dialog.dismiss();
                             }
                         }).create()
-                .show();
+                        .show();
             });
 
             recipeServings.setOnClickListener(v -> {
@@ -512,63 +604,12 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
-    private static void openInDefaultBrowser(Context context, String url) {
-        try {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            context.startActivity(browserIntent);
-        } catch (ActivityNotFoundException e) {
-            e.printStackTrace();
-            Log.e("DefaultBrowserError: ", "Activity Error");
-        }
-    }
-
-    private static void openURLInChromeCustomTab(Context context, String url) {
-        try {
-            CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
-            CustomTabsIntent customTabsIntent = builder1.build();
-            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            builder1.setInstantAppsEnabled(true);
-            customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
-            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
-            customTabsIntent.launchUrl(context, Uri.parse(url));
-        } catch (ActivityNotFoundException e) {
-            e.printStackTrace();
-            Log.e("ChromeCustomTabError: ", "Activity Error");
-        }
-    }
-
-    // Returns the total count of items in the list
-    @Override
-    public int getItemCount() {
-        return mRecipeItems == null ? 0 : mRecipeItems.size();
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return mRecipeItems.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        if (mRecipeItems.get(position) != null) {
-            return mRecipeItems.get(position).getItemId().hashCode();
-        } else {
-            return 0;
-        }
-    }
-
-    // Sets all variables related to logged status and user info
-    private void getInfoFromSharedPrefs() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        logged = sharedPreferences.getBoolean("logged", false);
-        userId = sharedPreferences.getString("userId", null);
-    }
-
-    private class LoadingViewHolder extends RecyclerView.ViewHolder {
+    // LOADING VIEW HOLDER
+    private static class LoadingViewHolder extends RecyclerView.ViewHolder {
 
         private ProgressBar progressBar;
 
-        public LoadingViewHolder(View view) {
+        public LoadingViewHolder(@NonNull View view) {
             super(view);
             progressBar = view.findViewById(R.id.loading_progressBar);
         }
