@@ -113,7 +113,7 @@ public class FavoritesFragment extends Fragment {
             }
         } else {
             retryConButton.setVisibility(View.GONE);
-            if (logged) {
+            if (logged && recipeItemList.isEmpty()) {
                 retrieveLikesFromFirebase();
             }
         }
@@ -141,6 +141,7 @@ public class FavoritesFragment extends Fragment {
                 }
             } else {
                 retryConButton.setVisibility(View.GONE);
+                favorite_message.setText("");
                 if (!logged) {
                     recipeItemList.clear();
                     if (adapter != null) {
@@ -149,6 +150,10 @@ public class FavoritesFragment extends Fragment {
                     mFavoriteRecyclerView.setAdapter(adapter);
                     favorite_message.setVisibility(View.VISIBLE);
                     favorite_message.setText(R.string.not_signed_in);
+                } else {
+                    if (recipeItemList.isEmpty()) {
+                        retrieveLikesFromFirebase();
+                    }
                 }
             }
         }

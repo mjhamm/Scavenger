@@ -159,7 +159,7 @@
             android:scaleY="0.5"
             android:scaleX="0.5"
             android:backgroundTint="@android:color/transparent"
-            android:visibility="visible"/>
+            android:visibility="gone"/>
 
     </LinearLayout>
 

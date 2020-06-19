@@ -22,9 +22,11 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,6 +41,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.AutoTransition;
 import androidx.transition.TransitionManager;
 
+import com.google.android.gms.ads.formats.MediaView;
+import com.google.android.gms.ads.formats.NativeAd;
+import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.google.android.gms.ads.formats.UnifiedNativeAdView;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.card.MaterialCardView;
@@ -59,7 +65,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public static final String TAG = "SEARCH_ADAPTER";
 
     private final int VIEW_TYPE_ITEM = 0;
-    private final int VIEW_TYPE_LOADING = 1;
+    private final int VIEW_TYPE_AD = 1;
     private boolean isLoadingAdded = false;
 
     // Firestore Labels ----------------------------------------------------------
@@ -82,16 +88,18 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private boolean logged;
     private ConnectionDetector con;
     private SharedPreferences sharedPreferences;
-    private ArrayList<RecipeItem> mRecipeItems;
+    //private ArrayList<RecipeItem> mRecipeItems;
+    private ArrayList<Object> mRecipeItems;
     private Context mContext;
     private LayoutInflater mInflater;
     private FirebaseAuth mAuth;
     private DatabaseHelper myDb;
 
-    SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId, boolean logged) {
+    SearchAdapter(Context context/*, ArrayList<RecipeItem> recipeItems*/, ArrayList<Object> recipeItems , String userId, boolean logged) {
         this.userId = userId;
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
+        //this.mRecipeItems = recipeItems;
         this.mRecipeItems = recipeItems;
         this.logged = logged;
         this.setHasStableIds(true);
@@ -109,54 +117,57 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         con = new ConnectionDetector(mContext);
 //        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 //
-//        switch (viewType) {
-//            case VIEW_TYPE_ITEM:
-//                viewHolder = getViewHolder(parent, inflater);
-//                break;
-//            case VIEW_TYPE_LOADING:
-//                View v2 = inflater.inflate(R.layout.item_loading, parent, false);
-//                viewHolder = new LoadingViewHolder(v2);
-//                break;
-//            default:
-//                viewHolder = getViewHolder(parent, inflater);
-//        }
+        switch (viewType) {
+            case VIEW_TYPE_AD:
+                View unifiedNativeLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.ad_unified, parent, false);
+                return new UnifiedNativeAdHolder(unifiedNativeLayoutView);
+            case VIEW_TYPE_ITEM:
+                // Fall through
+            default:
+                View cardItemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_card_item, parent, false);
+                return new ItemViewHolder(cardItemLayoutView);
+        }
 //        return viewHolder;
 
-        if (viewType == VIEW_TYPE_ITEM) {
-            try {
-                view = mInflater.inflate(R.layout.row_card_item, parent, false);
-            } catch (Exception e) {
-                Log.d(TAG, "onCreateView", e);
-                throw  e;
-            }
-            return new ItemViewHolder(view);
-        } else {
-            try {
-                view = mInflater.inflate(R.layout.item_loading, parent, false);
-            } catch (Exception e) {
-                Log.d(TAG, "onCreateView", e);
-                throw  e;
-            }
-            return new LoadingViewHolder(view);
-        }
+//        if (viewType == VIEW_TYPE_ITEM) {
+//            try {
+//                view = mInflater.inflate(R.layout.row_card_item, parent, false);
+//            } catch (Exception e) {
+//                Log.d(TAG, "onCreateView", e);
+//                throw  e;
+//            }
+//            return new ItemViewHolder(view);
+//        } else {
+//            try {
+//                view = mInflater.inflate(R.layout.ad_unified, parent, false);
+//            } catch (Exception e) {
+//                Log.d(TAG, "onCreateView", e);
+//                throw  e;
+//            }
+//            return new UnifiedNativeAdHolder(view);
+//        }
     }
 
-    @NonNull
-    private RecyclerView.ViewHolder getViewHolder(ViewGroup parent, LayoutInflater inflater) {
-        RecyclerView.ViewHolder viewHolder;
-        View v1 = inflater.inflate(R.layout.row_card_item, parent, false);
-        viewHolder = new ItemViewHolder(v1);
-        return viewHolder;
-    }
+//    @NonNull
+//    private RecyclerView.ViewHolder getViewHolder(ViewGroup parent, LayoutInflater inflater) {
+//        RecyclerView.ViewHolder viewHolder;
+//        View v1 = inflater.inflate(R.layout.row_card_item, parent, false);
+//        viewHolder = new ItemViewHolder(v1);
+//        return viewHolder;
+//    }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-
-        switch (getItemViewType(position)) {
-            case VIEW_TYPE_ITEM:
-                populateItemData((ItemViewHolder) holder, position);
-            case VIEW_TYPE_LOADING:
+        int viewType = getItemViewType(position);
+        switch (viewType) {
+            case VIEW_TYPE_AD:
+                UnifiedNativeAd nativeAd = (UnifiedNativeAd) mRecipeItems.get(position);
+                populateNativeAdView(nativeAd, ((UnifiedNativeAdHolder) holder).getAdView());
                 break;
+            case VIEW_TYPE_ITEM:
+                // Fall through
+            default:
+                populateItemData((ItemViewHolder) holder, position);
         }
 
 
@@ -176,13 +187,19 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public int getItemViewType(int position) {
-        return mRecipeItems.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
+
+        Object recyclerViewItem = mRecipeItems.get(position);
+        if (recyclerViewItem instanceof UnifiedNativeAd) {
+            return VIEW_TYPE_AD;
+        }
+        return VIEW_TYPE_ITEM;
+//        return mRecipeItems.get(position) == null ? VIEW_TYPE_AD : VIEW_TYPE_ITEM;
     }
 
     @Override
     public long getItemId(int position) {
         if (mRecipeItems.get(position) != null) {
-            return mRecipeItems.get(position).getItemId().hashCode();
+            return mRecipeItems.get(position).hashCode();// .getItemId().hashCode();
         } else {
             return 0;
         }
@@ -194,9 +211,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
      */
 
     private void populateItemData(ItemViewHolder holder, int position) {
-        RecipeItem item = mRecipeItems.get(position);
+        RecipeItem item = (RecipeItem) mRecipeItems.get(position);
 
-        boolean isExpanded = mRecipeItems.get(position).isClicked();
+        boolean isExpanded = ((RecipeItem) mRecipeItems.get(position)).isClicked();
         holder.expandableLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
 
         if (item.isFavorited()) {
@@ -228,15 +245,62 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
     }
 
+    private void populateNativeAdView(UnifiedNativeAd nativeAd,
+                                      UnifiedNativeAdView adView) {
+        // Some assets are guaranteed to be in every UnifiedNativeAd.
+        ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+        ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
+        ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
+
+        // These assets aren't guaranteed to be in every UnifiedNativeAd, so it's important to
+        // check before trying to display them.
+        NativeAd.Image icon = nativeAd.getIcon();
+
+        if (icon == null) {
+            adView.getIconView().setVisibility(View.INVISIBLE);
+        } else {
+            ((ImageView) adView.getIconView()).setImageDrawable(icon.getDrawable());
+            adView.getIconView().setVisibility(View.VISIBLE);
+        }
+
+        if (nativeAd.getPrice() == null) {
+            adView.getPriceView().setVisibility(View.INVISIBLE);
+        } else {
+            adView.getPriceView().setVisibility(View.VISIBLE);
+            ((TextView) adView.getPriceView()).setText(nativeAd.getPrice());
+        }
+
+        if (nativeAd.getStore() == null) {
+            adView.getStoreView().setVisibility(View.INVISIBLE);
+        } else {
+            adView.getStoreView().setVisibility(View.VISIBLE);
+            ((TextView) adView.getStoreView()).setText(nativeAd.getStore());
+        }
+
+        if (nativeAd.getStarRating() == null) {
+            adView.getStarRatingView().setVisibility(View.INVISIBLE);
+        } else {
+            ((RatingBar) adView.getStarRatingView())
+                    .setRating(nativeAd.getStarRating().floatValue());
+            adView.getStarRatingView().setVisibility(View.VISIBLE);
+        }
+
+        if (nativeAd.getAdvertiser() == null) {
+            adView.getAdvertiserView().setVisibility(View.INVISIBLE);
+        } else {
+            ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
+            adView.getAdvertiserView().setVisibility(View.VISIBLE);
+        }
+
+        // Assign native ad object to the native view.
+        adView.setNativeAd(nativeAd);
+    }
+
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
-    }
-
-    private void showLoadingView(LoadingViewHolder holder, int position) {
-        // Progress bar for load more is displayed
     }
 
     private void saveDataToFirebase(String itemId, String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
@@ -373,7 +437,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 int position = getAdapterPosition();
                 // Adapter Position
                 // Gets the item at the position
-                item = mRecipeItems.get(position);
+                item = (RecipeItem) mRecipeItems.get(position);
                 // Checks if the item is clicked
                 // Sets the layout visible/gone
                 item.setClicked(!item.isClicked());
@@ -400,7 +464,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                             .show();
                 } else {
                     getInfoFromSharedPrefs();
-                    item = mRecipeItems.get(getAdapterPosition());
+                    item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
                     v.getTag();
                     if (SystemClock.elapsedRealtime() - mLastClickTime < 1500) {
                         return;
@@ -589,29 +653,47 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
 
         private String retrieveRecipeUrl() {
-            item = mRecipeItems.get(getAdapterPosition());
+            item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
             return item.getmRecipeURL();
         }
 
         private String retrieveRecipeSource() {
-            item = mRecipeItems.get(getAdapterPosition());
+            item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
             return item.getmSourceName();
         }
 
         private String retrieveRecipeName() {
-            item = mRecipeItems.get(getAdapterPosition());
+            item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
             return item.getmRecipeName();
         }
     }
 
     // LOADING VIEW HOLDER
-    private static class LoadingViewHolder extends RecyclerView.ViewHolder {
+    private static class UnifiedNativeAdHolder extends RecyclerView.ViewHolder {
 
-        private ProgressBar progressBar;
+        private UnifiedNativeAdView adView;
 
-        public LoadingViewHolder(@NonNull View view) {
+        public UnifiedNativeAdView getAdView() {
+            return adView;
+        }
+
+        public UnifiedNativeAdHolder(@NonNull View view) {
             super(view);
-            progressBar = view.findViewById(R.id.loading_progressBar);
+            adView = (UnifiedNativeAdView) view.findViewById(R.id.ad_view);
+
+            // The MediaView will display a video asset if one is present in the ad, and the
+            // first image asset otherwise.
+            adView.setMediaView((MediaView) adView.findViewById(R.id.ad_media));
+
+            // Register the view used for each individual asset.
+            adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
+            adView.setBodyView(adView.findViewById(R.id.ad_body));
+            adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
+            adView.setIconView(adView.findViewById(R.id.ad_icon));
+            adView.setPriceView(adView.findViewById(R.id.ad_price));
+            adView.setStarRatingView(adView.findViewById(R.id.ad_stars));
+            adView.setStoreView(adView.findViewById(R.id.ad_store));
+            adView.setAdvertiserView(adView.findViewById(R.id.ad_advertiser));
         }
     }
 }

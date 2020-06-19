@@ -11,6 +11,10 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
+
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -81,6 +85,14 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         }
 
         setContentView(R.layout.activity_main);
+
+        // Initialize the Google Mobile Ads SDK
+        //MobileAds.initialize(this);
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+            }
+        });
 
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);

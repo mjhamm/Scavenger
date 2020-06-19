@@ -23,6 +23,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
@@ -56,7 +58,8 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private int fromIngr = 0;
     private int toIngr = 10;
     private LinearLayoutManager mLayoutManager;
-    private ArrayList<RecipeItem> recipeItemArrayList;
+//    private ArrayList<RecipeItem> recipeItemArrayList;
+    private ArrayList<Object> recipeItemArrayList;
     private String queryString = null;
     private FirebaseAuth mAuth;
     private ConnectionDetector con;
@@ -175,16 +178,25 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             return false;
         });
 
-        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar) {
+        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar, mContext) {
+
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (isLastVisible() && !con.connectedToInternet()) {
+                    Toast.makeText(mContext, "Failed to load more recipes. Please check your Internet connection.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                getMoreRecipes();
+                if (con.connectedToInternet()) {
+                    getMoreRecipes();
+                }
             }
         };
 
         mSearchRecyclerView.addOnScrollListener(scrollListener);
-
-        //initScrollListener();
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -225,10 +237,10 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         if (!recipeItemArrayList.isEmpty()) {
             Cursor removedItems = myDb.getRemovedItems();
             while (removedItems.moveToNext()) {
-                for (RecipeItem item : recipeItemArrayList) {
-                    if (item.getItemId().equals(removedItems.getString(1))) {
-                        item.setFavorited(false);
-                        myDb.removeRemovedItem(item.getItemId());
+                for (/*RecipeItem item*/Object item : recipeItemArrayList) {
+                    if (((RecipeItem) item).getItemId().equals(removedItems.getString(1))) {
+                        ((RecipeItem)item).setFavorited(false);
+                        myDb.removeRemovedItem( ((RecipeItem) item).getItemId());
                     }
                 }
             }
@@ -437,6 +449,12 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         shimmer.setVisibility(View.GONE);
     }
 
+    boolean isLastVisible() {
+        int pos = mLayoutManager.findLastCompletelyVisibleItemPosition();
+        int numItems =  adapter.getItemCount();
+        return (pos >= numItems - 1);
+    }
+
     private void itemsFromDB() {
         likesData = myDb.getListContents();
         itemIds.clear();
@@ -447,64 +465,10 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         likesData.close();
     }
 
-//    private void initScrollListener() {
-//        mSearchRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-//                super.onScrollStateChanged(recyclerView, newState);
-//            }
-//
-//            @Override
-//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-//                super.onScrolled(recyclerView, dx, dy);
-//
-//                if (!isLoading) {
-//                    if (mLayoutManager != null && mLayoutManager.findLastCompletelyVisibleItemPosition() == recipeItemArrayList.size() - 1) {
-//                        // Bottom of list
-//
-//
-//
-//                        loadMoreRecipes();
-//                        isLoading = true;
-//                    }
-//                }
-//            }
-//        });
-//    }
-
     //Gets the input from Searchview and returns it as string
     private String getIngredientsSearch() {
         return mSearchView.getQuery().toString();
     }
-
-//    private void loadMoreRecipes() {
-//
-//        recipeItemArrayList.add(null);
-//
-//        mSearchRecyclerView.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                adapter.notifyItemInserted(recipeItemArrayList.size() - 1);
-//            }
-//        });
-//
-/*        Handler handler = new Handler();
-        handler.postDelayed(() -> {
-
-            mSearchRecyclerView.post(new Runnable() {
-                @Override
-                public void run() {
-                    recipeItemArrayList.remove(recipeItemArrayList.size() - 1);
-                    int scrollPosition = recipeItemArrayList.size();
-                    adapter.notifyItemRemoved(scrollPosition);
-                }
-            });
-
-            isLoading = false;
-        }, 1000);*/
-//
-//        getMoreRecipes();
-//    }
 
     private void getMoreRecipes() {
         fromIngr = toIngr;

@@ -53,7 +53,10 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:contentDescription="@string/more_button_content_descr"
-                android:padding="8dp" />
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="12dp"
+                android:paddingTop="8dp" />
 
             <TextView
                 android:id="@+id/recipe_name"

@@ -28,6 +28,7 @@
             android:id="@+id/osl_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:contentDescription="@string/back_button"
             android:background="@drawable/ic_arrow_back_black_36dp"
             android:layout_gravity="center_vertical"
             android:layout_marginStart="8dp"/>
@@ -71,7 +72,7 @@
                     android:text="@string/osl_header_detail" />
 
                 <TextView
-                    android:id="@+id/glide_att"
+                    android:id="@+id/picasso_att"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="12dp"
@@ -81,7 +82,67 @@
                     android:layout_alignParentEnd="true"
                     android:background="@drawable/text_bg"
                     android:textColor="@android:color/black"
-                    android:text="@string/glide_license_info"
+                    android:text="@string/picasso_license_info"
+                    android:autoLink="web"
+                    android:textColorLink="@color/link_blue"/>
+
+                <TextView
+                    android:id="@+id/leak_canary_att"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_below="@id/picasso_att"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/text_bg"
+                    android:textColor="@android:color/black"
+                    android:text="@string/leakcanary_license"
+                    android:autoLink="web"
+                    android:textColorLink="@color/link_blue"/>
+
+                <TextView
+                    android:id="@+id/shimmer_att"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_below="@id/leak_canary_att"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/text_bg"
+                    android:textColor="@android:color/black"
+                    android:text="@string/shimmer_license"
+                    android:autoLink="web"
+                    android:textColorLink="@color/link_blue"/>
+
+                <TextView
+                    android:id="@+id/retrofit_att"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_below="@id/shimmer_att"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/text_bg"
+                    android:textColor="@android:color/black"
+                    android:text="@string/retrofit_license"
+                    android:autoLink="web"
+                    android:textColorLink="@color/link_blue"/>
+
+                <TextView
+                    android:id="@+id/rxjava_att"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_below="@id/retrofit_att"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/text_bg"
+                    android:textColor="@android:color/black"
+                    android:text="@string/rxjava_license"
                     android:autoLink="web"
                     android:textColorLink="@color/link_blue"/>
 
@@ -91,7 +152,7 @@
                     android:layout_height="wrap_content"
                     android:padding="12dp"
                     android:layout_marginTop="16dp"
-                    android:layout_below="@id/glide_att"
+                    android:layout_below="@id/rxjava_att"
                     android:layout_alignParentStart="true"
                     android:layout_alignParentEnd="true"
                     android:background="@drawable/text_bg"
