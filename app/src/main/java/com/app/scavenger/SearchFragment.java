@@ -14,18 +14,18 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
-
-import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.facebook.shimmer.ShimmerFrameLayout;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdLoader;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,6 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -46,6 +47,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
     private static final String TAG = "SEARCH_FRAGMENT: ";
     public static final String ARG_ITEM_IDS = "itemIds";
+    public static final int NUMBER_OF_ADS = 2;
 
     private RecyclerView mSearchRecyclerView;
     private ArrayList<String> itemIds;
@@ -58,16 +60,21 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private int fromIngr = 0;
     private int toIngr = 10;
     private LinearLayoutManager mLayoutManager;
-//    private ArrayList<RecipeItem> recipeItemArrayList;
     private ArrayList<Object> recipeItemArrayList;
     private String queryString = null;
     private FirebaseAuth mAuth;
     private ConnectionDetector con;
-    //private boolean isLoading = false;
+    private int numItemsBefore = 0;
+    private int numItemsAfter = 0;
+    private boolean numItemsChanged = true;
+    private int adIndex = 3;
     private EndlessRecyclerViewScrollListener scrollListener;
 
     private DatabaseHelper myDb;
     private Cursor likesData;
+
+    private AdLoader adLoader;
+    private List<UnifiedNativeAd> mNativeAds = new ArrayList<>();
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -178,7 +185,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             return false;
         });
 
-        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar, mContext) {
+        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar, mContext, toIngr) {
 
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -190,7 +197,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                if (con.connectedToInternet()) {
+                if (con.connectedToInternet() && numItemsChanged) {
                     getMoreRecipes();
                 }
             }
@@ -233,11 +240,53 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         outState.putString("query", queryString);
     }
 
+    private void insertAdsInRecipeItems() {
+        if (mNativeAds.size() <= 0) {
+            return;
+        }
+
+        int offset = (recipeItemArrayList.size() / mNativeAds.size() + 1);
+        //int adIndex = 3;
+        for (UnifiedNativeAd ad : mNativeAds) {
+            recipeItemArrayList.add(adIndex, ad);
+            adIndex = adIndex + offset;
+        }
+    }
+
+    private void loadNativeAds() {
+
+        AdLoader.Builder builder = new AdLoader.Builder(mContext, getString(R.string.ad_unit_id));
+        adLoader = builder.forUnifiedNativeAd(
+                unifiedNativeAd -> {
+                    // A native ad loaded successfully, check if the ad loader has finished loading
+                    // and if so, insert the ads into the list.
+                    mNativeAds.add(unifiedNativeAd);
+                    if (!adLoader.isLoading()) {
+                        insertAdsInRecipeItems();
+                    }
+                }).withAdListener(
+                new AdListener() {
+                    @Override
+                    public void onAdFailedToLoad(int errorCode) {
+                        // A native ad failed to load, check if the ad loader has finished loading
+                        // and if so, insert the ads into the list.
+                        Log.e("MainActivity", "The previous native ad failed to load. Attempting to"
+                                + " load another.");
+                        if (!adLoader.isLoading()) {
+                            insertAdsInRecipeItems();
+                        }
+                    }
+                }).build();
+
+        // Load the Native Express ad.
+        adLoader.loadAds(new AdRequest.Builder().build(), NUMBER_OF_ADS);
+    }
+
     public void updateSearchFrag() {
         if (!recipeItemArrayList.isEmpty()) {
             Cursor removedItems = myDb.getRemovedItems();
             while (removedItems.moveToNext()) {
-                for (/*RecipeItem item*/Object item : recipeItemArrayList) {
+                for (Object item : recipeItemArrayList) {
                     if (((RecipeItem) item).getItemId().equals(removedItems.getString(1))) {
                         ((RecipeItem)item).setFavorited(false);
                         myDb.removeRemovedItem( ((RecipeItem) item).getItemId());
@@ -327,6 +376,8 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                             writeRecycler(result);
 
                             adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
+                            adIndex = 4;
+                            //loadNativeAds();
                             mSearchRecyclerView.setAdapter(adapter);
                             mSearchRecyclerView.setLayoutManager(mLayoutManager);
 
@@ -442,6 +493,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
                 recipeItemArrayList.add(item);
             }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -471,6 +523,10 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     }
 
     private void getMoreRecipes() {
+        numItemsBefore = recipeItemArrayList.size();
+        if (toIngr == 50) {
+            return;
+        }
         fromIngr = toIngr;
         toIngr = fromIngr + 10;
         Log.d(TAG, "from: " + fromIngr + " to: " + toIngr);
@@ -486,6 +542,14 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                     if (response.body() != null) {
                         String result = response.body();
                         writeRecycler(result);
+
+                        numItemsAfter = recipeItemArrayList.size();
+                        if (numItemsAfter == numItemsBefore) {
+                            numItemsChanged = false;
+                        }
+
+                        //loadNativeAds();
+
                         //adapter.notifyDataSetChanged();
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");

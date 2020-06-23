@@ -170,13 +170,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 populateItemData((ItemViewHolder) holder, position);
         }
 
-
-//        if (holder instanceof ItemViewHolder) {
-//            populateItemData((ItemViewHolder) holder, position);
-//        } else if (holder instanceof LoadingViewHolder) {
-//            showLoadingView((LoadingViewHolder) holder, position);
-//        }
-
     }
 
     // Returns the total count of items in the list
@@ -189,11 +182,12 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public int getItemViewType(int position) {
 
         Object recyclerViewItem = mRecipeItems.get(position);
-        if (recyclerViewItem instanceof UnifiedNativeAd) {
-            return VIEW_TYPE_AD;
+        if (mRecipeItems.size() > 3) {
+            if (recyclerViewItem instanceof UnifiedNativeAd) {
+                return VIEW_TYPE_AD;
+            }
         }
         return VIEW_TYPE_ITEM;
-//        return mRecipeItems.get(position) == null ? VIEW_TYPE_AD : VIEW_TYPE_ITEM;
     }
 
     @Override

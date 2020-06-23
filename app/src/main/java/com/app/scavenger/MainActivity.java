@@ -87,12 +87,12 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         setContentView(R.layout.activity_main);
 
         // Initialize the Google Mobile Ads SDK
-        //MobileAds.initialize(this);
-        MobileAds.initialize(this, new OnInitializationCompleteListener() {
-            @Override
-            public void onInitializationComplete(InitializationStatus initializationStatus) {
-            }
-        });
+        MobileAds.initialize(this, getString(R.string.admob_app_id));
+//        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+//            @Override
+//            public void onInitializationComplete(InitializationStatus initializationStatus) {
+//            }
+//        });
 
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
