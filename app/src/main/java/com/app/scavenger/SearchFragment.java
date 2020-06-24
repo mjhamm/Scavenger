@@ -289,9 +289,11 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             Cursor removedItems = myDb.getRemovedItems();
             while (removedItems.moveToNext()) {
                 for (Object item : recipeItemArrayList) {
-                    if (((RecipeItem) item).getItemId().equals(removedItems.getString(1))) {
-                        ((RecipeItem)item).setFavorited(false);
-                        myDb.removeRemovedItem( ((RecipeItem) item).getItemId());
+                    if (item instanceof RecipeItem) {
+                        if (((RecipeItem) item).getItemId().equals(removedItems.getString(1))) {
+                            ((RecipeItem)item).setFavorited(false);
+                            myDb.removeRemovedItem( ((RecipeItem) item).getItemId());
+                        }
                     }
                 }
             }

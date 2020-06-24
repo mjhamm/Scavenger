@@ -314,14 +314,15 @@ public class SignUpActivity extends AppCompatActivity {
         Map<String, Object> data = new HashMap<>();
         data.put("name", name);
         data.put("email", email);
-        db.collection("Users").whereEqualTo("userId", user.getUid()).get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        if (task.getResult().getDocuments().size() == 0) {
-                            db.collection("Users").document(user.getUid()).set(data);
-                        }
-                    }
-                });
+        db.collection("Users").document(user.getUid()).set(data);
+//        db.collection("Users").whereEqualTo("userId", user.getUid()).get()
+//                .addOnCompleteListener(task -> {
+//                    if (task.isSuccessful()) {
+//                        if (task.getResult().getDocuments().size() == 0) {
+//                            db.collection("Users").document(user.getUid()).set(data);
+//                        }
+//                    }
+//                });
     }
 
     // Google Sign Up information and Methods -----------------------------------------------------------------------------------------------------------------
