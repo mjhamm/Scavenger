@@ -245,7 +245,9 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             return;
         }
 
-        int offset = (recipeItemArrayList.size() / mNativeAds.size() + 1);
+        Log.d(TAG, "mNativeAds.size(): " + mNativeAds.size());
+
+        int offset = (recipeItemArrayList.size() / (mNativeAds.size() + 1));
         //int adIndex = 3;
         for (UnifiedNativeAd ad : mNativeAds) {
             recipeItemArrayList.add(adIndex, ad);
@@ -374,10 +376,10 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                             String result = response.body();
                             recipeItemArrayList.clear();
                             writeRecycler(result);
-
+                            Log.d(TAG, "1. recipeItemListSize: " + recipeItemArrayList.size());
+                            adIndex = 3;
+                            loadNativeAds();
                             adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
-                            adIndex = 4;
-                            //loadNativeAds();
                             mSearchRecyclerView.setAdapter(adapter);
                             mSearchRecyclerView.setLayoutManager(mLayoutManager);
 
@@ -548,7 +550,9 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                             numItemsChanged = false;
                         }
 
-                        //loadNativeAds();
+                        Log.d(TAG, "2. recipeItemListSize: " + recipeItemArrayList.size());
+
+                        loadNativeAds();
 
                         //adapter.notifyDataSetChanged();
                     } else {
