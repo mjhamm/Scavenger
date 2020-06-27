@@ -55,9 +55,13 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -506,6 +510,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 Animation cw = AnimationUtils.loadAnimation(mContext, R.anim.menu_clockwise);
                 Animation acw = AnimationUtils.loadAnimation(mContext, R.anim.menu_anti_clockwise);
 
+                item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
+
                 PopupMenu popupMenu = new PopupMenu(mContext, more_button);
                 popupMenu.setOnMenuItemClickListener(item -> {
                     switch (item.getItemId()) {
@@ -525,7 +531,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
                 popupMenu.show();
 
-                if (!rotated) {
+                /*if (!rotated) {
                     more_button.startAnimation(cw);
                     rotated = true;
                     cw.setFillAfter(true);
@@ -535,7 +541,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     more_button.startAnimation(acw);
                     rotated = false;
                     acw.setFillAfter(true);
-                });
+                });*/
             });
 
             mNutritionCard.setOnClickListener(v -> {
@@ -615,11 +621,60 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                                 }
                             }
                         })
-                        .setPositiveButton("Report",(dialog, which) -> Toast.makeText(mContext, "Reported for " + reportReason + ". Thank you.", Toast.LENGTH_SHORT).show())
+                        .setPositiveButton("Report",(dialog, which) -> {
+                            sendReportToDb(reportReason, item);
+                        })
                         .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
                         .create()
                         .show();
             }
+        }
+
+        private void sendReportToDb(String reason, RecipeItem item) {
+            // Send report to Server under reports with Phone information
+
+            Calendar calendar = Calendar.getInstance();
+
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+            int year = calendar.get(Calendar.YEAR);
+
+            calendar.clear();
+            calendar.set(year, month, day);
+
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+            String strDate = simpleDateFormat.format(calendar.getTime());
+
+            Date now = new Date();
+            Timestamp timestamp = new Timestamp(now);
+
+            Map<String, Object> reportInfo = new HashMap<>();
+
+            CollectionReference reportingReference = db.collection("RecipeReports").document(strDate).collection("reports");
+
+            reportInfo.put("Recipe Report Reason", reason);
+            reportInfo.put("Timestamp", timestamp);
+            reportInfo.put("Recipe Image", item.getmImageUrl());
+            reportInfo.put("Recipe Name", item.getmRecipeName());
+            reportInfo.put("Recipe Source", item.getmSourceName());
+            reportInfo.put("Recipe Ingredients", item.getmIngredients());
+            reportInfo.put("Recipe URL", item.getmRecipeURL());
+
+            reportingReference.document().set(reportInfo)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.d(TAG,"Report saved to Firebase");
+                            Toast.makeText(mContext, "Reported for " + reportReason + ". Thank you.", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(mContext, "Error sending report", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, e.toString());
+                        }
+                    });
         }
 
         private void copyRecipe() {

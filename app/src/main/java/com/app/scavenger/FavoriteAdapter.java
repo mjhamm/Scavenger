@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -40,12 +41,20 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import animations.Animations;
 
@@ -311,9 +320,6 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                         case R.id.fav_menu_report:
                             reportRecipe();
                             return true;
-//                        case R.id.fav_menu_remove:
-//                            removeDataFromFirebase(recipeItem);
-//                            refreshFavorites.refresh(true);
                     }
                     return false;
                 });
@@ -321,7 +327,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                 inflater.inflate(R.menu.favorite_menu, popupMenu.getMenu());
                 popupMenu.show();
 
-                if (!rotated) {
+                /*if (!rotated) {
                     more_button.startAnimation(cw);
                     rotated = true;
                     cw.setFillAfter(true);
@@ -331,7 +337,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                     more_button.startAnimation(acw);
                     rotated = false;
                     acw.setFillAfter(true);
-                });
+                });*/
             });
 
             mNutritionCard.setOnClickListener(v -> {
@@ -410,11 +416,61 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                                 }
                             }
                         })
-                        .setPositiveButton("Report",(dialog, which) -> Toast.makeText(mContext, "Reported for " + reportReason + ". Thank you.", Toast.LENGTH_SHORT).show())
+                        .setPositiveButton("Report",(dialog, which) -> {
+                            sendReportToDb(reportReason, recipeItem);
+                            Toast.makeText(mContext, "Reported for " + reportReason + ". Thank you.", Toast.LENGTH_SHORT).show();
+                        })
                         .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
                         .create()
                         .show();
             }
+        }
+
+        private void sendReportToDb(String reason, RecipeItem item) {
+            // Send report to Server under reports with Phone information
+
+            Calendar calendar = Calendar.getInstance();
+
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+            int year = calendar.get(Calendar.YEAR);
+
+            calendar.clear();
+            calendar.set(year, month, day);
+
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+            String strDate = simpleDateFormat.format(calendar.getTime());
+
+            Date now = new Date();
+            Timestamp timestamp = new Timestamp(now);
+
+            Map<String, Object> reportInfo = new HashMap<>();
+
+            CollectionReference reportingReference = db.collection("RecipeReports").document(strDate).collection("reports");
+
+            reportInfo.put("Recipe Report Reason", reason);
+            reportInfo.put("Timestamp", timestamp);
+            reportInfo.put("Recipe Image", item.getmImageUrl());
+            reportInfo.put("Recipe Name", item.getmRecipeName());
+            reportInfo.put("Recipe Source", item.getmSourceName());
+            reportInfo.put("Recipe Ingredients", item.getmIngredients());
+            reportInfo.put("Recipe URL", item.getmRecipeURL());
+
+            reportingReference.document().set(reportInfo)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.d(TAG,"Report saved to Firebase");
+                            Toast.makeText(mContext, "Thank you for your report", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(mContext, "Error sending report", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, e.toString());
+                        }
+                    });
         }
 
         private void copyRecipe() {

@@ -48,7 +48,30 @@
             android:focusableInTouchMode="false"
             android:focusable="false">
 
-            <com.google.android.material.card.MaterialCardView
+            <include layout="@layout/row_shimmer_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:id="@+id/shimmer_item1"/>
+            <include layout="@layout/row_shimmer_item"
+                android:id="@+id/shimmer_item2"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_below="@id/shimmer_item1"/>
+            <include layout="@layout/row_shimmer_item"
+                android:id="@+id/shimmer_item3"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_below="@id/shimmer_item2"/>
+            <include layout="@layout/row_shimmer_item"
+                android:id="@+id/shimmer_item4"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_below="@id/shimmer_item3"/>
+
+            <!--<com.google.android.material.card.MaterialCardView
                 android:id="@+id/shimmer1"
                 android:layout_width="match_parent"
                 android:layout_height="280dp"
@@ -101,7 +124,7 @@
                 android:layout_below="@id/shimmer3"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="10dp"
-                app:cardBackgroundColor="#DDDDDD"/>
+                app:cardBackgroundColor="#DDDDDD"/>-->
 
         </RelativeLayout>
 

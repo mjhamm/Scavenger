@@ -247,7 +247,9 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
         Log.d(TAG, "mNativeAds.size(): " + mNativeAds.size());
 
-        int offset = (recipeItemArrayList.size() / (mNativeAds.size() + 1));
+        int offset = (recipeItemArrayList.size() / mNativeAds.size());
+        Log.d(TAG, "RecipeArrayListSize(): " + recipeItemArrayList.size());
+        Log.d(TAG, "OFFSET: " + offset);
         //int adIndex = 3;
         for (UnifiedNativeAd ad : mNativeAds) {
             recipeItemArrayList.add(adIndex, ad);
@@ -527,10 +529,10 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     }
 
     private void getMoreRecipes() {
-        numItemsBefore = recipeItemArrayList.size();
-        if (toIngr == 50) {
+        if (toIngr >= 50 || (toIngr + 10) > 50) {
             return;
         }
+        numItemsBefore = recipeItemArrayList.size();
         fromIngr = toIngr;
         toIngr = fromIngr + 10;
         Log.d(TAG, "from: " + fromIngr + " to: " + toIngr);

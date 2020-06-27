@@ -241,6 +241,9 @@ public class FavoritesFragment extends Fragment {
     }
 
     private void retrieveLikesFromFirebase() {
+        favorite_message.setVisibility(View.GONE);
+        shimmer.setVisibility(View.VISIBLE);
+        shimmer.startShimmer();
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
         favoritesRef.orderBy("Timestamp", Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -261,6 +264,11 @@ public class FavoritesFragment extends Fragment {
                         if (queryDocumentSnapshots.isEmpty()) {
                             favorite_message.setVisibility(View.VISIBLE);
                             favorite_message.setText(R.string.no_favorites);
+                            recipeItemList.clear();
+                            if (adapter != null) {
+                                adapter.clearList();
+                            }
+                            mFavoriteRecyclerView.setAdapter(null);
                         } else {
                             recipeItemList.clear();
                             if (adapter != null) {
@@ -310,6 +318,9 @@ public class FavoritesFragment extends Fragment {
                                     recipeItemList.add(item);
                                 }
                             }
+                            adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
+                            mFavoriteRecyclerView.setAdapter(adapter);
+                            mFavoriteRecyclerView.setLayoutManager(mLayoutManager);
                         }
                         SharedPreferences.Editor editor = sharedPreferences.edit(); // added
                         editor.putInt("actualNumLikes", queryDocumentSnapshots.size()); // added
@@ -321,10 +332,9 @@ public class FavoritesFragment extends Fragment {
         shimmer.stopShimmer();
         shimmer.setVisibility(View.GONE);
         numLikes = actualNumLikes;
-        adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
-        //adapter.setHasStableIds(true);
-        mFavoriteRecyclerView.setAdapter(adapter);
-        mFavoriteRecyclerView.setLayoutManager(mLayoutManager);
+        //adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
+        //mFavoriteRecyclerView.setAdapter(adapter);
+        //mFavoriteRecyclerView.setLayoutManager(mLayoutManager);
     }
 
     // Sets all variables related to logged status and user info
