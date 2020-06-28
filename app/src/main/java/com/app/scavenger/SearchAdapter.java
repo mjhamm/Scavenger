@@ -90,6 +90,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String userId;
     private boolean logged;
+    private UpdateQuery mUpdateQuery;
     private ConnectionDetector con;
     private SharedPreferences sharedPreferences;
     //private ArrayList<RecipeItem> mRecipeItems;
@@ -98,6 +99,10 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private LayoutInflater mInflater;
     private FirebaseAuth mAuth;
     private DatabaseHelper myDb;
+
+    interface UpdateQuery {
+        void updateQuery();
+    }
 
     SearchAdapter(Context context/*, ArrayList<RecipeItem> recipeItems*/, ArrayList<Object> recipeItems , String userId, boolean logged) {
         this.userId = userId;
@@ -112,15 +117,14 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        //RecyclerView.ViewHolder viewHolder = null;
-        View view;
+
         getInfoFromSharedPrefs();
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         myDb = DatabaseHelper.getInstance(mContext);
         con = new ConnectionDetector(mContext);
-//        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-//
+        mUpdateQuery = (UpdateQuery) mContext;
+
         switch (viewType) {
             case VIEW_TYPE_AD:
                 View unifiedNativeLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.ad_unified, parent, false);
@@ -131,34 +135,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 View cardItemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_card_item, parent, false);
                 return new ItemViewHolder(cardItemLayoutView);
         }
-//        return viewHolder;
-
-//        if (viewType == VIEW_TYPE_ITEM) {
-//            try {
-//                view = mInflater.inflate(R.layout.row_card_item, parent, false);
-//            } catch (Exception e) {
-//                Log.d(TAG, "onCreateView", e);
-//                throw  e;
-//            }
-//            return new ItemViewHolder(view);
-//        } else {
-//            try {
-//                view = mInflater.inflate(R.layout.ad_unified, parent, false);
-//            } catch (Exception e) {
-//                Log.d(TAG, "onCreateView", e);
-//                throw  e;
-//            }
-//            return new UnifiedNativeAdHolder(view);
-//        }
     }
-
-//    @NonNull
-//    private RecyclerView.ViewHolder getViewHolder(ViewGroup parent, LayoutInflater inflater) {
-//        RecyclerView.ViewHolder viewHolder;
-//        View v1 = inflater.inflate(R.layout.row_card_item, parent, false);
-//        viewHolder = new ItemViewHolder(v1);
-//        return viewHolder;
-//    }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
@@ -326,6 +303,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        updateQuery();
                         Log.d("LOG: ", "Item saved to Firebase");
                         int likes = sharedPreferences.getInt("numLikes", 0);
                         likes += 1;
@@ -351,6 +329,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        updateQuery();
                         Log.d(TAG, "Successfully removed Like");
                         int likes = sharedPreferences.getInt("numLikes", 0);
                         likes -= 1;
@@ -390,6 +369,10 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             e.printStackTrace();
             Log.e("ChromeCustomTabError: ", "Activity Error");
         }
+    }
+
+    public void updateQuery() {
+        mUpdateQuery.updateQuery();
     }
 
     /*
@@ -622,7 +605,21 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                             }
                         })
                         .setPositiveButton("Report",(dialog, which) -> {
-                            sendReportToDb(reportReason, item);
+                            if (!con.connectedToInternet()) {
+                                new MaterialAlertDialogBuilder(mContext)
+                                        .setTitle("No Internet connection found")
+                                        .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.dismiss();
+                                            }
+                                        })
+                                        .create()
+                                        .show();
+                            } else {
+                                sendReportToDb(reportReason, item);
+                            }
                         })
                         .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
                         .create()
@@ -665,7 +662,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                         @Override
                         public void onSuccess(Void aVoid) {
                             Log.d(TAG,"Report saved to Firebase");
-                            Toast.makeText(mContext, "Reported for " + reportReason + ". Thank you.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mContext, "Reported for " + reason + ". Thank you.", Toast.LENGTH_SHORT).show();
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {

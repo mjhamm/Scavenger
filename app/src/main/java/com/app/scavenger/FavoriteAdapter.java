@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -262,6 +263,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                             .show();
                 } else {
                     recipeItem = mRecipeItems.get(getAdapterPosition());
+                    String recipeItemId = recipeItem.getItemId();
                     new MaterialAlertDialogBuilder(mContext)
                             .setTitle("Remove this recipe from your Likes?")
                             .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
@@ -279,8 +281,15 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                                     myDb.addRemovedItem(recipeItem.getItemId());
                                     update();
                                     // CHECK - Let fragment know to reload
-                                    mRecipeItems.remove(getAdapterPosition());
-                                    if (mRecipeItems.isEmpty()) {
+                                    for (Iterator<RecipeItem> iterator = mRecipeItemsFull.iterator(); iterator.hasNext();) {
+                                        if (iterator.next().getItemId().equals(recipeItemId)) {
+                                            iterator.remove();
+                                        }
+                                    }
+                                    if (!mRecipeItems.isEmpty()) {
+                                        mRecipeItems.remove(getAdapterPosition());
+                                    }
+                                    if (mRecipeItemsFull.isEmpty()) {
                                         checkZeroLikes();
                                     }
                                     int actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
@@ -417,8 +426,21 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                             }
                         })
                         .setPositiveButton("Report",(dialog, which) -> {
-                            sendReportToDb(reportReason, recipeItem);
-                            Toast.makeText(mContext, "Reported for " + reportReason + ". Thank you.", Toast.LENGTH_SHORT).show();
+                            if (!con.connectedToInternet()) {
+                                new MaterialAlertDialogBuilder(mContext)
+                                        .setTitle("No Internet connection found")
+                                        .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.dismiss();
+                                            }
+                                        })
+                                        .create()
+                                        .show();
+                            } else {
+                                sendReportToDb(reportReason, recipeItem);
+                            }
                         })
                         .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
                         .create()
@@ -461,7 +483,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                         @Override
                         public void onSuccess(Void aVoid) {
                             Log.d(TAG,"Report saved to Firebase");
-                            Toast.makeText(mContext, "Thank you for your report", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mContext, "Reported for " + reason + ". Thank you", Toast.LENGTH_SHORT).show();
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -522,10 +544,6 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "Successfully removed favorite");
-
-
-                        // Alert Favorites Fragment to refresh data.
-                        // If list is empty, show message that no likes
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

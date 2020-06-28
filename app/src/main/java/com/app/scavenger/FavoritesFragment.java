@@ -151,7 +151,7 @@ public class FavoritesFragment extends Fragment {
                     favorite_message.setVisibility(View.VISIBLE);
                     favorite_message.setText(R.string.not_signed_in);
                 } else {
-                    if (recipeItemList.isEmpty()) {
+                    if (recipeItemList.isEmpty() || numLikes != actualNumLikes) {
                         retrieveLikesFromFirebase();
                     }
                 }
@@ -227,6 +227,11 @@ public class FavoritesFragment extends Fragment {
             favorite_message.setVisibility(View.VISIBLE);
             favorite_message.setText(R.string.no_favorites);
         }
+    }
+
+    public void clearFilter() {
+        mFavoriteSearch.setQuery("", false);
+        mFavoriteSearch.clearFocus();
     }
 
     private void retryConnection() {
