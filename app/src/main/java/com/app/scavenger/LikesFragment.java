@@ -10,15 +10,12 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -34,10 +31,10 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 
-public class FavoritesFragment extends Fragment {
+public class LikesFragment extends Fragment {
 
     private static final String TAG = "Favorites Fragment: ";
-    private FavoriteAdapter adapter;
+    private LikesAdapter adapter;
     private Context mContext;
 
     // Firestore Labels ----------------------------------------------------------
@@ -69,7 +66,7 @@ public class FavoritesFragment extends Fragment {
     // Items from Layout -------------------------
     private RecyclerView mFavoriteRecyclerView;
     private SearchView mFavoriteSearch;
-    private TextView favorite_message;
+    private TextView likes_message;
     private MaterialButton retryConButton;
     private MaterialCardView progressHolder;
     private ShimmerFrameLayout shimmer;
@@ -86,16 +83,16 @@ public class FavoritesFragment extends Fragment {
     private ArrayList<RecipeItem> recipeItemList = new ArrayList<>();
     private ArrayList<RecipeItem> likedItems = new ArrayList<>();
 
-    public FavoritesFragment() {
+    public LikesFragment() {
         // Required empty public constructor
     }
 
     // Create a new instance of Favorites Fragment
-    static FavoritesFragment newInstance() {
-        FavoritesFragment favoritesFragment = new FavoritesFragment();
+    static LikesFragment newInstance() {
+        LikesFragment likesFragment = new LikesFragment();
         Bundle args = new Bundle();
-        favoritesFragment.setArguments(args);
-        return favoritesFragment;
+        likesFragment.setArguments(args);
+        return likesFragment;
     }
 
     @Override
@@ -104,16 +101,18 @@ public class FavoritesFragment extends Fragment {
         getInfoFromSharedPrefs();
         if (!con.connectedToInternet()) {
             if (recipeItemList.isEmpty()) {
-                favorite_message.setText(R.string.favorites_not_connected);
-                favorite_message.setVisibility(View.VISIBLE);
+                likes_message.setText(R.string.favorites_not_connected);
+                likes_message.setVisibility(View.VISIBLE);
                 retryConButton.setVisibility(View.VISIBLE);
             } else {
-                favorite_message.setVisibility(View.GONE);
+                likes_message.setVisibility(View.GONE);
                 retryConButton.setVisibility(View.GONE);
             }
         } else {
             retryConButton.setVisibility(View.GONE);
             if (logged && recipeItemList.isEmpty()) {
+                shimmer.setVisibility(View.VISIBLE);
+                shimmer.startShimmer();
                 retrieveLikesFromFirebase();
             }
         }
@@ -132,26 +131,28 @@ public class FavoritesFragment extends Fragment {
         if (!hidden) {
             if (!con.connectedToInternet()) {
                 if (recipeItemList.isEmpty()) {
-                    favorite_message.setText(R.string.favorites_not_connected);
-                    favorite_message.setVisibility(View.VISIBLE);
+                    likes_message.setText(R.string.favorites_not_connected);
+                    likes_message.setVisibility(View.VISIBLE);
                     retryConButton.setVisibility(View.VISIBLE);
                 } else {
-                    favorite_message.setVisibility(View.GONE);
+                    likes_message.setVisibility(View.GONE);
                     retryConButton.setVisibility(View.GONE);
                 }
             } else {
                 retryConButton.setVisibility(View.GONE);
-                favorite_message.setText("");
+                likes_message.setText("");
                 if (!logged) {
                     recipeItemList.clear();
                     if (adapter != null) {
                         adapter.clearList();
                     }
-                    mFavoriteRecyclerView.setAdapter(adapter);
-                    favorite_message.setVisibility(View.VISIBLE);
-                    favorite_message.setText(R.string.not_signed_in);
+                    mFavoriteRecyclerView.setAdapter(null);
+                    likes_message.setVisibility(View.VISIBLE);
+                    likes_message.setText(R.string.not_signed_in);
                 } else {
                     if (recipeItemList.isEmpty() || numLikes != actualNumLikes) {
+                        shimmer.setVisibility(View.VISIBLE);
+                        shimmer.startShimmer();
                         retrieveLikesFromFirebase();
                     }
                 }
@@ -167,9 +168,9 @@ public class FavoritesFragment extends Fragment {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_favorites, container, false);
+        View view = inflater.inflate(R.layout.fragment_likes, container, false);
 
-        favorite_message = view.findViewById(R.id.favorite_message);
+        likes_message = view.findViewById(R.id.favorite_message);
         mFavoriteSearch = view.findViewById(R.id.favorites_searchView);
         retryConButton = view.findViewById(R.id.fav_retry_con_button);
         mFavoriteSearch.setMaxWidth(Integer.MAX_VALUE);
@@ -178,14 +179,14 @@ public class FavoritesFragment extends Fragment {
         shimmer = view.findViewById(R.id.likes_shimmerLayout);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         con = new ConnectionDetector(mContext);
-        adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
+        adapter = new LikesAdapter(mContext, recipeItemList, userId);
 
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
 
         retryConButton.setOnClickListener(v -> retryConnection());
 
         if (!logged) {
-            favorite_message.setText(R.string.not_signed_in);
+            likes_message.setText(R.string.not_signed_in);
         }
 
         mFavoriteSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -224,8 +225,11 @@ public class FavoritesFragment extends Fragment {
 
     public void hasZeroLikes() {
         if (logged) {
-            favorite_message.setVisibility(View.VISIBLE);
-            favorite_message.setText(R.string.no_favorites);
+            if (adapter != null) {
+                adapter = null;
+            }
+            likes_message.setVisibility(View.VISIBLE);
+            likes_message.setText(R.string.no_favorites);
         }
     }
 
@@ -246,9 +250,9 @@ public class FavoritesFragment extends Fragment {
     }
 
     private void retrieveLikesFromFirebase() {
-        favorite_message.setVisibility(View.GONE);
-        shimmer.setVisibility(View.VISIBLE);
-        shimmer.startShimmer();
+        mFavoriteRecyclerView.setVisibility(View.GONE);
+        likes_message.setVisibility(View.GONE);
+
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
         favoritesRef.orderBy("Timestamp", Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -267,8 +271,8 @@ public class FavoritesFragment extends Fragment {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (queryDocumentSnapshots.isEmpty()) {
-                            favorite_message.setVisibility(View.VISIBLE);
-                            favorite_message.setText(R.string.no_favorites);
+                            likes_message.setVisibility(View.VISIBLE);
+                            likes_message.setText(R.string.no_favorites);
                             recipeItemList.clear();
                             if (adapter != null) {
                                 adapter.clearList();
@@ -279,7 +283,7 @@ public class FavoritesFragment extends Fragment {
                             if (adapter != null) {
                                 adapter.clearList();
                             }
-                            favorite_message.setVisibility(View.GONE);
+                            likes_message.setVisibility(View.GONE);
                             for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                                 RecipeItem item = new RecipeItem();
                                 itemId = documentSnapshot.getString(ITEM_ID);
@@ -323,12 +327,13 @@ public class FavoritesFragment extends Fragment {
                                     recipeItemList.add(item);
                                 }
                             }
-                            adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
+                            adapter = new LikesAdapter(mContext, recipeItemList, userId);
+                            mFavoriteRecyclerView.setVisibility(View.VISIBLE);
                             mFavoriteRecyclerView.setAdapter(adapter);
                             mFavoriteRecyclerView.setLayoutManager(mLayoutManager);
                         }
-                        SharedPreferences.Editor editor = sharedPreferences.edit(); // added
-                        editor.putInt("actualNumLikes", queryDocumentSnapshots.size()); // added
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
                         editor.putInt("numLikes", queryDocumentSnapshots.size());
                         editor.apply(); // apply
                         Log.d(TAG, "Recipe List Size: " + recipeItemList.size());
@@ -337,9 +342,6 @@ public class FavoritesFragment extends Fragment {
         shimmer.stopShimmer();
         shimmer.setVisibility(View.GONE);
         numLikes = actualNumLikes;
-        //adapter = new FavoriteAdapter(mContext, recipeItemList, userId);
-        //mFavoriteRecyclerView.setAdapter(adapter);
-        //mFavoriteRecyclerView.setLayoutManager(mLayoutManager);
     }
 
     // Sets all variables related to logged status and user info

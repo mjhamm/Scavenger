@@ -193,7 +193,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             name = null;
             email = null;
             userId = null;
-            Toast.makeText(mContext, "Successfully Signed Out", Toast.LENGTH_SHORT).show();
+            toastMessage("Successfully signed out");
             signOut.setVisible(false);
             signIn.setVisible(true);
     }
@@ -256,6 +256,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     public void onDestroy() {
         super.onDestroy();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    //method for creating a Toast
+    private void toastMessage(String message) {
+        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
     }
 
     // Sets all variables related to logged status and user info

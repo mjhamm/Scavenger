@@ -191,7 +191,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (isLastVisible() && !con.connectedToInternet()) {
-                    Toast.makeText(mContext, "Failed to load more recipes. Please check your Internet connection.", Toast.LENGTH_SHORT).show();
+                    toastMessage("Failed to load more recipes. Please check your Internet connection.");
                 }
             }
 
@@ -210,6 +210,9 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             public boolean onQueryTextSubmit(String query) {
                 mSearchView.clearFocus();
                 mSearchView.setImeOptions(6);
+                if (adapter != null) {
+                    adapter = null;
+                }
                 getIngredients();
                 return false;
             }
@@ -245,16 +248,18 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             return;
         }
 
-        Log.d(TAG, "mNativeAds.size(): " + mNativeAds.size());
+        Log.d(TAG, "mNativeAds.size() Before ads: " + mNativeAds.size());
 
-        int offset = (recipeItemArrayList.size() / mNativeAds.size());
-        Log.d(TAG, "RecipeArrayListSize(): " + recipeItemArrayList.size());
+        int offset = (recipeItemArrayList.size() / mNativeAds.size() - 1);
+        Log.d(TAG, "RecipeArrayListSize() Before ads:" + recipeItemArrayList.size());
         Log.d(TAG, "OFFSET: " + offset);
         //int adIndex = 3;
         for (UnifiedNativeAd ad : mNativeAds) {
             recipeItemArrayList.add(adIndex, ad);
             adIndex = adIndex + offset;
         }
+        Log.d(TAG, "mNativeAds.size() After ads: " + mNativeAds.size());
+        Log.d(TAG, "RecipeArrayListSize() After ads:" + recipeItemArrayList.size());
     }
 
     private void loadNativeAds() {
@@ -267,6 +272,13 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                     mNativeAds.add(unifiedNativeAd);
                     if (!adLoader.isLoading()) {
                         insertAdsInRecipeItems();
+                        if (adapter == null) {
+                            adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
+                            mSearchRecyclerView.setAdapter(adapter);
+                            mSearchRecyclerView.setLayoutManager(mLayoutManager);
+                        }
+                        shimmer.stopShimmer();
+                        shimmer.setVisibility(View.GONE);
                     }
                 }).withAdListener(
                 new AdListener() {
@@ -278,6 +290,11 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                                 + " load another.");
                         if (!adLoader.isLoading()) {
                             insertAdsInRecipeItems();
+                            adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
+                            mSearchRecyclerView.setAdapter(adapter);
+                            mSearchRecyclerView.setLayoutManager(mLayoutManager);
+                            shimmer.stopShimmer();
+                            shimmer.setVisibility(View.GONE);
                         }
                     }
                 }).build();
@@ -370,7 +387,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             fromIngr = 0;
             toIngr = 10;
 
-            Call<String> call = apiService.getRecipeData(getIngredientsSearch(), "bd790cc2", "56fdf6a5593ad5199e8040a29b9fbfd6", checkNumIngredients(), fromIngr, toIngr);
+            Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
             queryString = getIngredientsSearch();
             call.enqueue(new Callback<String>() {
                 @Override
@@ -383,9 +400,9 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                             Log.d(TAG, "1. recipeItemListSize: " + recipeItemArrayList.size());
                             adIndex = 3;
                             loadNativeAds();
-                            adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
+                            /*adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
                             mSearchRecyclerView.setAdapter(adapter);
-                            mSearchRecyclerView.setLayoutManager(mLayoutManager);
+                            mSearchRecyclerView.setLayoutManager(mLayoutManager);*/
 
                             if (recipeItemArrayList.isEmpty()) {
                                 startup_message.setVisibility(View.VISIBLE);
@@ -503,8 +520,8 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        shimmer.stopShimmer();
-        shimmer.setVisibility(View.GONE);
+        /*shimmer.stopShimmer();
+        shimmer.setVisibility(View.GONE);*/
     }
 
     boolean isLastVisible() {
@@ -540,7 +557,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), "bd790cc2", "56fdf6a5593ad5199e8040a29b9fbfd6", checkNumIngredients(), fromIngr, toIngr);
+        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NotNull Call<String> call, @NotNull Response<String> response) {
@@ -548,7 +565,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                     if (response.body() != null) {
                         String result = response.body();
                         writeRecycler(result);
-
                         numItemsAfter = recipeItemArrayList.size();
                         if (numItemsAfter == numItemsBefore) {
                             numItemsChanged = false;
@@ -571,9 +587,9 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     }
 
     //method for creating a Toast
-//    private void toastMessage(String message) {
-//        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
-//    }
+    private void toastMessage(String message) {
+        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+    }
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {

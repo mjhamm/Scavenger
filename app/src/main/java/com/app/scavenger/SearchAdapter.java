@@ -315,7 +315,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(mContext, "Error", Toast.LENGTH_SHORT).show();
+                        toastMessage("Error saving Like. Please try again");
                         Log.d("LOG: ", e.toString());
                     }
                 });
@@ -369,6 +369,11 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             e.printStackTrace();
             Log.e("ChromeCustomTabError: ", "Activity Error");
         }
+    }
+
+    //method for creating a Toast
+    private void toastMessage(String message) {
+        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
     }
 
     public void updateQuery() {
@@ -662,13 +667,13 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                         @Override
                         public void onSuccess(Void aVoid) {
                             Log.d(TAG,"Report saved to Firebase");
-                            Toast.makeText(mContext, "Reported for " + reason + ". Thank you.", Toast.LENGTH_SHORT).show();
+                            toastMessage("Reported for " + reason + ". Thank you");
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(mContext, "Error sending report", Toast.LENGTH_SHORT).show();
+                            toastMessage("Error sending report");
                             Log.d(TAG, e.toString());
                         }
                     });
@@ -680,7 +685,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             if (clipboardManager != null) {
                 clipboardManager.setPrimaryClip(clipData);
             }
-            Toast.makeText(mContext, "URL Copied.", Toast.LENGTH_SHORT).show();
+            toastMessage("Recipe URL copied");
         }
 
         private void shareRecipe() {

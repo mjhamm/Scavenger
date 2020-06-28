@@ -13,20 +13,16 @@ import android.view.Menu;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.instabug.library.Instabug;
-import com.instabug.library.invocation.InstabugInvocationEvent;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, FavoriteAdapter.UpdateSearch, FavoriteAdapter.CheckZeroLikes, SearchAdapter.UpdateQuery {
+public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, LikesAdapter.UpdateSearch, LikesAdapter.CheckZeroLikes, SearchAdapter.UpdateQuery {
 
     //private static final String TAG = "LOG: ";
 
@@ -106,11 +102,11 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         getInfoFromSharedPrefs();
 
         if (match) {
-            Toast.makeText(this, "Match ingredients is On", Toast.LENGTH_SHORT).show();
+            toastMessage("Match ingredients is On");
         }
 
         fragment1 = SearchFragment.newInstance();
-        fragment2 = FavoritesFragment.newInstance();
+        fragment2 = LikesFragment.newInstance();
         fragment3 = new SettingsFragment();
         active = fragment1;
 
@@ -134,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                     }
                     fm.beginTransaction().hide(active).show(fragment1).commit();
                     if (match) {
-                        Toast.makeText(this, "Match Ingredients is On", Toast.LENGTH_SHORT).show();
+                        toastMessage("Match Ingredients is On");
                     }
                     active = fragment1;
                     return true;
@@ -187,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         }
 
         this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Back one more time to exit.", Toast.LENGTH_SHORT).show();
+        toastMessage("Back one more time to exit");
 
         mHandler.postDelayed(mRunnable, 2000);
     }
@@ -206,6 +202,11 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                     }
                 });
         numLikes = actualNumLikes;
+    }
+
+    //method for creating a Toast
+    private void toastMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -235,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     public void checkZeroLikes() {
         //Update Likes Fragment Here
         if (fragment2 != null) {
-            FavoritesFragment likeFrag = (FavoritesFragment) fragment2;
+            LikesFragment likeFrag = (LikesFragment) fragment2;
             likeFrag.hasZeroLikes();
         }
     }
@@ -244,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     public void updateQuery() {
         //Update Likes Fragment Here
         if (fragment2 != null) {
-            FavoritesFragment likeFrag = (FavoritesFragment) fragment2;
+            LikesFragment likeFrag = (LikesFragment) fragment2;
             likeFrag.clearFilter();
         }
     }

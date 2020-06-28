@@ -138,7 +138,7 @@ public class SignInActivity extends AppCompatActivity {
         ClickableSpan clickableSpanTerms = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                Toast.makeText(SignInActivity.this, "Terms & Conditions", Toast.LENGTH_SHORT).show();
+                toastMessage("Terms & Conditions");
             }
 
             @Override
@@ -152,7 +152,7 @@ public class SignInActivity extends AppCompatActivity {
         ClickableSpan clickableSpanPrivacy = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                Toast.makeText(SignInActivity.this, "Privacy Policy", Toast.LENGTH_SHORT).show();
+                toastMessage("Privacy Policy");
             }
 
             @Override
@@ -194,7 +194,7 @@ public class SignInActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
                                     FirebaseUser user = mAuth.getCurrentUser();
-                                    Toast.makeText(SignInActivity.this, "Sign In Successful", Toast.LENGTH_SHORT).show();
+                                    toastMessage("Signed in successfully");
                                     if (user != null) {
                                         retrieveLikesFromFirebase(user);
                                         updatePrefInfo(true, user.getUid());
@@ -345,7 +345,7 @@ public class SignInActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(SignInActivity.this, "Signed In Successfully", Toast.LENGTH_SHORT).show();
+                            toastMessage("Signed in successfully");
                             if (user != null) {
                                 retrieveLikesFromFirebase(user);
                                 updatePrefInfo(true, user.getUid());
@@ -354,7 +354,7 @@ public class SignInActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(SignInActivity.this, "Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance.", Toast.LENGTH_SHORT).show();
+                            toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                         }
                         finish();
                         progressHolder.setVisibility(View.GONE);
@@ -383,7 +383,7 @@ public class SignInActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(SignInActivity.this, "Signed In Successfully", Toast.LENGTH_SHORT).show();
+                            toastMessage("Signed in successfully");
                             if (user != null) {
                                 retrieveLikesFromFirebase(user);
                                 updatePrefInfo(true, user.getUid());
@@ -392,7 +392,7 @@ public class SignInActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(SignInActivity.this, "Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance.", Toast.LENGTH_SHORT).show();
+                            toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                         }
                         finish();
                         progressHolder.setVisibility(View.GONE);
@@ -442,6 +442,11 @@ public class SignInActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    //method for creating a Toast
+    private void toastMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     private void checkFieldsForValid() {

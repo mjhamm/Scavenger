@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".FavoritesFragment">
+    tools:context=".LikesFragment">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/favorites_cardView"
@@ -70,47 +70,6 @@
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:layout_below="@id/shimmer_item3"/>
-
-            <!--<com.google.android.material.card.MaterialCardView
-                android:id="@+id/shimmer1_likes"
-                android:layout_width="match_parent"
-                android:layout_height="280dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginTop="12dp"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="10dp"
-                app:cardBackgroundColor="#DDDDDD"/>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/shimmer2_likes"
-                android:layout_width="match_parent"
-                android:layout_height="280dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginTop="24dp"
-                android:layout_below="@id/shimmer1_likes"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="10dp"
-                app:cardBackgroundColor="#DDDDDD"/>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/shimmer3_likes"
-                android:layout_width="match_parent"
-                android:layout_height="280dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginTop="24dp"
-                android:layout_below="@id/shimmer2_likes"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="10dp"
-                app:cardBackgroundColor="#DDDDDD"/>-->
 
         </RelativeLayout>
 

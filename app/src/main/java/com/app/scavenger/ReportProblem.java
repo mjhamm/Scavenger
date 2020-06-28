@@ -162,16 +162,21 @@ public class ReportProblem extends AppCompatActivity {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG,"Report saved to Firebase");
-                        Toast.makeText(ReportProblem.this, "Thank you for your report", Toast.LENGTH_SHORT).show();
+                        toastMessage("Thank you for your report");
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(ReportProblem.this, "Error sending report", Toast.LENGTH_SHORT).show();
+                        toastMessage("Error sending report");
                         Log.d(TAG, e.toString());
                     }
                 });
+    }
+
+    //method for creating a Toast
+    private void toastMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     // Gets report text

@@ -55,15 +55,20 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
 
         switch (position) {
             case 0:
-                Toast.makeText(this, "Terms & Conditions", Toast.LENGTH_SHORT).show();
+                toastMessage("Terms & Conditions");
                 break;
             case 1:
-                Toast.makeText(this, "Privacy Policy", Toast.LENGTH_SHORT).show();
+                toastMessage("Privacy Policy");
                 break;
             case 2:
                 openOSL();
                 break;
         }
+    }
+
+    //method for creating a Toast
+    private void toastMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     private void openOSL() {

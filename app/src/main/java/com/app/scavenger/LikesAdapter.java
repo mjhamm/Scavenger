@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,20 +30,13 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.transition.AutoTransition;
-import androidx.transition.Fade;
-import androidx.transition.Transition;
-import androidx.transition.TransitionManager;
-import androidx.transition.TransitionValues;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -57,9 +49,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import animations.Animations;
-
-public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHolder> implements Filterable {
+public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> implements Filterable {
 
     private static final String TAG = "LOG: ";
 
@@ -102,7 +92,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         void checkZeroLikes();
     }
 
-    FavoriteAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId) {
+    LikesAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId) {
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
@@ -115,7 +105,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
 
     @NonNull
     @Override
-    public FavoriteAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public LikesAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.row_card_item, parent, false);
         con = new ConnectionDetector(mContext);
         myDb = DatabaseHelper.getInstance(mContext);
@@ -125,7 +115,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(@NonNull FavoriteAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull LikesAdapter.ViewHolder holder, int position) {
         RecipeItem item = mRecipeItems.get(position);
 
         boolean isExpanded = mRecipeItems.get(position).isClicked();
@@ -483,13 +473,13 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                         @Override
                         public void onSuccess(Void aVoid) {
                             Log.d(TAG,"Report saved to Firebase");
-                            Toast.makeText(mContext, "Reported for " + reason + ". Thank you", Toast.LENGTH_SHORT).show();
+                            toastMessage("Reported for " + reason + ". Thank you");
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(mContext, "Error sending report", Toast.LENGTH_SHORT).show();
+                            toastMessage("Error sending report");
                             Log.d(TAG, e.toString());
                         }
                     });
@@ -501,7 +491,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
             if (clipboardManager != null) {
                 clipboardManager.setPrimaryClip(clipData);
             }
-            Toast.makeText(mContext, "URL Copied.", Toast.LENGTH_SHORT).show();
+            toastMessage("Recipe URL copied");
         }
 
         private void shareRecipe() {
@@ -583,6 +573,11 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         //int size = mRecipeItems.size();
         mRecipeItemsFull.clear();
         notifyDataSetChanged();
+    }
+
+    //method for creating a Toast
+    private void toastMessage(String message) {
+        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
     }
 
     // Returns the total count of items in the list

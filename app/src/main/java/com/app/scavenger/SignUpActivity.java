@@ -157,7 +157,7 @@ public class SignUpActivity extends AppCompatActivity {
         ClickableSpan clickableSpanTerms = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                Toast.makeText(SignUpActivity.this, "Terms & Conditions", Toast.LENGTH_SHORT).show();
+                toastMessage("Terms & Conditions");
             }
 
             @Override
@@ -171,7 +171,7 @@ public class SignUpActivity extends AppCompatActivity {
         ClickableSpan clickableSpanPrivacy = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                Toast.makeText(SignUpActivity.this, "Privacy Policy", Toast.LENGTH_SHORT).show();
+                toastMessage("Privacy Policy");
             }
 
             @Override
@@ -217,7 +217,7 @@ public class SignUpActivity extends AppCompatActivity {
                 if (termsCheck.isChecked()) {
                     googleSignUp();
                 } else {
-                    Toast.makeText(SignUpActivity.this, "Please accept the Terms & Conditions", Toast.LENGTH_SHORT).show();
+                    toastMessage("Please accept the Terms & Conditions");
                 }
             }
         });
@@ -240,7 +240,7 @@ public class SignUpActivity extends AppCompatActivity {
                 if (termsCheck.isChecked()) {
                     facebookSignUp();
                 } else {
-                    Toast.makeText(SignUpActivity.this, "Please accept the Terms & Conditions", Toast.LENGTH_SHORT).show();
+                    toastMessage("Please accept the Terms & Conditions");
                 }
             }
         });
@@ -271,7 +271,7 @@ public class SignUpActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
                                     FirebaseUser user = mAuth.getCurrentUser();
-                                    Toast.makeText(SignUpActivity.this, "Signed Up Successfully", Toast.LENGTH_SHORT).show();
+                                    toastMessage("Signed up successfully.");
                                     if (user != null) {
                                         myDb.clearData();
                                         retrieveLikesFromFirebase(user);
@@ -335,7 +335,7 @@ public class SignUpActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signUpWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(SignUpActivity.this, "Signed Up Successfully", Toast.LENGTH_SHORT).show();
+                            toastMessage("Signed up successfully");
                             if (user != null) {
                                 myDb.clearData();
                                 name = user.getDisplayName();
@@ -347,7 +347,7 @@ public class SignUpActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signUpWithCredential:failure", task.getException());
-                            Toast.makeText(SignUpActivity.this, "Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance.", Toast.LENGTH_SHORT).show();
+                            toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                         }
 
                         finish();
@@ -396,7 +396,7 @@ public class SignUpActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(SignUpActivity.this, "Signed Up Successfully", Toast.LENGTH_SHORT).show();
+                            toastMessage("Signed up successfully");
                             if (user != null) {
                                 myDb.clearData();
                                 name = user.getDisplayName();
@@ -408,7 +408,7 @@ public class SignUpActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(SignUpActivity.this, "Authentication Failed.", Toast.LENGTH_SHORT).show();
+                            toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                         }
                         finish();
                         progressHolder.setVisibility(View.GONE);
@@ -520,5 +520,10 @@ public class SignUpActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
         view.clearFocus();
+    }
+
+    //method for creating a Toast
+    private void toastMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }
