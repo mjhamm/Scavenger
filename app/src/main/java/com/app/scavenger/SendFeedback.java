@@ -1,9 +1,7 @@
 package com.app.scavenger;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,8 +13,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
@@ -37,7 +33,6 @@ public class SendFeedback extends AppCompatActivity {
 
     private EditText feedbackEditText;
     private TextView submit_textButton;
-    private ImageButton backButton;
     private ConnectionDetector con;
 
     @Override
@@ -47,7 +42,7 @@ public class SendFeedback extends AppCompatActivity {
 
         feedbackEditText = findViewById(R.id.feedback_editText);
         submit_textButton = findViewById(R.id.submitFeedback_textButton);
-        backButton = findViewById(R.id.feedback_back);
+        ImageButton backButton = findViewById(R.id.feedback_back);
 
         submit_textButton.setEnabled(false);
         submit_textButton.setTextColor(Color.GRAY);
@@ -55,9 +50,7 @@ public class SendFeedback extends AppCompatActivity {
 
         con = new ConnectionDetector(this);
 
-        backButton.setOnClickListener(v -> {
-            finish();
-        });
+        backButton.setOnClickListener(v -> finish());
 
         // Checks for whether or not the edit text is empty or not and changes the appearance of the submit button
         feedbackEditText.addTextChangedListener(new TextWatcher() {
@@ -90,12 +83,7 @@ public class SendFeedback extends AppCompatActivity {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect in order to Submit Feedback.")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
             } else {
@@ -155,19 +143,13 @@ public class SendFeedback extends AppCompatActivity {
 
 
         feedbackReference.document().set(feedbackInfo)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG,"feedback saved to Firebase");
-                        toastMessage("Thank you for your feedback");
-                    }
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG,"feedback saved to Firebase");
+                    toastMessage("Thank you for your feedback");
                 })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        toastMessage("Error sending feedback");
-                        Log.d(TAG, e.toString());
-                    }
+                .addOnFailureListener(e -> {
+                    toastMessage("Error sending feedback");
+                    Log.d(TAG, e.toString());
                 });
     }
 

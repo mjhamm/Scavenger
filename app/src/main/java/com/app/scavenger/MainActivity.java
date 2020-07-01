@@ -8,17 +8,12 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.tasks.OnSuccessListener;
+//import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
@@ -36,10 +31,8 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     private final FragmentManager fm = getSupportFragmentManager();
     private Fragment active = null;
     private FirebaseAuth mAuth;
-    private DatabaseHelper myDB;
     private SharedPreferences sharedPreferences;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private ArrayList<String> itemIds;
+    private DatabaseHelper myDb;
 
     private boolean doubleBackToExitPressedOnce;
     private Handler mHandler = new Handler();
@@ -67,9 +60,9 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         getInfoFromSharedPrefs();
         if (logged) {
             userId = mAuth.getUid();
-            retrieveLikesFromFirebase();
-            numLikes = actualNumLikes;
         }
+
+
     }
 
     @Override
@@ -83,21 +76,18 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         setContentView(R.layout.activity_main);
 
         // Initialize the Google Mobile Ads SDK
-        MobileAds.initialize(this, getString(R.string.admob_app_id));
-//        MobileAds.initialize(this, new OnInitializationCompleteListener() {
-//            @Override
-//            public void onInitializationComplete(InitializationStatus initializationStatus) {
-//            }
-//        });
+        //MobileAds.initialize(this, getString(R.string.admob_app_id));
 
+        myDb = DatabaseHelper.getInstance(this);
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+        myDb.removeAllItemsFromRemoveTable();
+
         BottomNavigationView mNavView = findViewById(R.id.bottom_nav_view);
 
-        myDB = DatabaseHelper.getInstance(this);
-
-        itemIds = new ArrayList<>();
+        //private FirebaseFirestore db = FirebaseFirestore.getInstance();
+        ArrayList<String> itemIds = new ArrayList<>();
 
         getInfoFromSharedPrefs();
 
@@ -115,9 +105,9 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         fm.beginTransaction().add(R.id.fragment_container, fragment1, "1").commit();
 
         mNavView.setOnNavigationItemSelectedListener(item -> {
-            getInfoFromSharedPrefs();
             switch(item.getItemId()) {
                 case R.id.action_search:
+                    getInfoFromSharedPrefs();
                     if (refresh) {
                         if (fragment1 != null) {
                             SearchFragment searchFragment = (SearchFragment) fragment1;
@@ -135,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                     active = fragment1;
                     return true;
                 case R.id.action_favorites:
+                    getInfoFromSharedPrefs();
                     if (active != fragment2) {
                         if (logged && (numLikes != actualNumLikes)) {
                             fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
@@ -155,7 +146,6 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         match = sharedPreferences.getBoolean("match", false);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
@@ -167,7 +157,6 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("actualNumLikes", 0);
         editor.apply();
@@ -188,21 +177,18 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         mHandler.postDelayed(mRunnable, 2000);
     }
 
-    private void retrieveLikesFromFirebase() {
+    /*private void retrieveLikesFromFirebase() {
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
         favoritesRef.get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        actualNumLikes = queryDocumentSnapshots.size();
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
-                        editor.apply();
-                        Log.d("Retrieve from Firebase", "actual Number of Likes: " + queryDocumentSnapshots.size());
-                    }
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    actualNumLikes = queryDocumentSnapshots.size();
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
+                    editor.apply();
+                    Log.d("Retrieve from Firebase", "actual Number of Likes: " + queryDocumentSnapshots.size());
                 });
         numLikes = actualNumLikes;
-    }
+    }*/
 
     //method for creating a Toast
     private void toastMessage(String message) {

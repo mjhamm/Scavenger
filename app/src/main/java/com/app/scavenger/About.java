@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -18,17 +17,13 @@ import java.util.ArrayList;
 
 public class About extends AppCompatActivity implements AboutAdapter.ItemClickListener {
 
-    private RecyclerView aboutRecycler;
-    private AboutAdapter adapter;
-    private ImageButton backButton;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
 
-        aboutRecycler = findViewById(R.id.about_list);
-        backButton = findViewById(R.id.about_back);
+        RecyclerView aboutRecycler = findViewById(R.id.about_list);
+        ImageButton backButton = findViewById(R.id.about_back);
 
         ArrayList<String> options = new ArrayList<>();
         options.add("Terms & Conditions");
@@ -36,17 +31,15 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
         options.add("Open Source Libraries");
 
         aboutRecycler.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new AboutAdapter(this, options);
+        AboutAdapter adapter = new AboutAdapter(this, options);
         adapter.setClickListener(this);
         aboutRecycler.setAdapter(adapter);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(aboutRecycler.getContext(), layoutManager.getOrientation());
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, layoutManager.getOrientation());
         aboutRecycler.addItemDecoration(dividerItemDecoration);
 
-        backButton.setOnClickListener(v -> {
-            finish();
-        });
+        backButton.setOnClickListener(v -> finish());
 
     }
 

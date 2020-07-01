@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -21,7 +20,6 @@ import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -39,14 +37,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -69,10 +65,10 @@ public class SignUpActivity extends AppCompatActivity {
 
     // Views from Sign Up activity
     private EditText fullName, emailEdit, passEdit, passConfirmEdit;
-    private TextView passNoMatch, termsTextView;
+    private TextView passNoMatch;
     private MaterialCheckBox termsCheck;
     private FrameLayout progressHolder;
-    private MaterialButton signUpButton, googleSignUpButton, facebookSignUpButton;
+    private MaterialButton signUpButton;
 
     private String name = null, email = null, pass = null;
 
@@ -95,7 +91,7 @@ public class SignUpActivity extends AppCompatActivity {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            updatePrefInfo(true, currentUser.getUid());
+            updatePrefInfo(currentUser.getUid());
         }
     }
 
@@ -132,24 +128,17 @@ public class SignUpActivity extends AppCompatActivity {
         passEdit = findViewById(R.id.password_editText);
         passConfirmEdit = findViewById(R.id.passwordConfirm_editText);
         passNoMatch = findViewById(R.id.passNoMatch);
-        termsTextView = findViewById(R.id.signUpTerms);
+        TextView termsTextView = findViewById(R.id.signUpTerms);
         termsCheck = findViewById(R.id.signUpCheckbox);
         signUpButton = findViewById(R.id.signUp_Button);
-        facebookSignUpButton = findViewById(R.id.facebook_signUp);
-        googleSignUpButton = findViewById(R.id.google_signUp);
+        MaterialButton facebookSignUpButton = findViewById(R.id.facebook_signUp);
+        MaterialButton googleSignUpButton = findViewById(R.id.google_signUp);
         progressHolder = findViewById(R.id.signUp_progressHolder);
         ImageButton backButton = findViewById(R.id.signUp_back);
 
-        backButton.setOnClickListener(v -> {
-            finish();
-        });
+        backButton.setOnClickListener(v -> finish());
 
-        termsCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                checkFieldsForEmpty();
-            }
-        });
+        termsCheck.setOnCheckedChangeListener((buttonView, isChecked) -> checkFieldsForEmpty());
 
         String termsText = "By Signing Up, you agree to Scavenger's Terms & Conditions and Privacy Policy.";
         SpannableString termsSS = new SpannableString(termsText);
@@ -205,12 +194,7 @@ public class SignUpActivity extends AppCompatActivity {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try to Sign Up again.")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
             } else {
@@ -228,12 +212,7 @@ public class SignUpActivity extends AppCompatActivity {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try to Sign Up again.")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
             } else {
@@ -252,12 +231,7 @@ public class SignUpActivity extends AppCompatActivity {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try to Sign Up again.")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
             } else {
@@ -266,43 +240,37 @@ public class SignUpActivity extends AppCompatActivity {
                 email = emailEdit.getText().toString();
                 pass = passEdit.getText().toString();
                 mAuth.createUserWithEmailAndPassword(email, pass)
-                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    FirebaseUser user = mAuth.getCurrentUser();
-                                    toastMessage("Signed up successfully.");
-                                    if (user != null) {
-                                        myDb.clearData();
-                                        retrieveLikesFromFirebase(user);
-                                        updatePrefInfo(true, user.getUid());
-                                        sendDataToFirebase(user);
-                                    }
-                                    finish();
-                                    progressHolder.setVisibility(View.GONE);
-                                    // Sign in success
-                                } else {
-                                    // Sign in failed
-                                    Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                                    hideKeyboard(SignUpActivity.this);
-                                    new MaterialAlertDialogBuilder(SignUpActivity.this)
-                                            .setTitle("Email Address already in use.")
-                                            .setMessage("This email address is already in use by another account. Please Sign In, or Sign Up with a different email address.")
-                                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    dialog.dismiss();
-                                                    progressHolder.setVisibility(View.GONE);
-                                                    fullName.setText("");
-                                                    passEdit.setText("");
-                                                    passConfirmEdit.setText("");
-                                                    emailEdit.setText("");
-                                                    fullName.requestFocus();
-                                                }
-                                            })
-                                            .create()
-                                            .show();
+                        .addOnCompleteListener(this, task -> {
+                            if (task.isSuccessful()) {
+                                FirebaseUser user = mAuth.getCurrentUser();
+                                toastMessage("Signed up successfully.");
+                                if (user != null) {
+                                    myDb.clearData();
+                                    retrieveLikesFromFirebase(user);
+                                    updatePrefInfo(user.getUid());
+                                    sendDataToFirebase(user);
                                 }
+                                finish();
+                                progressHolder.setVisibility(View.GONE);
+                                // Sign in success
+                            } else {
+                                // Sign in failed
+                                Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                                hideKeyboard(SignUpActivity.this);
+                                new MaterialAlertDialogBuilder(SignUpActivity.this)
+                                        .setTitle("Email Address already in use.")
+                                        .setMessage("This email address is already in use by another account. Please Sign In, or Sign Up with a different email address.")
+                                        .setPositiveButton("OK", (dialog, which) -> {
+                                            dialog.dismiss();
+                                            progressHolder.setVisibility(View.GONE);
+                                            fullName.setText("");
+                                            passEdit.setText("");
+                                            passConfirmEdit.setText("");
+                                            emailEdit.setText("");
+                                            fullName.requestFocus();
+                                        })
+                                        .create()
+                                        .show();
                             }
                         });
             }
@@ -328,31 +296,28 @@ public class SignUpActivity extends AppCompatActivity {
     private void firebaseAuthWithGoogle(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signUpWithCredential:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            toastMessage("Signed up successfully");
-                            if (user != null) {
-                                myDb.clearData();
-                                name = user.getDisplayName();
-                                email = user.getEmail();
-                                retrieveLikesFromFirebase(user);
-                                updatePrefInfo(true, user.getUid());
-                                sendDataToFirebase(user);
-                            }
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signUpWithCredential:failure", task.getException());
-                            toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        Log.d(TAG, "signUpWithCredential:success");
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        toastMessage("Signed up successfully");
+                        if (user != null) {
+                            myDb.clearData();
+                            name = user.getDisplayName();
+                            email = user.getEmail();
+                            retrieveLikesFromFirebase(user);
+                            updatePrefInfo(user.getUid());
+                            sendDataToFirebase(user);
                         }
-
-                        finish();
-                        progressHolder.setVisibility(View.GONE);
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Log.w(TAG, "signUpWithCredential:failure", task.getException());
+                        toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                     }
+
+                    finish();
+                    progressHolder.setVisibility(View.GONE);
                 });
     }
 
@@ -389,30 +354,27 @@ public class SignUpActivity extends AppCompatActivity {
 
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithCredential:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            toastMessage("Signed up successfully");
-                            if (user != null) {
-                                myDb.clearData();
-                                name = user.getDisplayName();
-                                email = user.getEmail();
-                                retrieveLikesFromFirebase(user);
-                                updatePrefInfo(true, user.getUid());
-                                sendDataToFirebase(user);
-                            }
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        Log.d(TAG, "signInWithCredential:success");
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        toastMessage("Signed up successfully");
+                        if (user != null) {
+                            myDb.clearData();
+                            name = user.getDisplayName();
+                            email = user.getEmail();
+                            retrieveLikesFromFirebase(user);
+                            updatePrefInfo(user.getUid());
+                            sendDataToFirebase(user);
                         }
-                        finish();
-                        progressHolder.setVisibility(View.GONE);
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Log.w(TAG, "signInWithCredential:failure", task.getException());
+                        toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                     }
+                    finish();
+                    progressHolder.setVisibility(View.GONE);
                 });
     }
 
@@ -457,9 +419,9 @@ public class SignUpActivity extends AppCompatActivity {
         }
     };
 
-    private void updatePrefInfo(boolean logged, String userId) {
+    private void updatePrefInfo(String userId) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("logged", logged);
+        editor.putBoolean("logged", true);
         editor.putString("userId", userId);
         editor.putBoolean("refresh", true);
         editor.apply();

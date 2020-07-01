@@ -5,12 +5,10 @@
     <string name="menu_search">Search</string>
     <string name="menu_likes">Likes</string>
     <string name="menu_settings">Settings</string>
-    <string name="settings">Settings</string>
     <string name="about">About</string>
     <string name="help">Help</string>
     <string name="legal">Legal</string>
     <string name="forgot_password">Forgot Password</string>
-    <string name="no_internet_connection">You don\'t have an internet connection. In order to see your Likes you must be connected to the internet.</string>
 
     <!-- Sign In / Sign Up String Information -->
     <string name="sign_in">Sign In</string>
@@ -26,8 +24,6 @@
     <string name="sign_up_with_google">Sign Up with Google</string>
     <string name="signin_or">OR</string>
     <string name="forgot_your_password">Forgot Password?</string>
-    <string name="password_signin">Password</string>
-    <string name="sign_out_button">Sign Out</string>
     <string name="password_hint">Password</string>
     <string name="no_account_signup">Don\'t have an account? Sign Up!</string>
     <string name="signup_header_description">Sign Up to Save Recipes so you can go back to them later!</string>
@@ -49,8 +45,6 @@
     <!-- Recipe Card String Information -->
     <string name="recipe_image_content_descr">Recipe Image</string>
     <string name="more_button_content_descr">More Button</string>
-    <string name="example_recipe_name">Example Recipe Name</string>
-    <string name="example_recipe_source">Example Recipe Source</string>
     <string name="recipe_favorite_button_content_descr">Recipe Like Button</string>
     <string name="servings_text">Serves %1$d</string>
     <string name="calories">Calories</string>
@@ -76,10 +70,7 @@
 
     <!-- ID String Information -->
     <string name="facebook_app_id">505719136936823</string>
-    <string name="fb_login_protocol_scheme">fb505719136936823</string>
     <string name="clientId_web_googleSignIn">565312817175-cipp792csradj5qukdb836j8e9tuq7gr.apps.googleusercontent.com</string>
-    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
-    <string name="ad_unit_id">ca-app-pub-3940256099942544/8135179316</string>
 
     <!-- Miscellaneous String Information -->
     <string name="back_button">Back button</string>
@@ -126,7 +117,14 @@
         \n\nUnless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</string>
 
     <!-- Ad Information -->
-    <string name="ad_icon">Ad Icon</string>
-    <string name="ad">Ad</string>
+    <string name="like_menu_report">Report…</string>
+    <string name="like_menu_share">Share Recipe</string>
+    <string name="like_menu_copy">Copy Recipe URL</string>
+    <string name="search_menu_copy">Copy Recipe URL</string>
+    <string name="search_menu_share">Share Recipe</string>
+    <string name="search_menu_report">Report…</string>
+    <string name="retry_connection">Retry Connection</string>
+    <string name="match_ingredients_on_search">This can occur if Match Ingredients is On</string>
+    <string name="terms_and_conditions"><![CDATA[Terms & Conditions]]></string>
 
 </resources>

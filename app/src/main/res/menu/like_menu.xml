@@ -4,17 +4,17 @@
 
     <item
         android:id="@+id/fav_menu_copy"
-        android:title="Copy Recipe URL"
+        android:title="@string/like_menu_copy"
         android:orderInCategory="10"
         app:showAsAction="collapseActionView"/>
     <item
         android:id="@+id/fav_menu_share"
-        android:title="Share Recipe"
+        android:title="@string/like_menu_share"
         android:orderInCategory="20"
         app:showAsAction="collapseActionView"/>
     <item
         android:id="@+id/fav_menu_report"
-        android:title="Report..."
+        android:title="@string/like_menu_report"
         android:orderInCategory="60"
         app:showAsAction="collapseActionView"/>
 

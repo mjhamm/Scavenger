@@ -1,15 +1,12 @@
 package com.app.scavenger;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Movie;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -19,15 +16,10 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.RatingBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -38,22 +30,18 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.transition.AutoTransition;
-import androidx.transition.TransitionManager;
 
-import com.google.android.gms.ads.formats.MediaView;
-import com.google.android.gms.ads.formats.NativeAd;
-import com.google.android.gms.ads.formats.UnifiedNativeAd;
-import com.google.android.gms.ads.formats.UnifiedNativeAdView;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.card.MaterialCardView;
+//import com.google.android.gms.ads.formats.MediaView;
+//import com.google.android.gms.ads.formats.NativeAd;
+//import com.google.android.gms.ads.formats.UnifiedNativeAd;
+//import com.google.android.gms.ads.formats.UnifiedNativeAdView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -68,8 +56,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     public static final String TAG = "SEARCH_ADAPTER";
 
-    private final int VIEW_TYPE_ITEM = 0;
     private final int VIEW_TYPE_AD = 1;
+    private final int VIEW_TYPE_ITEM = 0;
     private boolean isLoadingAdded = false;
 
     // Firestore Labels ----------------------------------------------------------
@@ -96,19 +84,16 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     //private ArrayList<RecipeItem> mRecipeItems;
     private ArrayList<Object> mRecipeItems;
     private Context mContext;
-    private LayoutInflater mInflater;
-    private FirebaseAuth mAuth;
     private DatabaseHelper myDb;
 
     interface UpdateQuery {
         void updateQuery();
     }
 
-    SearchAdapter(Context context/*, ArrayList<RecipeItem> recipeItems*/, ArrayList<Object> recipeItems , String userId, boolean logged) {
+    SearchAdapter(Context context, ArrayList<Object> recipeItems , String userId, boolean logged) {
         this.userId = userId;
         this.mContext = context;
-        this.mInflater = LayoutInflater.from(context);
-        //this.mRecipeItems = recipeItems;
+        LayoutInflater mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
         this.logged = logged;
         this.setHasStableIds(true);
@@ -118,14 +103,14 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        getInfoFromSharedPrefs();
-        mAuth = FirebaseAuth.getInstance();
+        //FirebaseAuth mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        getInfoFromSharedPrefs();
         myDb = DatabaseHelper.getInstance(mContext);
         con = new ConnectionDetector(mContext);
         mUpdateQuery = (UpdateQuery) mContext;
 
-        switch (viewType) {
+        /*switch (viewType) {
             case VIEW_TYPE_AD:
                 View unifiedNativeLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.ad_unified, parent, false);
                 return new UnifiedNativeAdHolder(unifiedNativeLayoutView);
@@ -134,12 +119,15 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             default:
                 View cardItemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_card_item, parent, false);
                 return new ItemViewHolder(cardItemLayoutView);
-        }
+        }*/
+
+        View cardItemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_card_item, parent, false);
+        return new ItemViewHolder(cardItemLayoutView);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        int viewType = getItemViewType(position);
+        /*int viewType = getItemViewType(position);
         switch (viewType) {
             case VIEW_TYPE_AD:
                 UnifiedNativeAd nativeAd = (UnifiedNativeAd) mRecipeItems.get(position);
@@ -149,7 +137,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 // Fall through
             default:
                 populateItemData((ItemViewHolder) holder, position);
-        }
+        }*/
+
+        populateItemData((ItemViewHolder) holder, position);
 
     }
 
@@ -162,12 +152,13 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public int getItemViewType(int position) {
 
-        Object recyclerViewItem = mRecipeItems.get(position);
+        /*Object recyclerViewItem = mRecipeItems.get(position);
         if (mRecipeItems.size() > 3) {
+            //return VIEW_TYPE_AD;
             if (recyclerViewItem instanceof UnifiedNativeAd) {
                 return VIEW_TYPE_AD;
             }
-        }
+        }*/
         return VIEW_TYPE_ITEM;
     }
 
@@ -185,6 +176,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     ________________________________________________________________________________________________________________________________________
      */
 
+    // Code for adding Recipe Items inside of the Search Recyclerview
     private void populateItemData(ItemViewHolder holder, int position) {
         RecipeItem item = (RecipeItem) mRecipeItems.get(position);
 
@@ -203,6 +195,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             Picasso.get()
                     .load(item.getmImageUrl())
                     .fit()
+                    .memoryPolicy(MemoryPolicy.NO_CACHE)
+                    .networkPolicy(NetworkPolicy.NO_CACHE)
+                    .config(Bitmap.Config.RGB_565)
                     .into(holder.recipeImage);
         } else {
             holder.recipeImage.setImageDrawable(null);
@@ -220,7 +215,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
     }
 
-    private void populateNativeAdView(UnifiedNativeAd nativeAd,
+    // Code for populating NativeAdView's to Search Recyclerview
+    /*private void populateNativeAdView(UnifiedNativeAd nativeAd,
                                       UnifiedNativeAdView adView) {
         // Some assets are guaranteed to be in every UnifiedNativeAd.
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
@@ -269,55 +265,48 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         // Assign native ad object to the native view.
         adView.setNativeAd(nativeAd);
-    }
+    }*/
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
     }
 
     private void saveDataToFirebase(String itemId, String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
-        Map<String, Object> item = new HashMap<>();
+        Map<String, Object> itemMap = new HashMap<>();
         CollectionReference favoritesRef = db.collection("Users").document(userId).collection("Favorites");
 
         Date now = new Date();
         Timestamp timestamp = new Timestamp(now);
 
-        item.put(ITEM_ID, itemId);
-        item.put(ITEM_NAME, name);
-        item.put(ITEM_SOURCE, source);
-        item.put(ITEM_IMAGE, image);
-        item.put(ITEM_URL, url);
-        item.put(ITEM_YIELD, servings);
-        item.put(ITEM_CAL, calories);
-        item.put(ITEM_CARB, carbs);
-        item.put(ITEM_FAT, fat);
-        item.put(ITEM_PROTEIN, protein);
-        item.put(ITEM_ATT, attributes);
-        item.put(ITEM_INGR, ingredients);
-        item.put("Timestamp", timestamp);
+        itemMap.put(ITEM_ID, itemId);
+        itemMap.put(ITEM_NAME, name);
+        itemMap.put(ITEM_SOURCE, source);
+        itemMap.put(ITEM_IMAGE, image);
+        itemMap.put(ITEM_URL, url);
+        itemMap.put(ITEM_YIELD, servings);
+        itemMap.put(ITEM_CAL, calories);
+        itemMap.put(ITEM_CARB, carbs);
+        itemMap.put(ITEM_FAT, fat);
+        itemMap.put(ITEM_PROTEIN, protein);
+        itemMap.put(ITEM_ATT, attributes);
+        itemMap.put(ITEM_INGR, ingredients);
+        itemMap.put("Timestamp", timestamp);
 
-        favoritesRef.document(itemId).set(item)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        updateQuery();
-                        Log.d("LOG: ", "Item saved to Firebase");
-                        int likes = sharedPreferences.getInt("numLikes", 0);
-                        likes += 1;
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putInt("numLikes", likes);
-                        editor.apply();
-                    }
+        favoritesRef.document(itemId).set(itemMap)
+                .addOnSuccessListener(aVoid -> {
+                    updateQuery();
+                    Log.d("LOG: ", "Item saved to Firebase");
+                    int likes = sharedPreferences.getInt("numLikes", 0);
+                    likes += 1;
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt("numLikes", likes);
+                    editor.apply();
                 })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        toastMessage("Error saving Like. Please try again");
-                        Log.d("LOG: ", e.toString());
-                    }
+                .addOnFailureListener(e -> {
+                    toastMessage("Error saving Like. Please try again");
+                    Log.d("LOG: ", e.toString());
                 });
     }
 
@@ -326,24 +315,16 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         favoritesRef.document(recipeItem.getItemId())
                 .delete()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        updateQuery();
-                        Log.d(TAG, "Successfully removed Like");
-                        int likes = sharedPreferences.getInt("numLikes", 0);
-                        likes -= 1;
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putInt("numLikes", likes);
-                        editor.apply();
-                    }
+                .addOnSuccessListener(aVoid -> {
+                    updateQuery();
+                    Log.d(TAG, "Successfully removed Like");
+                    int likes = sharedPreferences.getInt("numLikes", 0);
+                    likes -= 1;
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt("numLikes", likes);
+                    editor.apply();
                 })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d(TAG, "Failed to remove Like" + e.toString());
-                    }
-                });
+                .addOnFailureListener(e -> Log.d(TAG, "Failed to remove Like" + e.toString()));
     }
 
     private static void openInDefaultBrowser(Context context, String url) {
@@ -390,12 +371,10 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         private TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
         private ImageView recipeImage;
-        private CardView mNutritionCard, mViewRecipe;
         private RecipeItem item;
         private ImageButton more_button, favorite_button;
         private String reportReason = null;
         private ConstraintLayout expandableLayout;
-        private boolean rotated;
         private long mLastClickTime = 0;
 
         ItemViewHolder( @NonNull View itemView) {
@@ -405,7 +384,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             recipeImage = itemView.findViewById(R.id.recipe_image);
             favorite_button = itemView.findViewById(R.id.recipe_favorite);
             more_button = itemView.findViewById(R.id.more_button);
-            mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
+            CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
             expandableLayout = itemView.findViewById(R.id.expandableLayout);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
@@ -413,7 +392,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             recipeCarbs = itemView.findViewById(R.id.carbs_amount);
             recipeFat = itemView.findViewById(R.id.fat_amount);
             recipeProtein = itemView.findViewById(R.id.protein_amount);
-            mNutritionCard = itemView.findViewById(R.id.facts_cardView);
+            CardView mNutritionCard = itemView.findViewById(R.id.facts_cardView);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
 
             itemView.setOnClickListener(this);
@@ -440,12 +419,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     new MaterialAlertDialogBuilder(mContext)
                             .setTitle("No Internet connection found")
                             .setMessage("You don't have an Internet connection. Please reconnect and try again.")
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            })
+                            .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                             .create()
                             .show();
                 } else {
@@ -482,12 +456,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                         new MaterialAlertDialogBuilder(mContext)
                                 .setTitle("You need to be Signed In")
                                 .setMessage("You must Sign Up or Sign In, in order to Like recipes.")
-                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                    }
-                                })
+                                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                                 .create()
                                 .show();
                     }
@@ -495,8 +464,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             });
 
             more_button.setOnClickListener(v -> {
-                Animation cw = AnimationUtils.loadAnimation(mContext, R.anim.menu_clockwise);
-                Animation acw = AnimationUtils.loadAnimation(mContext, R.anim.menu_anti_clockwise);
 
                 item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
 
@@ -518,51 +485,25 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 MenuInflater inflater = popupMenu.getMenuInflater();
                 inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
                 popupMenu.show();
-
-                /*if (!rotated) {
-                    more_button.startAnimation(cw);
-                    rotated = true;
-                    cw.setFillAfter(true);
-                }
-
-                popupMenu.setOnDismissListener(dismiss -> {
-                    more_button.startAnimation(acw);
-                    rotated = false;
-                    acw.setFillAfter(true);
-                });*/
             });
 
-            mNutritionCard.setOnClickListener(v -> {
-                new MaterialAlertDialogBuilder(mContext)
-                        .setTitle("Some Information about Our Data")
-                        .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
-                                "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
-                                "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
-                                "as well as the number of servings the amount of ingredients can make.")
-                        .setPositiveButton("Got It!", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        }).create()
-                        .show();
-            });
+            mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
+                    .setTitle("Some Information about Our Data")
+                    .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
+                            "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
+                            "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
+                            "as well as the number of servings the amount of ingredients can make.")
+                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
+                    .show());
 
-            recipeServings.setOnClickListener(v -> {
-                new MaterialAlertDialogBuilder(mContext)
-                        .setTitle("Some Information about Our Data")
-                        .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
-                                "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
-                                "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
-                                "as well as the number of servings the amount of ingredients can make.")
-                        .setPositiveButton("Got It!", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        }).create()
-                        .show();
-            });
+            recipeServings.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
+                    .setTitle("Some Information about Our Data")
+                    .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
+                            "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
+                            "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
+                            "as well as the number of servings the amount of ingredients can make.")
+                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
+                    .show());
 
             mViewRecipe.setOnClickListener(v -> {
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -581,32 +522,24 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 new MaterialAlertDialogBuilder(mContext)
                         .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try again.")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
             } else {
                 final CharSequence[] listItems = {"Inappropriate Image","Inappropriate Website","Profanity"};
                 new MaterialAlertDialogBuilder(mContext)
                         .setTitle("Why are you reporting this?")
-                        .setSingleChoiceItems(listItems, -1, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                switch (which) {
-                                    case 0:
-                                        reportReason = "Inappropriate Image";
-                                        break;
-                                    case 1:
-                                        reportReason = "Inappropriate Website";
-                                        break;
-                                    case 2:
-                                        reportReason = "Profanity";
-                                        break;
-                                }
+                        .setSingleChoiceItems(listItems, -1, (dialog, which) -> {
+                            switch (which) {
+                                case 0:
+                                    reportReason = "Inappropriate Image";
+                                    break;
+                                case 1:
+                                    reportReason = "Inappropriate Website";
+                                    break;
+                                case 2:
+                                    reportReason = "Profanity";
+                                    break;
                             }
                         })
                         .setPositiveButton("Report",(dialog, which) -> {
@@ -614,12 +547,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                                 new MaterialAlertDialogBuilder(mContext)
                                         .setTitle("No Internet connection found")
                                         .setMessage("You don't have an Internet connection. Please reconnect and try again.")
-                                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                dialog.dismiss();
-                                            }
-                                        })
+                                        .setPositiveButton("OK", (dialog1, which1) -> dialog1.dismiss())
                                         .create()
                                         .show();
                             } else {
@@ -663,19 +591,13 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             reportInfo.put("Recipe URL", item.getmRecipeURL());
 
             reportingReference.document().set(reportInfo)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Log.d(TAG,"Report saved to Firebase");
-                            toastMessage("Reported for " + reason + ". Thank you");
-                        }
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d(TAG,"Report saved to Firebase");
+                        toastMessage("Reported for " + reason + ". Thank you");
                     })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            toastMessage("Error sending report");
-                            Log.d(TAG, e.toString());
-                        }
+                    .addOnFailureListener(e -> {
+                        toastMessage("Error sending report");
+                        Log.d(TAG, e.toString());
                     });
         }
 
@@ -720,7 +642,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     // LOADING VIEW HOLDER
-    private static class UnifiedNativeAdHolder extends RecyclerView.ViewHolder {
+    /*private static class UnifiedNativeAdHolder extends RecyclerView.ViewHolder {
 
         private UnifiedNativeAdView adView;
 
@@ -746,6 +668,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             adView.setStoreView(adView.findViewById(R.id.ad_store));
             adView.setAdvertiserView(adView.findViewById(R.id.ad_advertiser));
         }
-    }
+    }*/
 }
 

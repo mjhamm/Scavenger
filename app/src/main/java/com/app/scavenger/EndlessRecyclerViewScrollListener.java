@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -14,9 +13,6 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnScrollListener {
 
-    // The minimum amount of items to have below your current scroll position
-    // before loading more.
-    private int visibleThreshold = 2;
     // The current offset index of data you have loaded
     private int currentPage = 0;
     // The total number of items in the dataset after the last load
@@ -28,7 +24,6 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
 
     private ProgressBar mProgressBar;
     private ConnectionDetector con;
-    private Context mContext;
     private int toIngr;
     
     RecyclerView.LayoutManager mLayoutManager;
@@ -36,7 +31,6 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
     public EndlessRecyclerViewScrollListener(LinearLayoutManager layoutManager, ProgressBar progressBar, Context context, int toIngr) {
         this.mLayoutManager = layoutManager;
         this.mProgressBar = progressBar;
-        this.mContext = context;
         this.toIngr = toIngr;
         con = new ConnectionDetector(context);
     }
@@ -106,6 +100,9 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
             // the visibleThreshold and need to reload more data.
             // If we do need to reload some more data, we execute onLoadMore to fetch the data.
             // threshold should reflect how many total columns there are too
+            // The minimum amount of items to have below your current scroll position
+            // before loading more.
+            int visibleThreshold = 2;
             if (!loading && (lastVisibleItemPosition + visibleThreshold) > totalItemCount && toIngr < 50) {
                 currentPage++;
                 mProgressBar.setVisibility(View.VISIBLE);

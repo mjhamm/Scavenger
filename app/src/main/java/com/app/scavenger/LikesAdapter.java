@@ -4,9 +4,9 @@ import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
@@ -14,8 +14,6 @@ import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
@@ -31,12 +29,12 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -49,6 +47,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> implements Filterable {
 
     private static final String TAG = "LOG: ";
@@ -70,7 +69,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private DatabaseHelper myDb;
 
-    private String userId = null;
+    private String userId;
     private UpdateSearch mCallback;
     private CheckZeroLikes mZeroLikes;
 
@@ -131,6 +130,9 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             Picasso.get()
                     .load(item.getmImageUrl())
                     .fit()
+                    .memoryPolicy(MemoryPolicy.NO_CACHE)
+                    .networkPolicy(NetworkPolicy.NO_CACHE)
+                    .config(Bitmap.Config.RGB_565)
                     .into(holder.recipeImage);
         } else {
             holder.recipeImage.setImageDrawable(null);
@@ -196,13 +198,10 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         private TextView recipeProtein;
         private TextView recipeAttributes;
         private ImageView recipeImage;
-        private CardView mNutritionCard, bottomCard;
         private RecipeItem recipeItem;
         private ImageButton more_button, favorite_button;
         private ConstraintLayout expandableLayout;
-        private CardView mViewRecipe;
         private String reportReason = null;
-        private boolean rotated;
 
         ViewHolder( @NonNull View itemView) {
             super(itemView);
@@ -213,15 +212,15 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             more_button = itemView.findViewById(R.id.more_button);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
-            bottomCard = itemView.findViewById(R.id.bottomCardView);
+            CardView bottomCard = itemView.findViewById(R.id.bottomCardView);
             recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
             recipeCarbs = itemView.findViewById(R.id.carbs_amount);
             recipeFat = itemView.findViewById(R.id.fat_amount);
             expandableLayout = itemView.findViewById(R.id.expandableLayout);
             recipeProtein = itemView.findViewById(R.id.protein_amount);
-            mNutritionCard = itemView.findViewById(R.id.facts_cardView);
+            CardView mNutritionCard = itemView.findViewById(R.id.facts_cardView);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
-            mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
+            CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
 
             itemView.setOnClickListener(this);
 
@@ -243,12 +242,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                     new MaterialAlertDialogBuilder(mContext)
                             .setTitle("No Internet connection found")
                             .setMessage("You don't have an Internet connection. Please reconnect and try again.")
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            })
+                            .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                             .create()
                             .show();
                 } else {
@@ -258,44 +252,36 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                             .setTitle("Remove this recipe from your Likes?")
                             .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
                             .setCancelable(false)
-                            .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    try {
-                                        removeDataFromFirebase(recipeItem);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
+                            .setPositiveButton("Remove", (dialog, which) -> {
+                                try {
+                                    removeDataFromFirebase(recipeItem);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
 
-                                    myDb.removeDataFromView(recipeItem.getItemId());
-                                    myDb.addRemovedItem(recipeItem.getItemId());
-                                    update();
-                                    // CHECK - Let fragment know to reload
-                                    for (Iterator<RecipeItem> iterator = mRecipeItemsFull.iterator(); iterator.hasNext();) {
-                                        if (iterator.next().getItemId().equals(recipeItemId)) {
-                                            iterator.remove();
-                                        }
+                                myDb.removeDataFromView(recipeItem.getItemId());
+                                myDb.addRemovedItem(recipeItem.getItemId());
+                                update();
+                                // CHECK - Let fragment know to reload
+                                for (Iterator<RecipeItem> iterator = mRecipeItemsFull.iterator(); iterator.hasNext();) {
+                                    if (iterator.next().getItemId().equals(recipeItemId)) {
+                                        iterator.remove();
                                     }
-                                    if (!mRecipeItems.isEmpty()) {
-                                        mRecipeItems.remove(getAdapterPosition());
-                                    }
-                                    if (mRecipeItemsFull.isEmpty()) {
-                                        checkZeroLikes();
-                                    }
-                                    int actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
-                                    actualNumLikes -= 1;
-                                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                                    editor.putInt("actualNumLikes", actualNumLikes);
-                                    editor.apply();
-                                    notifyDataSetChanged();
                                 }
-                            })
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
+                                if (!mRecipeItems.isEmpty()) {
+                                    mRecipeItems.remove(getAdapterPosition());
                                 }
+                                if (mRecipeItemsFull.isEmpty()) {
+                                    checkZeroLikes();
+                                }
+                                int actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
+                                actualNumLikes -= 1;
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putInt("actualNumLikes", actualNumLikes);
+                                editor.apply();
+                                notifyDataSetChanged();
                             })
+                            .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                             .create()
                             .show();
                 }
@@ -304,8 +290,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             more_button.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 recipeItem = mRecipeItems.get(position);
-                Animation cw = AnimationUtils.loadAnimation(mContext, R.anim.menu_clockwise);
-                Animation acw = AnimationUtils.loadAnimation(mContext, R.anim.menu_anti_clockwise);
 
                 PopupMenu popupMenu = new PopupMenu(mContext, more_button);
                 popupMenu.setOnMenuItemClickListener(item -> {
@@ -323,7 +307,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                     return false;
                 });
                 MenuInflater inflater = popupMenu.getMenuInflater();
-                inflater.inflate(R.menu.favorite_menu, popupMenu.getMenu());
+                inflater.inflate(R.menu.like_menu, popupMenu.getMenu());
                 popupMenu.show();
 
                 /*if (!rotated) {
@@ -339,37 +323,23 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 });*/
             });
 
-            mNutritionCard.setOnClickListener(v -> {
-                new MaterialAlertDialogBuilder(mContext)
-                        .setTitle("Some Information about Our Data")
-                        .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
-                                "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
-                                "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
-                                "as well as the number of servings the amount of ingredients can make.")
-                        .setPositiveButton("Got It!", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        }).create()
-                        .show();
-            });
+            mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
+                    .setTitle("Some Information about Our Data")
+                    .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
+                            "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
+                            "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
+                            "as well as the number of servings the amount of ingredients can make.")
+                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
+                    .show());
 
-            recipeServings.setOnClickListener(v -> {
-                new MaterialAlertDialogBuilder(mContext)
-                        .setTitle("Some Information about Our Data")
-                        .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
-                                "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
-                                "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
-                                "as well as the number of servings the amount of ingredients can make.")
-                        .setPositiveButton("Got It!", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        }).create()
-                        .show();
-            });
+            recipeServings.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
+                    .setTitle("Some Information about Our Data")
+                    .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
+                            "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
+                            "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
+                            "as well as the number of servings the amount of ingredients can make.")
+                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
+                    .show());
 
             mViewRecipe.setOnClickListener(v -> {
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -387,32 +357,24 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 new MaterialAlertDialogBuilder(mContext)
                         .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try again.")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
             } else {
                 final CharSequence[] listItems = {"Inappropriate Image","Inappropriate Website","Profanity"};
                 new MaterialAlertDialogBuilder(mContext)
                         .setTitle("Why are you reporting this?")
-                        .setSingleChoiceItems(listItems, -1, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                switch (which) {
-                                    case 0:
-                                        reportReason = "Inappropriate Image";
-                                        break;
-                                    case 1:
-                                        reportReason = "Inappropriate Website";
-                                        break;
-                                    case 2:
-                                        reportReason = "Profanity";
-                                        break;
-                                }
+                        .setSingleChoiceItems(listItems, -1, (dialog, which) -> {
+                            switch (which) {
+                                case 0:
+                                    reportReason = "Inappropriate Image";
+                                    break;
+                                case 1:
+                                    reportReason = "Inappropriate Website";
+                                    break;
+                                case 2:
+                                    reportReason = "Profanity";
+                                    break;
                             }
                         })
                         .setPositiveButton("Report",(dialog, which) -> {
@@ -420,12 +382,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                 new MaterialAlertDialogBuilder(mContext)
                                         .setTitle("No Internet connection found")
                                         .setMessage("You don't have an Internet connection. Please reconnect and try again.")
-                                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                dialog.dismiss();
-                                            }
-                                        })
+                                        .setPositiveButton("OK", (dialog1, which1) -> dialog1.dismiss())
                                         .create()
                                         .show();
                             } else {
@@ -469,19 +426,13 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             reportInfo.put("Recipe URL", item.getmRecipeURL());
 
             reportingReference.document().set(reportInfo)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Log.d(TAG,"Report saved to Firebase");
-                            toastMessage("Reported for " + reason + ". Thank you");
-                        }
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d(TAG,"Report saved to Firebase");
+                        toastMessage("Reported for " + reason + ". Thank you");
                     })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            toastMessage("Error sending report");
-                            Log.d(TAG, e.toString());
-                        }
+                    .addOnFailureListener(e -> {
+                        toastMessage("Error sending report");
+                        Log.d(TAG, e.toString());
                     });
         }
 
@@ -530,18 +481,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
 
         favoritesRef.document(recipeItem.getItemId())
                 .delete()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "Successfully removed favorite");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d(TAG, "Failed to remove favorite" + e.toString());
-                    }
-                });
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Successfully removed favorite"))
+                .addOnFailureListener(e -> Log.d(TAG, "Failed to remove favorite" + e.toString()));
     }
 
     private static void openInDefaultBrowser(Context context, String url) {

@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout android:id="@+id/activity_settings"
+<androidx.fragment.app.FragmentContainerView
+
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
+    <!--android:id="@+id/activity_settings"
+    xmlns:app="http://schemas.android.com/apk/res-auto">-->
 
-    <com.google.android.material.card.MaterialCardView
+    <!--<com.google.android.material.card.MaterialCardView
         android:id="@+id/settings_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         app:cardElevation="12dp">
 
         <TextView
@@ -33,9 +35,9 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="8dp"/>
 
-    </com.google.android.material.card.MaterialCardView>
+    </com.google.android.material.card.MaterialCardView>-->
 
-    <androidx.fragment.app.FragmentContainerView
+    <!--<androidx.fragment.app.FragmentContainerView
         android:id="@+id/settings_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -43,6 +45,6 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:name="com.app.scavenger.SettingsFragment"/>
+        android:name="com.app.scavenger.SettingsFragment"/>-->
 
-</RelativeLayout>
+</androidx.fragment.app.FragmentContainerView>

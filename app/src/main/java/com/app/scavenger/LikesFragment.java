@@ -8,7 +8,6 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,8 +21,6 @@ import android.widget.TextView;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.card.MaterialCardView;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -68,20 +65,18 @@ public class LikesFragment extends Fragment {
     private SearchView mFavoriteSearch;
     private TextView likes_message;
     private MaterialButton retryConButton;
-    private MaterialCardView progressHolder;
     private ShimmerFrameLayout shimmer;
     //--------------------------------------------
 
-    private FirebaseAuth mAuth;
+    //private FirebaseAuth mAuth;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private SharedPreferences sharedPreferences;
     private ConnectionDetector con;
-    private String queryString = null;
+    //private String queryString = null;
     private LinearLayoutManager mLayoutManager;
 
     // Liked Items
     private ArrayList<RecipeItem> recipeItemList = new ArrayList<>();
-    private ArrayList<RecipeItem> likedItems = new ArrayList<>();
 
     public LikesFragment() {
         // Required empty public constructor
@@ -89,33 +84,10 @@ public class LikesFragment extends Fragment {
 
     // Create a new instance of Favorites Fragment
     static LikesFragment newInstance() {
-        LikesFragment likesFragment = new LikesFragment();
-        Bundle args = new Bundle();
-        likesFragment.setArguments(args);
-        return likesFragment;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        getInfoFromSharedPrefs();
-        if (!con.connectedToInternet()) {
-            if (recipeItemList.isEmpty()) {
-                likes_message.setText(R.string.favorites_not_connected);
-                likes_message.setVisibility(View.VISIBLE);
-                retryConButton.setVisibility(View.VISIBLE);
-            } else {
-                likes_message.setVisibility(View.GONE);
-                retryConButton.setVisibility(View.GONE);
-            }
-        } else {
-            retryConButton.setVisibility(View.GONE);
-            if (logged && recipeItemList.isEmpty()) {
-                shimmer.setVisibility(View.VISIBLE);
-                shimmer.startShimmer();
-                retrieveLikesFromFirebase();
-            }
-        }
+        //LikesFragment likesFragment = new LikesFragment();
+        //Bundle args = new Bundle();
+        //likesFragment.setArguments(args);
+        return new LikesFragment();
     }
 
     @Override
@@ -130,13 +102,23 @@ public class LikesFragment extends Fragment {
         getInfoFromSharedPrefs();
         if (!hidden) {
             if (!con.connectedToInternet()) {
-                if (recipeItemList.isEmpty()) {
-                    likes_message.setText(R.string.favorites_not_connected);
+                if (!logged) {
+                    recipeItemList.clear();
+                    if (adapter != null) {
+                        adapter.clearList();
+                    }
+                    mFavoriteRecyclerView.setAdapter(null);
                     likes_message.setVisibility(View.VISIBLE);
-                    retryConButton.setVisibility(View.VISIBLE);
+                    likes_message.setText(R.string.not_signed_in);
                 } else {
-                    likes_message.setVisibility(View.GONE);
-                    retryConButton.setVisibility(View.GONE);
+                    if (recipeItemList.isEmpty()) {
+                        likes_message.setText(R.string.favorites_not_connected);
+                        likes_message.setVisibility(View.VISIBLE);
+                        retryConButton.setVisibility(View.VISIBLE);
+                    } else {
+                        likes_message.setVisibility(View.GONE);
+                        retryConButton.setVisibility(View.GONE);
+                    }
                 }
             } else {
                 retryConButton.setVisibility(View.GONE);
@@ -160,11 +142,6 @@ public class LikesFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -174,9 +151,9 @@ public class LikesFragment extends Fragment {
         mFavoriteSearch = view.findViewById(R.id.favorites_searchView);
         retryConButton = view.findViewById(R.id.fav_retry_con_button);
         mFavoriteSearch.setMaxWidth(Integer.MAX_VALUE);
-        progressHolder = view.findViewById(R.id.likes_progressHolder);
-        mAuth = FirebaseAuth.getInstance();
+        //mAuth = FirebaseAuth.getInstance();
         shimmer = view.findViewById(R.id.likes_shimmerLayout);
+        mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         con = new ConnectionDetector(mContext);
         adapter = new LikesAdapter(mContext, recipeItemList, userId);
@@ -185,9 +162,9 @@ public class LikesFragment extends Fragment {
 
         retryConButton.setOnClickListener(v -> retryConnection());
 
-        if (!logged) {
+        /*if (!logged) {
             likes_message.setText(R.string.not_signed_in);
-        }
+        }*/
 
         mFavoriteSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -198,22 +175,22 @@ public class LikesFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (logged) {
-                    queryString = newText;
+                    //queryString = newText;
                     adapter.getFilter().filter(newText);
                 }
                 return false;
             }
         });
 
-        mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
-        mFavoriteRecyclerView.setHasFixedSize(true);
+
+        //mFavoriteRecyclerView.setHasFixedSize(true);
 
         RecyclerView.ItemAnimator animator = mFavoriteRecyclerView.getItemAnimator();
 
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
-        mFavoriteRecyclerView.setItemViewCacheSize(10);
+        mFavoriteRecyclerView.setItemViewCacheSize(4);
 
         mFavoriteRecyclerView.setOnTouchListener((v, event) -> {
             mFavoriteSearch.clearFocus();
@@ -239,13 +216,52 @@ public class LikesFragment extends Fragment {
     }
 
     private void retryConnection() {
-        try {
+        /*try {
             // Reload the fragment
             FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
             ft.detach(this).attach(this).commit();
         } catch (NullPointerException e) {
             e.printStackTrace();
             Log.d(TAG, e.toString());
+        }*/
+
+        if (!con.connectedToInternet()) {
+            if (!logged) {
+                recipeItemList.clear();
+                if (adapter != null) {
+                    adapter.clearList();
+                }
+                mFavoriteRecyclerView.setAdapter(null);
+                likes_message.setVisibility(View.VISIBLE);
+                likes_message.setText(R.string.not_signed_in);
+            } else {
+                if (recipeItemList.isEmpty()) {
+                    likes_message.setText(R.string.favorites_not_connected);
+                    likes_message.setVisibility(View.VISIBLE);
+                    retryConButton.setVisibility(View.VISIBLE);
+                } else {
+                    likes_message.setVisibility(View.GONE);
+                    retryConButton.setVisibility(View.GONE);
+                }
+            }
+        } else {
+            retryConButton.setVisibility(View.GONE);
+            likes_message.setText("");
+            if (!logged) {
+                recipeItemList.clear();
+                if (adapter != null) {
+                    adapter.clearList();
+                }
+                mFavoriteRecyclerView.setAdapter(null);
+                likes_message.setVisibility(View.VISIBLE);
+                likes_message.setText(R.string.not_signed_in);
+            } else {
+                if (recipeItemList.isEmpty() || numLikes != actualNumLikes) {
+                    shimmer.setVisibility(View.VISIBLE);
+                    shimmer.startShimmer();
+                    retrieveLikesFromFirebase();
+                }
+            }
         }
     }
 
@@ -268,6 +284,7 @@ public class LikesFragment extends Fragment {
                     int protein = 1;
                     ArrayList<String> att = new ArrayList<>();
                     ArrayList<String> ingr = new ArrayList<>();
+                    @SuppressWarnings("unchecked")
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (queryDocumentSnapshots.isEmpty()) {

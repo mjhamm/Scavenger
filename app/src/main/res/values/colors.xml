@@ -3,8 +3,6 @@
     <color name="colorPrimary">#BE0C0C</color>
     <color name="colorPrimaryDark">#A30A0A</color>
     <color name="colorAccent">#8A0808</color>
-    <color name="buttonRed">#BE0C0C</color>
     <color name="link_blue">#448AFF</color>
     <color name="dark_gray">#7D7D7D</color>
-    <color name="dark_blue">#0034C4</color>
 </resources>

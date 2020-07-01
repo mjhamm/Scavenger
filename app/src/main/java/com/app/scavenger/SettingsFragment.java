@@ -1,7 +1,6 @@
 package com.app.scavenger;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -12,7 +11,6 @@ import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
-import androidx.preference.SwitchPreference;
 import com.facebook.AccessToken;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -25,7 +23,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     private Context mContext;
     private Preference signIn, signOut, help, about;
-    private SwitchPreference matchIngr;
     private SharedPreferences sharedPreferences;
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
@@ -55,11 +52,23 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         signOut = findPreference("signOut");
         help = findPreference("help");
         about = findPreference("about");
-        matchIngr = findPreference("match");
+        //SwitchPreference matchIngr = findPreference("match");
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+    }
 
-        getInfoFromSharedPrefs();
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        //getInfoFromSharedPrefs();
+
+        if (sharedPreferences.getBoolean("logged", false)) {
+            signOut.setVisible(true);
+            signIn.setVisible(false);
+        } else {
+            signOut.setVisible(false);
+            signIn.setVisible(true);
+        }
     }
 
     @Override
@@ -86,14 +95,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         accessToken = AccessToken.getCurrentAccessToken();
 
         // -------------------------------------------------------------------------
-
-        if (sharedPreferences.getBoolean("logged", false)) {
-            signOut.setVisible(true);
-            signIn.setVisible(false);
-        } else {
-            signOut.setVisible(false);
-            signIn.setVisible(true);
-        }
     }
 
     @Override
@@ -115,12 +116,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 new MaterialAlertDialogBuilder(mContext)
                         .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect and try again.")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
             } else {
@@ -193,7 +189,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             name = null;
             email = null;
             userId = null;
-            toastMessage("Successfully signed out");
+            toastMessage();
             signOut.setVisible(false);
             signIn.setVisible(true);
     }
@@ -216,7 +212,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     @Override
     public void onResume() {
         super.onResume();
-        getInfoFromSharedPrefs();
+        //getInfoFromSharedPrefs();
 
         if (sharedPreferences.getBoolean("logged", false)) {
             signOut.setVisible(true);
@@ -259,13 +255,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     //method for creating a Toast
-    private void toastMessage(String message) {
-        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+    private void toastMessage() {
+        Toast.makeText(mContext, "Successfully signed out", Toast.LENGTH_SHORT).show();
     }
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
         email = sharedPreferences.getString("email", null);

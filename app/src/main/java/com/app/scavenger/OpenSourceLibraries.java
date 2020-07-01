@@ -7,17 +7,13 @@ import android.widget.ImageButton;
 
 public class OpenSourceLibraries extends AppCompatActivity {
 
-    private ImageButton backButton;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_osl);
 
-        backButton = findViewById(R.id.osl_back);
+        ImageButton backButton = findViewById(R.id.osl_back);
 
-        backButton.setOnClickListener(v -> {
-            finish();
-        });
+        backButton.setOnClickListener(v -> finish());
     }
 }

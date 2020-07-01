@@ -13,6 +13,6 @@
         android:paddingBottom="12dp"
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
-        android:text="Terms &amp; Conditions"/>
+        android:text="@string/terms_and_conditions"/>
 
 </LinearLayout>

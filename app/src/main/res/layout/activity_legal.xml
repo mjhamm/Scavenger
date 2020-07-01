@@ -7,7 +7,6 @@
     tools:context=".Legal">
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/legal_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         android:layout_alignParentTop="true"

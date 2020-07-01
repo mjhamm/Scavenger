@@ -1,10 +1,7 @@
 package com.app.scavenger;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,13 +13,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.instabug.library.model.Report;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -38,7 +32,6 @@ public class ReportProblem extends AppCompatActivity {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private EditText reportEditText;
-    private ImageButton backButton;
     private TextView submit_buttonText;
     private ConnectionDetector con;
     private String reportText;
@@ -50,7 +43,7 @@ public class ReportProblem extends AppCompatActivity {
 
         reportEditText = findViewById(R.id.report_editText);
         submit_buttonText = findViewById(R.id.report_textButton);
-        backButton = findViewById(R.id.reportProblem_back);
+        ImageButton backButton = findViewById(R.id.reportProblem_back);
 
         submit_buttonText.setEnabled(false);
         submit_buttonText.setTextColor(Color.GRAY);
@@ -58,9 +51,7 @@ public class ReportProblem extends AppCompatActivity {
 
         con = new ConnectionDetector(this);
 
-        backButton.setOnClickListener(v -> {
-            finish();
-        });
+        backButton.setOnClickListener(v -> finish());
 
         // Checks for whether or not the edit text is empty or not and changes the appearance of the submit button
         reportEditText.addTextChangedListener(new TextWatcher() {
@@ -93,12 +84,7 @@ public class ReportProblem extends AppCompatActivity {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("No Internet connection found")
                         .setMessage("You don't have an Internet connection. Please reconnect in order to Report a Problem.")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
             } else {
@@ -158,19 +144,13 @@ public class ReportProblem extends AppCompatActivity {
 
 
         reportingReference.document().set(reportInfo)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG,"Report saved to Firebase");
-                        toastMessage("Thank you for your report");
-                    }
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG,"Report saved to Firebase");
+                    toastMessage("Thank you for your report");
                 })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        toastMessage("Error sending report");
-                        Log.d(TAG, e.toString());
-                    }
+                .addOnFailureListener(e -> {
+                    toastMessage("Error sending report");
+                    Log.d(TAG, e.toString());
                 });
     }
 

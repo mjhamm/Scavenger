@@ -22,10 +22,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.shimmer.ShimmerFrameLayout;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdLoader;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.formats.UnifiedNativeAd;
+//import com.google.android.gms.ads.AdListener;
+//import com.google.android.gms.ads.AdLoader;
+//import com.google.android.gms.ads.AdRequest;
+//import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,7 +34,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -46,8 +45,6 @@ import retrofit2.http.Query;
 public class SearchFragment extends Fragment /*implements SignInActivity.RefreshSearchFrag*/ {
 
     private static final String TAG = "SEARCH_FRAGMENT: ";
-    public static final String ARG_ITEM_IDS = "itemIds";
-    public static final int NUMBER_OF_ADS = 2;
 
     private RecyclerView mSearchRecyclerView;
     private ArrayList<String> itemIds;
@@ -67,14 +64,16 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private int numItemsBefore = 0;
     private int numItemsAfter = 0;
     private boolean numItemsChanged = true;
-    private int adIndex = 3;
+    private SharedPreferences sharedPreferences;
     private EndlessRecyclerViewScrollListener scrollListener;
+    private String noRecipesFound;
 
     private DatabaseHelper myDb;
     private Cursor likesData;
+    private Random random_start_number;
 
-    private AdLoader adLoader;
-    private List<UnifiedNativeAd> mNativeAds = new ArrayList<>();
+    /*private AdLoader adLoader;
+    private List<UnifiedNativeAd> mNativeAds = new ArrayList<>();*/
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -92,19 +91,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
     // Create a new instance of Search Fragment
     static SearchFragment newInstance() {
-        SearchFragment searchFragment = new SearchFragment();
-        Bundle args = new Bundle();
-        //args.putStringArrayList(ARG_ITEM_IDS, itemIds);
-        searchFragment.setArguments(args);
-        return searchFragment;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        logged = currentUser != null;
-        myDb.removeAllItemsFromRemoveTable();
+        return new SearchFragment();
     }
 
     @Override
@@ -116,8 +103,16 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        logged = currentUser != null;
+        //myDb.removeAllItemsFromRemoveTable();
+
+        recipeItemArrayList = new ArrayList<>();
+        itemIds = new ArrayList<>();
+
+        con = new ConnectionDetector(mContext);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -138,16 +133,15 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         matchMessage = view.findViewById(R.id.match_message);
         mProgressBar = view.findViewById(R.id.main_progressBar);
 
-        con = new ConnectionDetector(mContext);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+
+        noRecipesFound = "We Couldn't Find Any Recipes :(\n" + "Sorry About That!";
 
         mProgressBar.setVisibility(View.GONE);
 
-        recipeItemArrayList = new ArrayList<>();
-        itemIds = new ArrayList<>();
-
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
 
-        Random random_start_number = new Random();
+        random_start_number = new Random();
 
         //creates a random number and sets the welcome text to a specific text based on number
         int start_message_int = random_start_number.nextInt(5);
@@ -171,14 +165,14 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         }
 
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
-        mSearchRecyclerView.setHasFixedSize(true);
+        //mSearchRecyclerView.setHasFixedSize(true);
 
         RecyclerView.ItemAnimator animator = mSearchRecyclerView.getItemAnimator();
 
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
-        mSearchRecyclerView.setItemViewCacheSize(10);
+        mSearchRecyclerView.setItemViewCacheSize(4);
 
         mSearchRecyclerView.setOnTouchListener((v, event) -> {
             mSearchView.clearFocus();
@@ -191,7 +185,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (isLastVisible() && !con.connectedToInternet()) {
-                    toastMessage("Failed to load more recipes. Please check your Internet connection.");
+                    toastMessage();
                 }
             }
 
@@ -219,7 +213,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
             @Override
             public boolean onQueryTextChange(String newText) {
-
                 return false;
             }
         });
@@ -243,26 +236,19 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         outState.putString("query", queryString);
     }
 
-    private void insertAdsInRecipeItems() {
+    /*private void insertAdsInRecipeItems() {
         if (mNativeAds.size() <= 0) {
             return;
         }
 
-        Log.d(TAG, "mNativeAds.size() Before ads: " + mNativeAds.size());
-
-        int offset = (recipeItemArrayList.size() / mNativeAds.size() - 1);
-        Log.d(TAG, "RecipeArrayListSize() Before ads:" + recipeItemArrayList.size());
-        Log.d(TAG, "OFFSET: " + offset);
-        //int adIndex = 3;
+        int offset = 4;
         for (UnifiedNativeAd ad : mNativeAds) {
             recipeItemArrayList.add(adIndex, ad);
             adIndex = adIndex + offset;
         }
-        Log.d(TAG, "mNativeAds.size() After ads: " + mNativeAds.size());
-        Log.d(TAG, "RecipeArrayListSize() After ads:" + recipeItemArrayList.size());
-    }
+    }*/
 
-    private void loadNativeAds() {
+    /*private void loadNativeAds() {
 
         AdLoader.Builder builder = new AdLoader.Builder(mContext, getString(R.string.ad_unit_id));
         adLoader = builder.forUnifiedNativeAd(
@@ -272,11 +258,11 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                     mNativeAds.add(unifiedNativeAd);
                     if (!adLoader.isLoading()) {
                         insertAdsInRecipeItems();
-                        if (adapter == null) {
+                        *//*if (adapter == null) {
                             adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
                             mSearchRecyclerView.setAdapter(adapter);
                             mSearchRecyclerView.setLayoutManager(mLayoutManager);
-                        }
+                        }*//*
                         shimmer.stopShimmer();
                         shimmer.setVisibility(View.GONE);
                     }
@@ -290,9 +276,11 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                                 + " load another.");
                         if (!adLoader.isLoading()) {
                             insertAdsInRecipeItems();
-                            adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
-                            mSearchRecyclerView.setAdapter(adapter);
-                            mSearchRecyclerView.setLayoutManager(mLayoutManager);
+                            if (adapter == null) {
+                                adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
+                                mSearchRecyclerView.setAdapter(adapter);
+                                mSearchRecyclerView.setLayoutManager(mLayoutManager);
+                            }
                             shimmer.stopShimmer();
                             shimmer.setVisibility(View.GONE);
                         }
@@ -301,7 +289,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
         // Load the Native Express ad.
         adLoader.loadAds(new AdRequest.Builder().build(), NUMBER_OF_ADS);
-    }
+    }*/
 
     public void updateSearchFrag() {
         if (!recipeItemArrayList.isEmpty()) {
@@ -329,8 +317,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             // Reload the fragment
             mSearchView.setQuery("", false);
             FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-            adapter = null;
-            mSearchRecyclerView = null;
+            mSearchRecyclerView.setAdapter(null);
             ft.detach(this).attach(this).commit();
         } catch (NullPointerException e) {
             e.printStackTrace();
@@ -339,7 +326,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     }
 
     private int checkNumIngredients() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+
         int numIngr = 100;
         String[] ingredientsArray;
         boolean matchIngr = sharedPreferences.getBoolean("match", false);
@@ -397,18 +384,21 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                             String result = response.body();
                             recipeItemArrayList.clear();
                             writeRecycler(result);
-                            Log.d(TAG, "1. recipeItemListSize: " + recipeItemArrayList.size());
-                            adIndex = 3;
-                            loadNativeAds();
-                            /*adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
-                            mSearchRecyclerView.setAdapter(adapter);
-                            mSearchRecyclerView.setLayoutManager(mLayoutManager);*/
+                            if (adapter == null) {
+                                adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
+                                mSearchRecyclerView.setAdapter(adapter);
+                                mSearchRecyclerView.setLayoutManager(mLayoutManager);
+                            }
+                            //loadNativeAds();
 
                             if (recipeItemArrayList.isEmpty()) {
                                 startup_message.setVisibility(View.VISIBLE);
-                                startup_message.setText("We Couldn't Find Any Recipes :(\n" + "Sorry About That!");
+                                startup_message.setText(noRecipesFound);
                                 matchMessage.setVisibility(View.VISIBLE);
                             }
+
+                            shimmer.stopShimmer();
+                            shimmer.setVisibility(View.GONE);
                         } else {
                             Log.i("onEmptyResponse", "Returned Empty Response");
                         }
@@ -427,26 +417,13 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
     private void writeRecycler(String response) {
         try {
+            JSONObject hits, recipes, ing, totalNutrients, carbs, fat, protein;
+            JSONArray dietLabelsArray, healthLabelsArray, ingredientsArray;
+            ArrayList<String> list_healthLabels, list_ingredients;
+            String labels, total_ing;
+
             JSONObject obj = new JSONObject(response);
             JSONArray dataArray = obj.getJSONArray("hits");
-
-            JSONObject hits;
-            JSONObject recipes;
-            JSONObject ing;
-            JSONObject totalNutrients;
-            JSONObject carbs;
-            JSONObject fat;
-            JSONObject protein;
-
-            JSONArray dietLabelsArray;
-            JSONArray healthLabelsArray;
-            JSONArray ingredientsArray;
-
-            ArrayList<String> list_healthLabels;
-            ArrayList<String> list_ingredients;
-
-            String labels;
-            String total_ing;
 
             for (int i = 0; i < dataArray.length(); i++) {
                 RecipeItem item = new RecipeItem();
@@ -513,15 +490,13 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                 if (itemIds.contains(item.getItemId())) {
                     item.setFavorited(true);
                 }
-
+                
                 recipeItemArrayList.add(item);
             }
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        /*shimmer.stopShimmer();
-        shimmer.setVisibility(View.GONE);*/
     }
 
     boolean isLastVisible() {
@@ -565,16 +540,13 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                     if (response.body() != null) {
                         String result = response.body();
                         writeRecycler(result);
+
+                        //loadNativeAds();
+
                         numItemsAfter = recipeItemArrayList.size();
                         if (numItemsAfter == numItemsBefore) {
                             numItemsChanged = false;
                         }
-
-                        Log.d(TAG, "2. recipeItemListSize: " + recipeItemArrayList.size());
-
-                        loadNativeAds();
-
-                        //adapter.notifyDataSetChanged();
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");
                     }
@@ -587,8 +559,8 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     }
 
     //method for creating a Toast
-    private void toastMessage(String message) {
-        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+    private void toastMessage() {
+        Toast.makeText(mContext, "Failed to load more recipes. Please check your Internet connection.", Toast.LENGTH_SHORT).show();
     }
 
     // Sets all variables related to logged status and user info

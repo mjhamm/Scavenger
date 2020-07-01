@@ -10,9 +10,6 @@
     </style>
 
     <!-- Custom Preference Theme -->
-    <style name="AppTheme.PreferenceThemeOverlay" parent="@style/PreferenceThemeOverlay">
-        <item name="android:layout">@layout/activity_settings</item>
-    </style>
 
     <!-- Reminder Alert Theme -->
     <style name="ReminderAlertTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
