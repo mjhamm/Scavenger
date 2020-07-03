@@ -6,7 +6,7 @@ import android.net.NetworkInfo;
 
 class ConnectionDetector {
 
-    private Context context;
+    private final Context context;
 
     ConnectionDetector(Context context){
         this.context = context;

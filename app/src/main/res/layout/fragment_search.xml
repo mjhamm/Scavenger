@@ -123,8 +123,8 @@
             android:id="@+id/search_recyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="9"
             android:scrollbars="none"
+            android:layout_weight="9"
             android:animationCache="false"/>
 
         <ProgressBar
@@ -135,6 +135,7 @@
             android:elevation="0dp"
             android:scaleY="0.5"
             android:scaleX="0.5"
+            android:background="@android:color/transparent"
             android:backgroundTint="@android:color/transparent"
             android:visibility="gone"/>
 

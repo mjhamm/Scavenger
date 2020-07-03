@@ -20,18 +20,18 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
     // True if we are still waiting for the last set of data to load.
     private boolean loading = true;
     // Sets the starting page index
-    private int startingPageIndex = 0;
+    private final int startingPageIndex = 0;
 
-    private ProgressBar mProgressBar;
-    private ConnectionDetector con;
-    private int toIngr;
+    private final ProgressBar mProgressBar;
+    private final ConnectionDetector con;
+    //private final int toIngr;
     
-    RecyclerView.LayoutManager mLayoutManager;
+    final RecyclerView.LayoutManager mLayoutManager;
 
-    public EndlessRecyclerViewScrollListener(LinearLayoutManager layoutManager, ProgressBar progressBar, Context context, int toIngr) {
+    public EndlessRecyclerViewScrollListener(LinearLayoutManager layoutManager, ProgressBar progressBar, Context context) {
         this.mLayoutManager = layoutManager;
         this.mProgressBar = progressBar;
-        this.toIngr = toIngr;
+        //this.toIngr = toIngr;
         con = new ConnectionDetector(context);
     }
 
@@ -103,7 +103,7 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
             // The minimum amount of items to have below your current scroll position
             // before loading more.
             int visibleThreshold = 2;
-            if (!loading && (lastVisibleItemPosition + visibleThreshold) > totalItemCount && toIngr < 50) {
+            if (!loading && (lastVisibleItemPosition + visibleThreshold) > totalItemCount && currentPage < 5) {
                 currentPage++;
                 mProgressBar.setVisibility(View.VISIBLE);
                 onLoadMore(currentPage, totalItemCount, view);

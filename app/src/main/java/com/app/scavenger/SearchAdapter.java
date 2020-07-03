@@ -35,13 +35,12 @@ import androidx.recyclerview.widget.RecyclerView;
 //import com.google.android.gms.ads.formats.NativeAd;
 //import com.google.android.gms.ads.formats.UnifiedNativeAd;
 //import com.google.android.gms.ads.formats.UnifiedNativeAdView;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.MemoryPolicy;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -56,9 +55,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     public static final String TAG = "SEARCH_ADAPTER";
 
-    private final int VIEW_TYPE_AD = 1;
     private final int VIEW_TYPE_ITEM = 0;
-    private boolean isLoadingAdded = false;
 
     // Firestore Labels ----------------------------------------------------------
     private static final String ITEM_ID = "itemId";
@@ -75,15 +72,14 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private static final String ITEM_INGR = "ingredients";
     //-----------------------------------------------------------------------------
 
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String userId;
     private boolean logged;
     private UpdateQuery mUpdateQuery;
     private ConnectionDetector con;
     private SharedPreferences sharedPreferences;
-    //private ArrayList<RecipeItem> mRecipeItems;
-    private ArrayList<Object> mRecipeItems;
-    private Context mContext;
+    private final ArrayList<Object> mRecipeItems;
+    private final Context mContext;
     private DatabaseHelper myDb;
 
     interface UpdateQuery {
@@ -93,7 +89,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     SearchAdapter(Context context, ArrayList<Object> recipeItems , String userId, boolean logged) {
         this.userId = userId;
         this.mContext = context;
-        LayoutInflater mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
         this.logged = logged;
         this.setHasStableIds(true);
@@ -102,24 +97,11 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
-        //FirebaseAuth mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         getInfoFromSharedPrefs();
         myDb = DatabaseHelper.getInstance(mContext);
         con = new ConnectionDetector(mContext);
         mUpdateQuery = (UpdateQuery) mContext;
-
-        /*switch (viewType) {
-            case VIEW_TYPE_AD:
-                View unifiedNativeLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.ad_unified, parent, false);
-                return new UnifiedNativeAdHolder(unifiedNativeLayoutView);
-            case VIEW_TYPE_ITEM:
-                // Fall through
-            default:
-                View cardItemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_card_item, parent, false);
-                return new ItemViewHolder(cardItemLayoutView);
-        }*/
 
         View cardItemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_card_item, parent, false);
         return new ItemViewHolder(cardItemLayoutView);
@@ -127,20 +109,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        /*int viewType = getItemViewType(position);
-        switch (viewType) {
-            case VIEW_TYPE_AD:
-                UnifiedNativeAd nativeAd = (UnifiedNativeAd) mRecipeItems.get(position);
-                populateNativeAdView(nativeAd, ((UnifiedNativeAdHolder) holder).getAdView());
-                break;
-            case VIEW_TYPE_ITEM:
-                // Fall through
-            default:
-                populateItemData((ItemViewHolder) holder, position);
-        }*/
-
         populateItemData((ItemViewHolder) holder, position);
-
     }
 
     // Returns the total count of items in the list
@@ -151,21 +120,13 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public int getItemViewType(int position) {
-
-        /*Object recyclerViewItem = mRecipeItems.get(position);
-        if (mRecipeItems.size() > 3) {
-            //return VIEW_TYPE_AD;
-            if (recyclerViewItem instanceof UnifiedNativeAd) {
-                return VIEW_TYPE_AD;
-            }
-        }*/
         return VIEW_TYPE_ITEM;
     }
 
     @Override
     public long getItemId(int position) {
         if (mRecipeItems.get(position) != null) {
-            return mRecipeItems.get(position).hashCode();// .getItemId().hashCode();
+            return mRecipeItems.get(position).hashCode();
         } else {
             return 0;
         }
@@ -181,7 +142,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         RecipeItem item = (RecipeItem) mRecipeItems.get(position);
 
         boolean isExpanded = ((RecipeItem) mRecipeItems.get(position)).isClicked();
-        holder.expandableLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+        holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
 
         if (item.isFavorited()) {
             holder.favorite_button.setTag(position);
@@ -195,8 +156,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             Picasso.get()
                     .load(item.getmImageUrl())
                     .fit()
-                    .memoryPolicy(MemoryPolicy.NO_CACHE)
-                    .networkPolicy(NetworkPolicy.NO_CACHE)
                     .config(Bitmap.Config.RGB_565)
                     .into(holder.recipeImage);
         } else {
@@ -214,58 +173,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
         holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
     }
-
-    // Code for populating NativeAdView's to Search Recyclerview
-    /*private void populateNativeAdView(UnifiedNativeAd nativeAd,
-                                      UnifiedNativeAdView adView) {
-        // Some assets are guaranteed to be in every UnifiedNativeAd.
-        ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
-        ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
-        ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
-
-        // These assets aren't guaranteed to be in every UnifiedNativeAd, so it's important to
-        // check before trying to display them.
-        NativeAd.Image icon = nativeAd.getIcon();
-
-        if (icon == null) {
-            adView.getIconView().setVisibility(View.INVISIBLE);
-        } else {
-            ((ImageView) adView.getIconView()).setImageDrawable(icon.getDrawable());
-            adView.getIconView().setVisibility(View.VISIBLE);
-        }
-
-        if (nativeAd.getPrice() == null) {
-            adView.getPriceView().setVisibility(View.INVISIBLE);
-        } else {
-            adView.getPriceView().setVisibility(View.VISIBLE);
-            ((TextView) adView.getPriceView()).setText(nativeAd.getPrice());
-        }
-
-        if (nativeAd.getStore() == null) {
-            adView.getStoreView().setVisibility(View.INVISIBLE);
-        } else {
-            adView.getStoreView().setVisibility(View.VISIBLE);
-            ((TextView) adView.getStoreView()).setText(nativeAd.getStore());
-        }
-
-        if (nativeAd.getStarRating() == null) {
-            adView.getStarRatingView().setVisibility(View.INVISIBLE);
-        } else {
-            ((RatingBar) adView.getStarRatingView())
-                    .setRating(nativeAd.getStarRating().floatValue());
-            adView.getStarRatingView().setVisibility(View.VISIBLE);
-        }
-
-        if (nativeAd.getAdvertiser() == null) {
-            adView.getAdvertiserView().setVisibility(View.INVISIBLE);
-        } else {
-            ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
-            adView.getAdvertiserView().setVisibility(View.VISIBLE);
-        }
-
-        // Assign native ad object to the native view.
-        adView.setNativeAd(nativeAd);
-    }*/
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
@@ -362,19 +269,28 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     /*
-   VIEW HOLDERS
-   _________________________________________________________________________________________________
+    VIEW HOLDERS
+    ________________________________________________________________________________________________
     */
 
     // ITEM VIEW HOLDER
     public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
-        private ImageView recipeImage;
+        private final TextView recipeName;
+        private final TextView recipeSource;
+        private final TextView recipeServings;
+        private final TextView recipeCalories;
+        private final TextView recipeIngredients;
+        private final TextView recipeCarbs;
+        private final TextView recipeFat;
+        private final TextView recipeProtein;
+        private final TextView recipeAttributes;
+        private final ImageView recipeImage;
         private RecipeItem item;
-        private ImageButton more_button, favorite_button;
+        private final ImageButton more_button;
+        private final ImageButton favorite_button;
+        private final CardView mBottomCard;
         private String reportReason = null;
-        private ConstraintLayout expandableLayout;
         private long mLastClickTime = 0;
 
         ItemViewHolder( @NonNull View itemView) {
@@ -385,7 +301,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             favorite_button = itemView.findViewById(R.id.recipe_favorite);
             more_button = itemView.findViewById(R.id.more_button);
             CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
-            expandableLayout = itemView.findViewById(R.id.expandableLayout);
+            mBottomCard = itemView.findViewById(R.id.bottomCardView);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
             recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);

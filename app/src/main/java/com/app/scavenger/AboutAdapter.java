@@ -11,8 +11,8 @@ import java.util.List;
 
 public class AboutAdapter extends RecyclerView.Adapter<AboutAdapter.ViewHolder> {
 
-    private List<String> mData;
-    private LayoutInflater mInflater;
+    private final List<String> mData;
+    private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
@@ -41,7 +41,7 @@ public class AboutAdapter extends RecyclerView.Adapter<AboutAdapter.ViewHolder> 
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView myTextView;
+        final TextView myTextView;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -55,10 +55,12 @@ public class AboutAdapter extends RecyclerView.Adapter<AboutAdapter.ViewHolder> 
         }
     }
 
-    // convenience method for getting data at click position
-    String getItem(int id) {
-        return mData.get(id);
-    }
+// --Commented out by Inspection START (7/2/2020 12:38 PM):
+//    // convenience method for getting data at click position
+//    String getItem(int id) {
+//        return mData.get(id);
+//    }
+// --Commented out by Inspection STOP (7/2/2020 12:38 PM)
 
     // allows clicks events to be caught
     void setClickListener(ItemClickListener itemClickListener) {

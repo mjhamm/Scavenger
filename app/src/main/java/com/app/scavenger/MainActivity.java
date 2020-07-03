@@ -21,9 +21,13 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
     //private static final String TAG = "LOG: ";
 
-    private static final String ITEM_ID = "itemId";
-    private static final String USER_COLLECTION = "Users";
-    private static final String USER_FAVORITES = "Favorites";
+// --Commented out by Inspection START (7/2/2020 12:42 PM):
+// --Commented out by Inspection START (7/2/2020 12:42 PM):
+////    // --Commented out by Inspection (7/2/2020 12:42 PM):private static final String ITEM_ID = "itemId";
+////    private static final String USER_COLLECTION = "Users";
+// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
+// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
+    //private static final String USER_FAVORITES = "Favorites";
 
     private Fragment fragment1 = null;
     private Fragment fragment2 = null;
@@ -32,10 +36,9 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     private Fragment active = null;
     private FirebaseAuth mAuth;
     private SharedPreferences sharedPreferences;
-    private DatabaseHelper myDb;
 
     private boolean doubleBackToExitPressedOnce;
-    private Handler mHandler = new Handler();
+    private final Handler mHandler = new Handler();
 
     private final Runnable mRunnable = new Runnable() {
         @Override
@@ -78,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         // Initialize the Google Mobile Ads SDK
         //MobileAds.initialize(this, getString(R.string.admob_app_id));
 
-        myDb = DatabaseHelper.getInstance(this);
+        DatabaseHelper myDb = DatabaseHelper.getInstance(this);
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -87,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         BottomNavigationView mNavView = findViewById(R.id.bottom_nav_view);
 
         //private FirebaseFirestore db = FirebaseFirestore.getInstance();
-        ArrayList<String> itemIds = new ArrayList<>();
+        //ArrayList<String> itemIds = new ArrayList<>();
 
         getInfoFromSharedPrefs();
 
@@ -125,13 +128,14 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                     active = fragment1;
                     return true;
                 case R.id.action_favorites:
-                    getInfoFromSharedPrefs();
+                    //getInfoFromSharedPrefs();
                     if (active != fragment2) {
-                        if (logged && (numLikes != actualNumLikes)) {
+                        fm.beginTransaction().hide(active).show(fragment2).commit();
+                        /*if (logged && (numLikes != actualNumLikes)) {
                             fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
                         } else {
                             fm.beginTransaction().hide(active).show(fragment2).commit();
-                        }
+                        }*/
                     }
                     active = fragment2;
                     return true;

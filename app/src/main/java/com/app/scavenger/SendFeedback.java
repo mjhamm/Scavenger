@@ -29,7 +29,7 @@ public class SendFeedback extends AppCompatActivity {
 
     public static final String TAG = "SendFeedback";
 
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private EditText feedbackEditText;
     private TextView submit_textButton;

@@ -4,6 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
@@ -13,11 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
@@ -26,6 +26,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
 
 public class LikesFragment extends Fragment {
@@ -69,14 +70,22 @@ public class LikesFragment extends Fragment {
     //--------------------------------------------
 
     //private FirebaseAuth mAuth;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private SharedPreferences sharedPreferences;
     private ConnectionDetector con;
     //private String queryString = null;
     private LinearLayoutManager mLayoutManager;
+    private String itemId, name, source, image, url;
+    private int serves = 0;
+    private int cals = 0;
+    private int carb = 1;
+    private int fat = 1;
+    private int protein = 1;
+    private ArrayList<String> att = new ArrayList<>();
+    private ArrayList<String> ingr = new ArrayList<>();
 
     // Liked Items
-    private ArrayList<RecipeItem> recipeItemList = new ArrayList<>();
+    private final ArrayList<RecipeItem> recipeItemList = new ArrayList<>();
 
     public LikesFragment() {
         // Required empty public constructor
@@ -97,10 +106,22 @@ public class LikesFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+
+        getInfoFromSharedPrefs();
+
+        if (con.connectedToInternet() && logged) {
+            retrieveLikesFromFirebase();
+        }
+    }
+
+    @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        getInfoFromSharedPrefs();
+        // TODO: Check to see if this can be done once and only changed if info from sharedPrefs changes
         if (!hidden) {
+            getInfoFromSharedPrefs();
             if (!con.connectedToInternet()) {
                 if (!logged) {
                     recipeItemList.clear();
@@ -150,21 +171,24 @@ public class LikesFragment extends Fragment {
         likes_message = view.findViewById(R.id.favorite_message);
         mFavoriteSearch = view.findViewById(R.id.favorites_searchView);
         retryConButton = view.findViewById(R.id.fav_retry_con_button);
-        mFavoriteSearch.setMaxWidth(Integer.MAX_VALUE);
-        //mAuth = FirebaseAuth.getInstance();
         shimmer = view.findViewById(R.id.likes_shimmerLayout);
         mFavoriteRecyclerView = view.findViewById(R.id.favorites_recyclerView);
+
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         con = new ConnectionDetector(mContext);
         adapter = new LikesAdapter(mContext, recipeItemList, userId);
-
+        mFavoriteSearch.setMaxWidth(Integer.MAX_VALUE);
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
 
-        retryConButton.setOnClickListener(v -> retryConnection());
+        mFavoriteRecyclerView.setHasFixedSize(true);
+        mFavoriteRecyclerView.setItemViewCacheSize(10);
+        RecyclerView.ItemAnimator animator = mFavoriteRecyclerView.getItemAnimator();
 
-        /*if (!logged) {
-            likes_message.setText(R.string.not_signed_in);
-        }*/
+        if (animator instanceof SimpleItemAnimator) {
+            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+        }
+
+        retryConButton.setOnClickListener(v -> retryConnection());
 
         mFavoriteSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -175,22 +199,11 @@ public class LikesFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (logged) {
-                    //queryString = newText;
                     adapter.getFilter().filter(newText);
                 }
                 return false;
             }
         });
-
-
-        //mFavoriteRecyclerView.setHasFixedSize(true);
-
-        RecyclerView.ItemAnimator animator = mFavoriteRecyclerView.getItemAnimator();
-
-        if (animator instanceof SimpleItemAnimator) {
-            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
-        }
-        mFavoriteRecyclerView.setItemViewCacheSize(4);
 
         mFavoriteRecyclerView.setOnTouchListener((v, event) -> {
             mFavoriteSearch.clearFocus();
@@ -216,14 +229,6 @@ public class LikesFragment extends Fragment {
     }
 
     private void retryConnection() {
-        /*try {
-            // Reload the fragment
-            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-            ft.detach(this).attach(this).commit();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            Log.d(TAG, e.toString());
-        }*/
 
         if (!con.connectedToInternet()) {
             if (!logged) {
@@ -271,90 +276,74 @@ public class LikesFragment extends Fragment {
 
         CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
         favoritesRef.orderBy("Timestamp", Query.Direction.DESCENDING).get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    String itemId;
-                    String name;
-                    String source;
-                    String image;
-                    String url;
-                    int serves = 0;
-                    int cals = 0;
-                    int carb = 1;
-                    int fat = 1;
-                    int protein = 1;
-                    ArrayList<String> att = new ArrayList<>();
-                    ArrayList<String> ingr = new ArrayList<>();
-                    @SuppressWarnings("unchecked")
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if (queryDocumentSnapshots.isEmpty()) {
-                            likes_message.setVisibility(View.VISIBLE);
-                            likes_message.setText(R.string.no_favorites);
-                            recipeItemList.clear();
-                            if (adapter != null) {
-                                adapter.clearList();
-                            }
-                            mFavoriteRecyclerView.setAdapter(null);
-                        } else {
-                            recipeItemList.clear();
-                            if (adapter != null) {
-                                adapter.clearList();
-                            }
-                            likes_message.setVisibility(View.GONE);
-                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                                RecipeItem item = new RecipeItem();
-                                itemId = documentSnapshot.getString(ITEM_ID);
-                                name = documentSnapshot.getString(ITEM_NAME);
-                                source = documentSnapshot.getString(ITEM_SOURCE);
-                                image = documentSnapshot.getString(ITEM_IMAGE);
-                                url = documentSnapshot.getString(ITEM_URL);
-                                if (documentSnapshot.getLong(ITEM_YIELD) != null) {
-                                    serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
-                                }
-                                if (documentSnapshot.getLong(ITEM_CAL) != null) {
-                                    cals = documentSnapshot.getLong(ITEM_CAL).intValue();
-                                }
-                                if (documentSnapshot.getLong(ITEM_CARB) != null) {
-                                    carb = documentSnapshot.getLong(ITEM_CARB).intValue();
-                                }
-                                if (documentSnapshot.getLong(ITEM_FAT) != null) {
-                                    fat = documentSnapshot.getLong(ITEM_FAT).intValue();
-                                }
-                                if (documentSnapshot.getLong(ITEM_PROTEIN) != null) {
-                                    protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
-                                }
-                                if (documentSnapshot.exists()) {
-                                    att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
-                                    ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
-                                }
-                                item.setItemId(itemId);
-                                item.setmRecipeName(name);
-                                item.setmSourceName(source);
-                                item.setmImageUrl(image);
-                                item.setmRecipeURL(url);
-                                item.setmServings(serves);
-                                item.setmCalories(cals);
-                                item.setmCarbs(carb);
-                                item.setmFat(fat);
-                                item.setmProtein(protein);
-                                item.setmRecipeAttributes(att);
-                                item.setmIngredients(ingr);
-
-                                if (!recipeItemList.contains(item)) {
-                                    recipeItemList.add(item);
-                                }
-                            }
-                            adapter = new LikesAdapter(mContext, recipeItemList, userId);
-                            mFavoriteRecyclerView.setVisibility(View.VISIBLE);
-                            mFavoriteRecyclerView.setAdapter(adapter);
-                            mFavoriteRecyclerView.setLayoutManager(mLayoutManager);
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        likes_message.setVisibility(View.VISIBLE);
+                        likes_message.setText(R.string.no_favorites);
+                        recipeItemList.clear();
+                        if (adapter != null) {
+                            adapter.clearList();
                         }
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
-                        editor.putInt("numLikes", queryDocumentSnapshots.size());
-                        editor.apply(); // apply
-                        Log.d(TAG, "Recipe List Size: " + recipeItemList.size());
+                        mFavoriteRecyclerView.setAdapter(null);
+                    } else {
+                        recipeItemList.clear();
+                        if (adapter != null) {
+                            adapter.clearList();
+                        }
+                        likes_message.setVisibility(View.GONE);
+                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            RecipeItem item = new RecipeItem();
+                            itemId = documentSnapshot.getString(ITEM_ID);
+                            name = documentSnapshot.getString(ITEM_NAME);
+                            source = documentSnapshot.getString(ITEM_SOURCE);
+                            image = documentSnapshot.getString(ITEM_IMAGE);
+                            url = documentSnapshot.getString(ITEM_URL);
+                            if (documentSnapshot.getLong(ITEM_YIELD) != null) {
+                                serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
+                            }
+                            if (documentSnapshot.getLong(ITEM_CAL) != null) {
+                                cals = documentSnapshot.getLong(ITEM_CAL).intValue();
+                            }
+                            if (documentSnapshot.getLong(ITEM_CARB) != null) {
+                                carb = documentSnapshot.getLong(ITEM_CARB).intValue();
+                            }
+                            if (documentSnapshot.getLong(ITEM_FAT) != null) {
+                                fat = documentSnapshot.getLong(ITEM_FAT).intValue();
+                            }
+                            if (documentSnapshot.getLong(ITEM_PROTEIN) != null) {
+                                protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
+                            }
+                            if (documentSnapshot.exists()) {
+                                att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
+                                ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
+                            }
+                            item.setItemId(itemId);
+                            item.setmRecipeName(name);
+                            item.setmSourceName(source);
+                            item.setmImageUrl(image);
+                            item.setmRecipeURL(url);
+                            item.setmServings(serves);
+                            item.setmCalories(cals);
+                            item.setmCarbs(carb);
+                            item.setmFat(fat);
+                            item.setmProtein(protein);
+                            item.setmRecipeAttributes(att);
+                            item.setmIngredients(ingr);
+
+                            if (!recipeItemList.contains(item)) {
+                                recipeItemList.add(item);
+                            }
+                        }
+                        adapter = new LikesAdapter(mContext, recipeItemList, userId);
+                        mFavoriteRecyclerView.setVisibility(View.VISIBLE);
+                        mFavoriteRecyclerView.setAdapter(adapter);
+                        mFavoriteRecyclerView.setLayoutManager(mLayoutManager);
                     }
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
+                    editor.putInt("numLikes", queryDocumentSnapshots.size());
+                    editor.apply(); // apply
+                    Log.d(TAG, "Recipe List Size: " + recipeItemList.size());
                 });
         shimmer.stopShimmer();
         shimmer.setVisibility(View.GONE);

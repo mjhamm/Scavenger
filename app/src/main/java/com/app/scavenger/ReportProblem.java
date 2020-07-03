@@ -29,12 +29,12 @@ public class ReportProblem extends AppCompatActivity {
 
     public static final String TAG = "ReportProblem";
 
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private EditText reportEditText;
     private TextView submit_buttonText;
     private ConnectionDetector con;
-    private String reportText;
+    // --Commented out by Inspection (7/2/2020 12:42 PM):private String reportText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -62,7 +62,7 @@ public class SignInActivity extends AppCompatActivity {
     private EditText emailEdit, passEdit;
     private FrameLayout progressHolder;
 
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
     private SharedPreferences sharedPreferences;
     private String email = null, pass = null;
@@ -426,7 +426,7 @@ public class SignInActivity extends AppCompatActivity {
         }
     }
 
-    private TextWatcher signInTextWatcher = new TextWatcher() {
+    private final TextWatcher signInTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 

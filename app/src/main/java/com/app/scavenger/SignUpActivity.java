@@ -76,7 +76,7 @@ public class SignUpActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private GoogleSignInClient mGoogleSignUpClient;
     private DatabaseHelper myDb;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
     private CallbackManager callbackManager;
 
@@ -402,7 +402,7 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }
 
-    private TextWatcher signUpTextWatcher = new TextWatcher() {
+    private final TextWatcher signUpTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 

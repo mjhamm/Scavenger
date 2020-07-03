@@ -75,13 +75,15 @@ class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery("SELECT * FROM " + TABLE_LIKES, null);
     }
 
-    //Updates Likes itemID
-    public void updateListItem(String itemId) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(KEY_ITEM_ID, itemId);
-        db.update(TABLE_LIKES, contentValues,KEY_ITEM_ID + " =?", new String[]{itemId});
-    }
+// --Commented out by Inspection START (7/2/2020 12:42 PM):
+//    //Updates Likes itemID
+//    public void updateListItem(String itemId) {
+//        SQLiteDatabase db = this.getWritableDatabase();
+//        ContentValues contentValues = new ContentValues();
+//        contentValues.put(KEY_ITEM_ID, itemId);
+//        db.update(TABLE_LIKES, contentValues,KEY_ITEM_ID + " =?", new String[]{itemId});
+//    }
+// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
 
     //Add data to Likes Table
     void addDataToView(String itemId) {
@@ -105,13 +107,15 @@ class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery("SELECT * FROM " + TABLE_REMOVED, null);
     }
 
-    //Updates Removed Item's itemID
-    public void updateRemovedItems(String itemId) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(KEY_ITEM_ID, itemId);
-        db.update(TABLE_REMOVED, contentValues,KEY_ITEM_ID + " =?", new String[]{itemId});
-    }
+// --Commented out by Inspection START (7/2/2020 12:42 PM):
+//    //Updates Removed Item's itemID
+//    public void updateRemovedItems(String itemId) {
+//        SQLiteDatabase db = this.getWritableDatabase();
+//        ContentValues contentValues = new ContentValues();
+//        contentValues.put(KEY_ITEM_ID, itemId);
+//        db.update(TABLE_REMOVED, contentValues,KEY_ITEM_ID + " =?", new String[]{itemId});
+//    }
+// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
 
     //Add data to Removed Table
     void addRemovedItem(String itemId) {

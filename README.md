@@ -2,7 +2,7 @@
 
 You can search by recipe name, ingredients, diet type as well as who makes the recipe (Martha Stewart, BBC, etc...)
 
-Recipes that inclue your ingredients will appear and give you information related to that specific recipe such as:
+Recipes that include your ingredients will appear and give you information related to that specific recipe such as:
 
 ► Recipe Name
 

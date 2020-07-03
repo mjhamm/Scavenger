@@ -32,14 +32,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     private RefreshFragments mCallback;
 
-    // Shared Preferences Data
-    //-----------------------------------------
-    private String userId = null;
-    private boolean logged = false;
-    private String name = null;
-    private String email = null;
-    //------------------------------------------
-
     interface RefreshFragments {
         void refreshSearch();
     }
@@ -185,10 +177,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             editor.putString("userId", null);
             editor.putBoolean("refresh", false);
             editor.apply();
-            logged = false;
-            name = null;
-            email = null;
-            userId = null;
+        boolean logged = false;
+        String name = null;
+        String email = null;
+        // Shared Preferences Data
+        //-----------------------------------------
+        String userId = null;
             toastMessage();
             signOut.setVisible(false);
             signIn.setVisible(true);
@@ -256,15 +250,17 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     //method for creating a Toast
     private void toastMessage() {
-        Toast.makeText(mContext, "Successfully signed out", Toast.LENGTH_SHORT).show();
-    }
-
-    // Sets all variables related to logged status and user info
-    private void getInfoFromSharedPrefs() {
-        logged = sharedPreferences.getBoolean("logged", false);
-        userId = sharedPreferences.getString("userId", null);
-        email = sharedPreferences.getString("email", null);
-        name = sharedPreferences.getString("name", null);
+// --Commented out by Inspection START (7/2/2020 12:42 PM):
+//        Toast.makeText(mContext, "Successfully signed out", Toast.LENGTH_SHORT).show();
+//    }
+//
+//    // Sets all variables related to logged status and user info
+//    private void getInfoFromSharedPrefs() {
+//        logged = sharedPreferences.getBoolean("logged", false);
+//        userId = sharedPreferences.getString("userId", null);
+//        email = sharedPreferences.getString("email", null);
+//        name = sharedPreferences.getString("name", null);
+// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
     }
 
     public void refresh() {

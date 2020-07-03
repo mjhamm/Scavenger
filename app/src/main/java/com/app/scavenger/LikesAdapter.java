@@ -34,7 +34,6 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.MemoryPolicy;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -52,36 +51,20 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
 
     private static final String TAG = "LOG: ";
 
-    // Firestore Labels ----------------------------------------------------------
-    private static final String ITEM_NAME = "name";
-    private static final String ITEM_SOURCE = "source";
-    private static final String ITEM_IMAGE = "image";
-    private static final String ITEM_URL = "url";
-    private static final String ITEM_YIELD = "servings";
-    private static final String ITEM_CAL = "calories";
-    private static final String ITEM_CARB = "carbs";
-    private static final String ITEM_FAT = "fat";
-    private static final String ITEM_PROTEIN = "protein";
-    private static final String ITEM_ATT = "attributes";
-    private static final String ITEM_INGR = "ingredients";
-    //-----------------------------------------------------------------------------
-
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private DatabaseHelper myDb;
 
-    private String userId;
+    private final String userId;
     private UpdateSearch mCallback;
     private CheckZeroLikes mZeroLikes;
 
-    private ArrayList<RecipeItem> mRecipeItemsFull;
+    private final ArrayList<RecipeItem> mRecipeItemsFull;
     private ArrayList<RecipeItem> mRecipeItems;
-    private Context mContext;
-    private LayoutInflater mInflater;
-    private SharedPreferences sharedPreferences;
+    private final Context mContext;
+    private final LayoutInflater mInflater;
+    private final SharedPreferences sharedPreferences;
     private ConnectionDetector con;
     private int filterCount;
-
-    private boolean refresh = false;
 
     interface UpdateSearch {
         void updateSearch();
@@ -115,39 +98,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull LikesAdapter.ViewHolder holder, int position) {
-        RecipeItem item = mRecipeItems.get(position);
-
-        boolean isExpanded = mRecipeItems.get(position).isClicked();
-        holder.expandableLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
-
-        item.setFavorited(true);
-        holder.favorite_button.setTag(position);
-        holder.favorite_button.setImageResource(R.mipmap.heart_icon_filled);
-
-        String servings_string = String.format(mContext.getString(R.string.servings_text),item.getmServings());
-
-        if (item.getmImageUrl() != null) {
-            Picasso.get()
-                    .load(item.getmImageUrl())
-                    .fit()
-                    .memoryPolicy(MemoryPolicy.NO_CACHE)
-                    .networkPolicy(NetworkPolicy.NO_CACHE)
-                    .config(Bitmap.Config.RGB_565)
-                    .into(holder.recipeImage);
-        } else {
-            holder.recipeImage.setImageDrawable(null);
-        }
-
-
-        holder.recipeName.setText(item.getmRecipeName());
-        holder.recipeSource.setText(item.getmSourceName());
-        holder.recipeServings.setText(servings_string);
-        holder.recipeCalories.setText(String.valueOf(item.getmCalories()));
-        holder.recipeCarbs.setText(String.valueOf(item.getmCarbs()));
-        holder.recipeFat.setText(String.valueOf(item.getmFat()));
-        holder.recipeProtein.setText(String.valueOf(item.getmProtein()));
-        holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
-        holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
+        populateItemData(holder, position);
     }
 
     @Override
@@ -155,7 +106,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         return likeFilter;
     }
 
-    private Filter likeFilter = new Filter() {
+    private final Filter likeFilter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
             List<RecipeItem> filteredList = new ArrayList<>();
@@ -182,25 +133,134 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         }
     };
 
-    public int getFilterItemCount() {
-        return filterCount;
+    // Returns the total count of items in the list
+    @Override
+    public int getItemCount() {
+        return mRecipeItems.size();
     }
 
+    @Override
+    public long getItemId(int position) {
+        RecipeItem item = mRecipeItems.get(position);
+        return item.hashCode();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
+    /*
+    HELPERS
+    ________________________________________________________________________________________________________________________________________
+     */
+
+    // Code for adding Recipe Items inside of the Search Recyclerview
+    private void populateItemData(ViewHolder holder, int position) {
+        RecipeItem item = mRecipeItems.get(position);
+
+        boolean isExpanded = mRecipeItems.get(position).isClicked();
+        holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+
+        item.setFavorited(true);
+        holder.favorite_button.setTag(position);
+        holder.favorite_button.setImageResource(R.mipmap.heart_icon_filled);
+
+        if (item.getmImageUrl() != null) {
+            Picasso.get()
+                    .load(item.getmImageUrl())
+                    .fit()
+                    .config(Bitmap.Config.RGB_565)
+                    .into(holder.recipeImage);
+        } else {
+            holder.recipeImage.setImageDrawable(null);
+        }
+
+        holder.recipeName.setText(item.getmRecipeName());
+        holder.recipeSource.setText(item.getmSourceName());
+        holder.recipeServings.setText(String.format(mContext.getString(R.string.servings_text),item.getmServings()));
+        holder.recipeCalories.setText(String.valueOf(item.getmCalories()));
+        holder.recipeCarbs.setText(String.valueOf(item.getmCarbs()));
+        holder.recipeFat.setText(String.valueOf(item.getmFat()));
+        holder.recipeProtein.setText(String.valueOf(item.getmProtein()));
+        holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
+        holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
+    }
+
+    private void removeDataFromFirebase(RecipeItem recipeItem) {
+        CollectionReference favoritesRef = db.collection("Users").document(userId).collection("Favorites");
+
+        favoritesRef.document(recipeItem.getItemId())
+                .delete()
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Successfully removed favorite"))
+                .addOnFailureListener(e -> Log.d(TAG, "Failed to remove favorite" + e.toString()));
+    }
+
+    private static void openInDefaultBrowser(Context context, String url) {
+        try {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            context.startActivity(browserIntent);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Log.e("DefaultBrowserError: ", "Activity Error");
+        }
+    }
+
+    private static void openURLInChromeCustomTab(Context context, String url) {
+        try {
+            CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
+            CustomTabsIntent customTabsIntent = builder1.build();
+            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            builder1.setInstantAppsEnabled(true);
+            customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
+            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
+            customTabsIntent.launchUrl(context, Uri.parse(url));
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Log.e("ChromeCustomTabError: ", "Activity Error");
+        }
+    }
+
+    public void clearList() {
+        mRecipeItemsFull.clear();
+        notifyDataSetChanged();
+    }
+
+    //method for creating a Toast
+    private void toastMessage(String message) {
+        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+    }
+
+    public void update() {
+        mCallback.updateSearch();
+    }
+
+    public void checkZeroLikes() {
+        mZeroLikes.checkZeroLikes();
+    }
+
+    /*
+    VIEW HOLDERS
+    ________________________________________________________________________________________________
+    */
+
+    // ITEM VIEW HOLDER
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private TextView recipeName;
-        private TextView recipeSource;
-        private TextView recipeServings;
-        private TextView recipeCalories;
-        private TextView recipeIngredients;
-        private TextView recipeCarbs;
-        private TextView recipeFat;
-        private TextView recipeProtein;
-        private TextView recipeAttributes;
-        private ImageView recipeImage;
+        private final TextView recipeName;
+        private final TextView recipeSource;
+        private final TextView recipeServings;
+        private final TextView recipeCalories;
+        private final TextView recipeIngredients;
+        private final TextView recipeCarbs;
+        private final TextView recipeFat;
+        private final TextView recipeProtein;
+        private final TextView recipeAttributes;
+        private final ImageView recipeImage;
         private RecipeItem recipeItem;
-        private ImageButton more_button, favorite_button;
-        private ConstraintLayout expandableLayout;
+        private final CardView mBottomCard;
+        private final ImageButton more_button;
+        private final ImageButton favorite_button;
         private String reportReason = null;
 
         ViewHolder( @NonNull View itemView) {
@@ -212,11 +272,10 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             more_button = itemView.findViewById(R.id.more_button);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
-            CardView bottomCard = itemView.findViewById(R.id.bottomCardView);
             recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
             recipeCarbs = itemView.findViewById(R.id.carbs_amount);
             recipeFat = itemView.findViewById(R.id.fat_amount);
-            expandableLayout = itemView.findViewById(R.id.expandableLayout);
+            mBottomCard = itemView.findViewById(R.id.bottomCardView);
             recipeProtein = itemView.findViewById(R.id.protein_amount);
             CardView mNutritionCard = itemView.findViewById(R.id.facts_cardView);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
@@ -261,8 +320,9 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
 
                                 myDb.removeDataFromView(recipeItem.getItemId());
                                 myDb.addRemovedItem(recipeItem.getItemId());
+                                // Let search adapter know that something has changed
                                 update();
-                                // CHECK - Let fragment know to reload
+
                                 for (Iterator<RecipeItem> iterator = mRecipeItemsFull.iterator(); iterator.hasNext();) {
                                     if (iterator.next().getItemId().equals(recipeItemId)) {
                                         iterator.remove();
@@ -309,18 +369,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 MenuInflater inflater = popupMenu.getMenuInflater();
                 inflater.inflate(R.menu.like_menu, popupMenu.getMenu());
                 popupMenu.show();
-
-                /*if (!rotated) {
-                    more_button.startAnimation(cw);
-                    rotated = true;
-                    cw.setFillAfter(true);
-                }
-
-                popupMenu.setOnDismissListener(dismiss -> {
-                    more_button.startAnimation(acw);
-                    rotated = false;
-                    acw.setFillAfter(true);
-                });*/
             });
 
             mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
@@ -395,9 +443,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             }
         }
 
+        // Send report to Server under reports with Phone information
         private void sendReportToDb(String reason, RecipeItem item) {
-            // Send report to Server under reports with Phone information
-
             Calendar calendar = Calendar.getInstance();
 
             int month = calendar.get(Calendar.MONTH);
@@ -471,78 +518,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         }
 
         @Override
-        public void onClick(View v) {
-
-        }
-    }
-
-    private void removeDataFromFirebase(RecipeItem recipeItem) {
-        CollectionReference favoritesRef = db.collection("Users").document(userId).collection("Favorites");
-
-        favoritesRef.document(recipeItem.getItemId())
-                .delete()
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Successfully removed favorite"))
-                .addOnFailureListener(e -> Log.d(TAG, "Failed to remove favorite" + e.toString()));
-    }
-
-    private static void openInDefaultBrowser(Context context, String url) {
-        try {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            context.startActivity(browserIntent);
-        } catch (ActivityNotFoundException e) {
-            e.printStackTrace();
-            Log.e("DefaultBrowserError: ", "Activity Error");
-        }
-    }
-
-    private static void openURLInChromeCustomTab(Context context, String url) {
-        try {
-            CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
-            CustomTabsIntent customTabsIntent = builder1.build();
-            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            builder1.setInstantAppsEnabled(true);
-            customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
-            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
-            customTabsIntent.launchUrl(context, Uri.parse(url));
-        } catch (ActivityNotFoundException e) {
-            e.printStackTrace();
-            Log.e("ChromeCustomTabError: ", "Activity Error");
-        }
-    }
-
-    public void clearList() {
-        //int size = mRecipeItems.size();
-        mRecipeItemsFull.clear();
-        notifyDataSetChanged();
-    }
-
-    //method for creating a Toast
-    private void toastMessage(String message) {
-        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
-    }
-
-    // Returns the total count of items in the list
-    @Override
-    public int getItemCount() {
-        return mRecipeItems.size();
-    }
-
-    public void update() {
-        mCallback.updateSearch();
-    }
-
-    public void checkZeroLikes() {
-        mZeroLikes.checkZeroLikes();
-    }
-
-    @Override
-    public long getItemId(int position) {
-        RecipeItem item = mRecipeItems.get(position);
-        return item.hashCode();
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return position;
+        public void onClick(View v) {}
     }
 }

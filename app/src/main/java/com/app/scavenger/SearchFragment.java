@@ -69,8 +69,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private String noRecipesFound;
 
     private DatabaseHelper myDb;
-    private Cursor likesData;
-    private Random random_start_number;
 
     /*private AdLoader adLoader;
     private List<UnifiedNativeAd> mNativeAds = new ArrayList<>();*/
@@ -141,7 +139,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
 
-        random_start_number = new Random();
+        Random random_start_number = new Random();
 
         //creates a random number and sets the welcome text to a specific text based on number
         int start_message_int = random_start_number.nextInt(5);
@@ -165,21 +163,22 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         }
 
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
-        //mSearchRecyclerView.setHasFixedSize(true);
+        mSearchRecyclerView.setHasFixedSize(true);
 
         RecyclerView.ItemAnimator animator = mSearchRecyclerView.getItemAnimator();
 
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
-        mSearchRecyclerView.setItemViewCacheSize(4);
+
+        mSearchRecyclerView.setItemViewCacheSize(10);
 
         mSearchRecyclerView.setOnTouchListener((v, event) -> {
             mSearchView.clearFocus();
             return false;
         });
 
-        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar, mContext, toIngr) {
+        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar, mContext) {
 
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -383,19 +382,22 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                         if (response.body() != null) {
                             String result = response.body();
                             recipeItemArrayList.clear();
+                            numItemsChanged = true;
+                            numItemsBefore = 0;
                             writeRecycler(result);
                             if (adapter == null) {
                                 adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
                                 mSearchRecyclerView.setAdapter(adapter);
                                 mSearchRecyclerView.setLayoutManager(mLayoutManager);
                             }
-                            //loadNativeAds();
 
                             if (recipeItemArrayList.isEmpty()) {
                                 startup_message.setVisibility(View.VISIBLE);
                                 startup_message.setText(noRecipesFound);
                                 matchMessage.setVisibility(View.VISIBLE);
                             }
+
+                            numItemsBefore = recipeItemArrayList.size();
 
                             shimmer.stopShimmer();
                             shimmer.setVisibility(View.GONE);
@@ -506,7 +508,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     }
 
     private void itemsFromDB() {
-        likesData = myDb.getListContents();
+        Cursor likesData = myDb.getListContents();
         itemIds.clear();
         likesData.moveToPosition(-1);
         while (likesData.moveToNext()) {
@@ -524,7 +526,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         if (toIngr >= 50 || (toIngr + 10) > 50) {
             return;
         }
-        numItemsBefore = recipeItemArrayList.size();
         fromIngr = toIngr;
         toIngr = fromIngr + 10;
         Log.d(TAG, "from: " + fromIngr + " to: " + toIngr);
@@ -541,12 +542,8 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                         String result = response.body();
                         writeRecycler(result);
 
-                        //loadNativeAds();
-
                         numItemsAfter = recipeItemArrayList.size();
-                        if (numItemsAfter == numItemsBefore) {
-                            numItemsChanged = false;
-                        }
+                        numItemsChanged = numItemsAfter != numItemsBefore;
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");
                     }
@@ -563,10 +560,12 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         Toast.makeText(mContext, "Failed to load more recipes. Please check your Internet connection.", Toast.LENGTH_SHORT).show();
     }
 
-    // Sets all variables related to logged status and user info
-    private void getInfoFromSharedPrefs() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        logged = sharedPreferences.getBoolean("logged", false);
-        userId = sharedPreferences.getString("userId", null);
-    }
+// --Commented out by Inspection START (7/2/2020 12:42 PM):
+//    // Sets all variables related to logged status and user info
+//    private void getInfoFromSharedPrefs() {
+//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+//        logged = sharedPreferences.getBoolean("logged", false);
+//        userId = sharedPreferences.getString("userId", null);
+//    }
+// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
 }
