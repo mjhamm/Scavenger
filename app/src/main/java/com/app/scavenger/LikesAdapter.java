@@ -24,7 +24,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.cardview.widget.CardView;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,7 +32,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -51,13 +49,15 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
 
     private static final String TAG = "LOG: ";
 
-    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    // Database variables
+    private FirebaseFirestore db;
     private DatabaseHelper myDb;
 
-    private final String userId;
+    // Interface variables
     private UpdateSearch mCallback;
     private CheckZeroLikes mZeroLikes;
 
+    private final String userId;
     private final ArrayList<RecipeItem> mRecipeItemsFull;
     private ArrayList<RecipeItem> mRecipeItems;
     private final Context mContext;
@@ -66,10 +66,12 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     private ConnectionDetector con;
     private int filterCount;
 
+    // Interface to update the search fragment if the information in the removed items is not 0
     interface UpdateSearch {
         void updateSearch();
     }
 
+    // Interface to be used to check if the amount of Likes a user has is actually zero
     interface CheckZeroLikes {
         void checkZeroLikes();
     }
@@ -91,6 +93,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         View view = mInflater.inflate(R.layout.row_card_item, parent, false);
         con = new ConnectionDetector(mContext);
         myDb = DatabaseHelper.getInstance(mContext);
+
+        db = FirebaseFirestore.getInstance();
         mCallback = (UpdateSearch) mContext;
         mZeroLikes = (CheckZeroLikes) mContext;
         return new ViewHolder(view);
@@ -101,6 +105,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         populateItemData(holder, position);
     }
 
+    // Filter information for using the SearchView on the Likes fragment to filter through Recipes
     @Override
     public Filter getFilter() {
         return likeFilter;
@@ -110,23 +115,26 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
             List<RecipeItem> filteredList = new ArrayList<>();
+            // if the SearchView on the Likes fragment is empty
+            // add the entire list of liked recipes to the arraylist
             if (charSequence.toString().isEmpty()) {
                 filteredList.addAll(mRecipeItemsFull);
             } else {
+                // For each item in the list
+                // if the recipe name, source or ingredients contains the filter text
+                // return the results in new arraylist
                 for (RecipeItem item : mRecipeItemsFull) {
                     if (item.getmRecipeName().toLowerCase().contains(charSequence.toString().toLowerCase()) || item.getmSourceName().toLowerCase().contains(charSequence.toString().toLowerCase()) || item.getmIngredients().toString().toLowerCase().contains(charSequence.toString().toLowerCase())) {
                         filteredList.add(item);
                     }
                 }
             }
-            Log.d(TAG, "1. filterCount: " + filterCount);
             FilterResults results = new FilterResults();
             results.values = filteredList;
             return results;
         }
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            Log.d(TAG, "2. filterCount: " + filterCount);
             filterCount = results.count;
             mRecipeItems = (ArrayList<RecipeItem>) results.values;
             notifyDataSetChanged();
@@ -139,12 +147,14 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         return mRecipeItems.size();
     }
 
+    // Returns the hashcode of the item at the adapters position
     @Override
     public long getItemId(int position) {
         RecipeItem item = mRecipeItems.get(position);
         return item.hashCode();
     }
 
+    // Returns the item view type at the position
     @Override
     public int getItemViewType(int position) {
         return position;
@@ -157,15 +167,25 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
 
     // Code for adding Recipe Items inside of the Search Recyclerview
     private void populateItemData(ViewHolder holder, int position) {
+        // Gets the item at the position
         RecipeItem item = mRecipeItems.get(position);
 
+        // variable for checking whether the item is expanded or not
         boolean isExpanded = mRecipeItems.get(position).isClicked();
+        // if the variable for isExpanded is true - mBottomCard is Visible
+        // else - mBottomCard is Gone
         holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
 
-        item.setFavorited(true);
-        holder.favorite_button.setTag(position);
-        holder.favorite_button.setImageResource(R.mipmap.heart_icon_filled);
+        // For the Likes fragment, all items are in the state of being liked
+        // Set each item to liked
+        item.setLiked(true);
+        // set their tag to the position of the item in the list
+        holder.like_button.setTag(position);
+        // sets the image of the button to the filled heart icon
+        holder.like_button.setImageResource(R.mipmap.heart_icon_filled);
 
+        // checks if the image url at that position is not null
+        // if not null - load the image from the url into the recipeImageView
         if (item.getmImageUrl() != null) {
             Picasso.get()
                     .load(item.getmImageUrl())
@@ -173,29 +193,42 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                     .config(Bitmap.Config.RGB_565)
                     .into(holder.recipeImage);
         } else {
+            // if the image url is not found, set the drawable to null
             holder.recipeImage.setImageDrawable(null);
         }
 
+        // Recipe Name
         holder.recipeName.setText(item.getmRecipeName());
+        // Recipe Source Name
         holder.recipeSource.setText(item.getmSourceName());
+        // # of Servings
         holder.recipeServings.setText(String.format(mContext.getString(R.string.servings_text),item.getmServings()));
+        // # of Calories
         holder.recipeCalories.setText(String.valueOf(item.getmCalories()));
+        // # of Carbs
         holder.recipeCarbs.setText(String.valueOf(item.getmCarbs()));
+        // # of Fat
         holder.recipeFat.setText(String.valueOf(item.getmFat()));
+        // # of Protein
         holder.recipeProtein.setText(String.valueOf(item.getmProtein()));
+        // Recipe Ingredients
         holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
+        // Recipe Attributes
         holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
     }
 
+    // Gets the Recipe Item's ID
+    // Removes the document in the users Likes with the Item ID
     private void removeDataFromFirebase(RecipeItem recipeItem) {
-        CollectionReference favoritesRef = db.collection("Users").document(userId).collection("Favorites");
+        CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
 
-        favoritesRef.document(recipeItem.getItemId())
+        likesRef.document(recipeItem.getItemId())
                 .delete()
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Successfully removed favorite"))
-                .addOnFailureListener(e -> Log.d(TAG, "Failed to remove favorite" + e.toString()));
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Successfully removed like"))
+                .addOnFailureListener(e -> Log.d(TAG, "Failed to remove like" + e.toString()));
     }
 
+    // Opens the Recipe in the default web browser
     private static void openInDefaultBrowser(Context context, String url) {
         try {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -206,6 +239,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         }
     }
 
+    // Opens the Recipe in Google Chrome
     private static void openURLInChromeCustomTab(Context context, String url) {
         try {
             CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
@@ -221,20 +255,23 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         }
     }
 
+    // Clears the items in the Arraylist and notifies the adapter
     public void clearList() {
         mRecipeItemsFull.clear();
         notifyDataSetChanged();
     }
 
-    //method for creating a Toast
+    // Method for creating a Toast
     private void toastMessage(String message) {
         Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
     }
 
+    // The callback for the Update the Search fragment after an item has been removed from Likes
     public void update() {
         mCallback.updateSearch();
     }
 
+    // checks to see if the user doesn't have any likes
     public void checkZeroLikes() {
         mZeroLikes.checkZeroLikes();
     }
@@ -247,20 +284,14 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     // ITEM VIEW HOLDER
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private final TextView recipeName;
-        private final TextView recipeSource;
-        private final TextView recipeServings;
-        private final TextView recipeCalories;
-        private final TextView recipeIngredients;
-        private final TextView recipeCarbs;
-        private final TextView recipeFat;
-        private final TextView recipeProtein;
-        private final TextView recipeAttributes;
-        private final ImageView recipeImage, edamamBranding;
-        private RecipeItem recipeItem;
+        // View Holder Recipe Card
+        private final TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
+        private final ImageView recipeImage;
+        private final ImageButton more_button, like_button;
         private final CardView mBottomCard;
-        private final ImageButton more_button;
-        private final ImageButton favorite_button;
+
+        // View Holder variables
+        private RecipeItem recipeItem;
         private String reportReason = null;
 
         ViewHolder( @NonNull View itemView) {
@@ -268,11 +299,11 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             recipeName = itemView.findViewById(R.id.recipe_name);
             recipeSource = itemView.findViewById(R.id.recipe_source);
             recipeImage = itemView.findViewById(R.id.recipe_image);
-            favorite_button = itemView.findViewById(R.id.recipe_favorite);
+            like_button = itemView.findViewById(R.id.recipe_like);
             more_button = itemView.findViewById(R.id.more_button);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
-            edamamBranding = itemView.findViewById(R.id.edamam_branding);
+            ImageView edamamBranding = itemView.findViewById(R.id.edamam_branding);
             recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
             recipeCarbs = itemView.findViewById(R.id.carbs_amount);
             recipeFat = itemView.findViewById(R.id.fat_amount);
@@ -296,9 +327,13 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 notifyItemChanged(position);
             });
 
-            favorite_button.setOnClickListener(v -> {
-                int position = getAdapterPosition();
+            // Like Button Click Listener
+            like_button.setOnClickListener(v -> {
                 // Gets the item at the position
+                int position = getAdapterPosition();
+
+                // Checks if the user is connected to the internet
+                // if false - alert user not connecting
                 if (!con.connectedToInternet()) {
                     new MaterialAlertDialogBuilder(mContext)
                             .setTitle(Constants.noInternetTitle)
@@ -306,12 +341,14 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                             .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                             .create()
                             .show();
+                    // else - ask user if they want to remove the recipe from their likes
                 } else {
                     recipeItem = mRecipeItems.get(position);
                     new MaterialAlertDialogBuilder(mContext)
                             .setTitle("Remove this recipe from your Likes?")
                             .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
                             .setCancelable(false)
+                            // Positive button - Remove the item from Firebase
                             .setPositiveButton("Remove", (dialog, which) -> {
                                 try {
                                     removeDataFromFirebase(recipeItem);
@@ -319,11 +356,14 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                     e.printStackTrace();
                                 }
 
+                                // remove the item from the like item list in Database
                                 myDb.removeDataFromView(recipeItem.getItemId());
+                                // add the item to the removed table in Database
                                 myDb.addRemovedItem(recipeItem.getItemId());
                                 // Let search adapter know that something has changed
                                 update();
 
+                                // iterates through the items in filtered items to remove the item with the item's ID
                                 Iterator<RecipeItem> i = mRecipeItems.iterator();
                                 while (i.hasNext()) {
                                     RecipeItem item = i.next();
@@ -332,6 +372,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                     }
                                 }
 
+                                // // iterates through the items in the full list to remove the item with the item's ID
                                 Iterator<RecipeItem> fullIterator = mRecipeItemsFull.iterator();
                                 while (fullIterator.hasNext()) {
                                     RecipeItem item = fullIterator.next();
@@ -340,24 +381,28 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                     }
                                 }
 
+                                // notifies the adapter that an item was removed
                                 notifyItemRemoved(position);
 
-                                /*if (!mRecipeItems.isEmpty()) {
-                                    mRecipeItems.remove(getAdapterPosition());
-                                }*/
-
+                                // if the full item list is empty
+                                // alert the Likes fragment to update the Likes Message to say you have no likes
                                 if (mRecipeItemsFull.isEmpty()) {
                                     checkZeroLikes();
                                 }
 
+                                // get the shared preferences value for actual number of likes
                                 int actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
+                                // subtract 1 from the value
                                 actualNumLikes -= 1;
                                 SharedPreferences.Editor editor = sharedPreferences.edit();
+                                // store the new value into numLikes and actualNumLikes
+                                // this is so the program knows that these items are the same and the fragment won't keep refreshing
                                 editor.putInt("actualNumLikes", actualNumLikes);
                                 editor.putInt("numLikes", actualNumLikes);
                                 editor.apply();
 
                             })
+                            // dismiss the alert if cancel button is clicked
                             .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                             .create()
                             .show();

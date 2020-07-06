@@ -35,9 +35,9 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
 
         // Add options inside of the recyclerview
         ArrayList<String> options = new ArrayList<>();
-        options.add(getResources().getResourceName(R.string.terms_and_conditions));
-        options.add(getResources().getResourceName(R.string.privacy_policy));
-        options.add(getResources().getResourceName(R.string.open_source_libraries));
+        options.add(getResources().getString(R.string.terms_and_conditions));
+        options.add(getResources().getString(R.string.privacy_policy));
+        options.add(getResources().getString(R.string.open_source_libraries));
 
         aboutRecycler.setLayoutManager(new LinearLayoutManager(this));
         AboutAdapter adapter = new AboutAdapter(this, options);
@@ -60,11 +60,11 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
         switch (position) {
             // Terms and Conditions
             case 0:
-                toastMessage(getResources().getResourceName(R.string.terms_and_conditions));
+                toastMessage(getResources().getString(R.string.terms_and_conditions));
                 break;
                 // Privacy Policy
             case 1:
-                toastMessage(getResources().getResourceName(R.string.privacy_policy));
+                toastMessage(getResources().getString(R.string.privacy_policy));
                 break;
                 // Open Source Libraries
             case 2:

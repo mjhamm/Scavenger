@@ -32,14 +32,14 @@ Recipes that include your ingredients will appear and give you information relat
  
  ► A button to link you to the URL of the recipe
  
- You can also Favorite recipes and save them in your "My Favorites" screen.
+ You can also Like recipes and save them in your "My Likes" screen.
  
- This will allow you to search through these recipes that you've favorited in order to find that exact recipe you want!
+ This will allow you to search through these recipes that you've Liked in order to find that exact recipe you want!
  
- (In order to use the Favorite feature, you must sign up with Scavenger by using, Google, Facebook or email)
+ (In order to use the Like feature, you must sign up with Scavenger by using Google, Facebook or email)
  
  Settings allow you to personalize your experience inside of Scavenger:
  
- ► Turn on Dark mode to save your eyes and your battery!
- 
  ► Turn off in app browsing to open recipe URL's using your browser of choice.
+
+ ► Match ingredients to exactly match the number of ingredients that you are searching with to find recipes that only include those items or less

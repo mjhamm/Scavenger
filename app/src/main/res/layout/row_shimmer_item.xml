@@ -36,9 +36,9 @@
             android:scaleX=".5"
             android:scaleY=".5"
             android:layout_gravity="bottom|end"
-            android:src="@drawable/favorite_icon_light"
+            android:src="@drawable/like_icon_light"
             android:background="@android:color/transparent"
-            android:contentDescription="@string/recipe_favorite_button_content_descr"
+            android:contentDescription="@string/recipe_like_button_content_descr"
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:paddingTop="4dp" />

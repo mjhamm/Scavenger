@@ -464,8 +464,8 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void retrieveLikesFromFirebase(FirebaseUser user) {
-        CollectionReference favoritesRef = db.collection("Users").document(user.getUid()).collection("Favorites");
-        favoritesRef.get()
+        CollectionReference likesRef = db.collection(Constants.firebaseUser).document(user.getUid()).collection(Constants.firebaseLikes);
+        likesRef.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     String itemId;
                     @Override

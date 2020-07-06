@@ -60,7 +60,7 @@
         android:layout_marginEnd="8dp"
         android:layout_alignStart="@id/imageHolder"
         android:layout_above="@id/recipe_source"
-        android:layout_toStartOf="@id/recipe_favorite"
+        android:layout_toStartOf="@id/recipe_like"
         android:ellipsize="end"
         android:elevation="6dp"
         android:translationZ="6dp"
@@ -81,7 +81,7 @@
         android:translationZ="6dp"
         android:layout_alignStart="@id/imageHolder"
         android:layout_alignBottom="@id/imageHolder"
-        android:layout_toStartOf="@id/recipe_favorite"
+        android:layout_toStartOf="@id/recipe_like"
         android:ellipsize="end"
         android:fontFamily="@font/roboto_light"
         android:maxLines="1"
@@ -89,7 +89,7 @@
         android:textSize="18sp"/>
 
     <ImageButton
-        android:id="@+id/recipe_favorite"
+        android:id="@+id/recipe_like"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignEnd="@id/imageHolder"
@@ -98,9 +98,9 @@
         android:translationZ="6dp"
         android:scaleX=".5"
         android:scaleY=".5"
-        android:src="@drawable/favorite_icon_light"
+        android:src="@drawable/like_icon_light"
         android:background="@android:color/transparent"
-        android:contentDescription="@string/recipe_favorite_button_content_descr"
+        android:contentDescription="@string/recipe_like_button_content_descr"
         android:paddingStart="4dp"
         android:paddingEnd="4dp"
         android:paddingTop="4dp" />

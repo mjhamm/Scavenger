@@ -57,7 +57,7 @@ class RecipeItem {
     private int mCalories;
 
     private boolean clicked;
-    private boolean favorited;
+    private boolean liked;
 
     @Exclude
     String getItemId() {
@@ -100,12 +100,12 @@ class RecipeItem {
         this.clicked = clicked;
     }
 
-    boolean isFavorited() {
-        return favorited;
+    boolean isLiked() {
+        return liked;
     }
 
-    void setFavorited(boolean favorited) {
-        this.favorited = favorited;
+    void setLiked(boolean liked) {
+        this.liked = liked;
     }
 
     ArrayList<String> getmRecipeAttributes() {

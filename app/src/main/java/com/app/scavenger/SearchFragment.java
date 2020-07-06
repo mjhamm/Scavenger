@@ -242,7 +242,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                 for (Object item : recipeItemArrayList) {
                     if (item instanceof RecipeItem) {
                         if (((RecipeItem) item).getItemId().equals(removedItems.getString(1))) {
-                            ((RecipeItem)item).setFavorited(false);
+                            ((RecipeItem)item).setLiked(false);
                             myDb.removeRemovedItem( ((RecipeItem) item).getItemId());
                         }
                     }
@@ -429,7 +429,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                 item.setItemId(randomItemId(item));
 
                 if (itemIds.contains(item.getItemId())) {
-                    item.setFavorited(true);
+                    item.setLiked(true);
                 }
                 
                 recipeItemArrayList.add(item);

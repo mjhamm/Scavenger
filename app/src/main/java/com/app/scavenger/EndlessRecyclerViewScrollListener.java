@@ -31,7 +31,6 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
     public EndlessRecyclerViewScrollListener(LinearLayoutManager layoutManager, ProgressBar progressBar, Context context) {
         this.mLayoutManager = layoutManager;
         this.mProgressBar = progressBar;
-        //this.toIngr = toIngr;
         con = new ConnectionDetector(context);
     }
 
@@ -113,6 +112,7 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
         }
     }
 
+    // Gives a little bit of a delay before removing the Progress Bar
     public void isLoading() {
         Handler handler = new Handler();
         handler.postDelayed(() -> {

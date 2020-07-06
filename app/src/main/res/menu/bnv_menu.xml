@@ -8,9 +8,9 @@
     </item>
 
     <item
-        android:id="@+id/action_favorites"
+        android:id="@+id/action_likes"
         android:title="@string/menu_likes"
-        android:icon="@drawable/ic_favorite_filled_black_48dp">
+        android:icon="@drawable/ic_like_filled_black_48dp">
     </item>
 
     <item

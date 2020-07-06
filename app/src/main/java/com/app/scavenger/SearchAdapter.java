@@ -137,12 +137,12 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         boolean isExpanded = ((RecipeItem) mRecipeItems.get(position)).isClicked();
         holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
 
-        if (item.isFavorited()) {
-            holder.favorite_button.setTag(position);
-            holder.favorite_button.setImageResource(R.mipmap.heart_icon_filled);
+        if (item.isLiked()) {
+            holder.like_button.setTag(position);
+            holder.like_button.setImageResource(R.mipmap.heart_icon_filled);
         } else {
-            holder.favorite_button.setTag(position);
-            holder.favorite_button.setImageResource(R.mipmap.heart_icon_outline_white);
+            holder.like_button.setTag(position);
+            holder.like_button.setImageResource(R.mipmap.heart_icon_outline_white);
         }
 
         if (item.getmImageUrl() != null) {
@@ -175,7 +175,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private void saveDataToFirebase(String itemId, String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
         Map<String, Object> itemMap = new HashMap<>();
-        CollectionReference favoritesRef = db.collection("Users").document(userId).collection("Favorites");
+        CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
 
         Date now = new Date();
         Timestamp timestamp = new Timestamp(now);
@@ -194,7 +194,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         itemMap.put(ITEM_INGR, ingredients);
         itemMap.put("Timestamp", timestamp);
 
-        favoritesRef.document(itemId).set(itemMap)
+        likesRef.document(itemId).set(itemMap)
                 .addOnSuccessListener(aVoid -> {
                     updateQuery();
                     Log.d("LOG: ", "Item saved to Firebase");
@@ -211,9 +211,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     private void removeDataFromFirebase(RecipeItem recipeItem) {
-        CollectionReference favoritesRef = db.collection("Users").document(userId).collection("Favorites");
+        CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
 
-        favoritesRef.document(recipeItem.getItemId())
+        likesRef.document(recipeItem.getItemId())
                 .delete()
                 .addOnSuccessListener(aVoid -> {
                     updateQuery();
@@ -281,7 +281,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         private final ImageView recipeImage, edamamBranding;
         private RecipeItem item;
         private final ImageButton more_button;
-        private final ImageButton favorite_button;
+        private final ImageButton like_button;
         private final CardView mBottomCard;
         private String reportReason = null;
         private long mLastClickTime = 0;
@@ -291,7 +291,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             recipeName = itemView.findViewById(R.id.recipe_name);
             recipeSource = itemView.findViewById(R.id.recipe_source);
             recipeImage = itemView.findViewById(R.id.recipe_image);
-            favorite_button = itemView.findViewById(R.id.recipe_favorite);
+            like_button = itemView.findViewById(R.id.recipe_like);
             more_button = itemView.findViewById(R.id.more_button);
             CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
             edamamBranding = itemView.findViewById(R.id.edamam_branding);
@@ -320,11 +320,11 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             });
 
             //Creates animation for Love button - Animation to grow and shrink heart when clicked - light
-            Animation scaleAnimation_Favorite = new ScaleAnimation(0, 1, 0, 1, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-            scaleAnimation_Favorite.setDuration(500);
-            OvershootInterpolator overshootInterpolator_Favorite = new OvershootInterpolator(4);
-            scaleAnimation_Favorite.setInterpolator(overshootInterpolator_Favorite);
-            favorite_button.setOnClickListener(v -> {
+            Animation scaleAnimation_Like = new ScaleAnimation(0, 1, 0, 1, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+            scaleAnimation_Like.setDuration(500);
+            OvershootInterpolator overshootInterpolator_Like = new OvershootInterpolator(4);
+            scaleAnimation_Like.setInterpolator(overshootInterpolator_Like);
+            like_button.setOnClickListener(v -> {
                 if (!con.connectedToInternet()) {
                     new MaterialAlertDialogBuilder(mContext)
                             .setTitle(Constants.noInternetTitle)
@@ -341,10 +341,10 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     }
                     mLastClickTime = SystemClock.elapsedRealtime();
                     if (logged) {
-                        v.startAnimation(scaleAnimation_Favorite);
-                        if (item.isFavorited()) {
-                            favorite_button.setImageResource(R.mipmap.heart_icon_outline_white);
-                            item.setFavorited(false);
+                        v.startAnimation(scaleAnimation_Like);
+                        if (item.isLiked()) {
+                            like_button.setImageResource(R.mipmap.heart_icon_outline_white);
+                            item.setLiked(false);
                             try {
                                 removeDataFromFirebase(item);
                                 myDb.removeDataFromView(item.getItemId());
@@ -352,8 +352,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                                 e.printStackTrace();
                             }
                         } else {
-                            favorite_button.setImageResource(R.mipmap.heart_icon_filled);
-                            item.setFavorited(true);
+                            like_button.setImageResource(R.mipmap.heart_icon_filled);
+                            item.setLiked(true);
                             try {
                                 saveDataToFirebase(item.getItemId(), item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),
                                         item.getmCalories(), item.getmCarbs(), item.getmFat(), item.getmProtein(), item.getmRecipeAttributes(), item.getmIngredients());

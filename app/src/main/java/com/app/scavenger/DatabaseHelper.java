@@ -20,10 +20,11 @@ class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_LIKES = "table_itemIds";
     private static final String TABLE_REMOVED = "table_removed";
 
-    //Common Columns
+    // Common Columns
     private static final String KEY_ID = "id";
     private static final String KEY_ITEM_ID = "itemId";
 
+    // Singleton for opening Database
     static synchronized DatabaseHelper getInstance(Context context) {
         if (sInstance == null) {
             sInstance = new DatabaseHelper(context.getApplicationContext());
@@ -35,20 +36,24 @@ class DatabaseHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DB_VERSION);
     }
 
-    //Create View List Table
+    // Create Likes Table
     private static final String CREATE_TABLE_LIKES = "CREATE TABLE IF NOT EXISTS " + TABLE_LIKES + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ITEM_ID +
             " TEXT)";
+
+    // Create Removed Likes Table
     private static final String CREATE_TABLE_REMOVED = "CREATE TABLE IF NOT EXISTS " + TABLE_REMOVED + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ITEM_ID +
             " TEXT)";
 
     //------------------------------ ALL TABLES -------------------------------------------------------------------------------------------
 
+    // Create the tables
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_LIKES);
         db.execSQL(CREATE_TABLE_REMOVED);
     }
 
+    // Check if tables exist - if so - drop
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         /*switch (oldVersion) {
@@ -75,16 +80,6 @@ class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery("SELECT * FROM " + TABLE_LIKES, null);
     }
 
-// --Commented out by Inspection START (7/2/2020 12:42 PM):
-//    //Updates Likes itemID
-//    public void updateListItem(String itemId) {
-//        SQLiteDatabase db = this.getWritableDatabase();
-//        ContentValues contentValues = new ContentValues();
-//        contentValues.put(KEY_ITEM_ID, itemId);
-//        db.update(TABLE_LIKES, contentValues,KEY_ITEM_ID + " =?", new String[]{itemId});
-//    }
-// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
-
     //Add data to Likes Table
     void addDataToView(String itemId) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -107,16 +102,6 @@ class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery("SELECT * FROM " + TABLE_REMOVED, null);
     }
 
-// --Commented out by Inspection START (7/2/2020 12:42 PM):
-//    //Updates Removed Item's itemID
-//    public void updateRemovedItems(String itemId) {
-//        SQLiteDatabase db = this.getWritableDatabase();
-//        ContentValues contentValues = new ContentValues();
-//        contentValues.put(KEY_ITEM_ID, itemId);
-//        db.update(TABLE_REMOVED, contentValues,KEY_ITEM_ID + " =?", new String[]{itemId});
-//    }
-// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
-
     //Add data to Removed Table
     void addRemovedItem(String itemId) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -131,6 +116,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_REMOVED, KEY_ITEM_ID + "=?", new String[]{itemId});
     }
 
+    // Removes all items from the Removed Table
     void removeAllItemsFromRemoveTable() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TABLE_REMOVED);

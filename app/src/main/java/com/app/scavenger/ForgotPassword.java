@@ -42,15 +42,15 @@ public class ForgotPassword extends AppCompatActivity {
         ImageButton backButton = findViewById(R.id.forgotPass_back);
         con = new ConnectionDetector(this);
 
+        // Close the activity on button click
         backButton.setOnClickListener(v -> finish());
 
+        // Disable the button on start
         forgot_pass_button.setEnabled(false);
 
         forgot_editText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -66,16 +66,14 @@ public class ForgotPassword extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-
-            }
+            public void afterTextChanged(Editable s) {}
         });
 
         forgot_pass_button.setOnClickListener(v -> {
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet Connection")
-                        .setMessage("You don't have an internet connection. Please reconnect and try to Sign In again.")
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
@@ -84,8 +82,8 @@ public class ForgotPassword extends AppCompatActivity {
                         .addOnFailureListener(e -> {
                             Log.d(TAG, "Email send failure");
                             new MaterialAlertDialogBuilder(ForgotPassword.this, R.style.ReportAlertTheme)
-                                    .setTitle("Account not found")
-                                    .setMessage("The email that you have entered does not belong to an account. If this issue persists, please contact support at support@theScavengerApp.com")
+                                    .setTitle(Constants.accountNotFound)
+                                    .setMessage(Constants.accountNotFoundMessage)
                                     .setCancelable(false)
                                     .setPositiveButton("Ok", (dialog, which) -> dialog.dismiss())
                                     .create()
@@ -95,8 +93,8 @@ public class ForgotPassword extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 Log.d(TAG, "Reset password email sent");
                                 new MaterialAlertDialogBuilder(ForgotPassword.this, R.style.ReportAlertTheme)
-                                        .setTitle("Reset instructions have been sent.")
-                                        .setMessage("You will receive reset instructions in 2-5 minutes.")
+                                        .setTitle(Constants.resetPassTitle)
+                                        .setMessage(Constants.resetPassMessage)
                                         .setCancelable(false)
                                         .setPositiveButton("OK", (dialog, which) -> {
                                             dialog.dismiss();
@@ -109,20 +107,4 @@ public class ForgotPassword extends AppCompatActivity {
             }
         });
     }
-
-// --Commented out by Inspection START (7/2/2020 12:42 PM):
-//    public static void hideKeyboard(Activity activity) {
-//        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-//        //Find the currently focused view, so we can grab the correct window token from it.
-//        View view = activity.getCurrentFocus();
-//        //If no view currently has focus, create a new one, just so we can grab a window token from it
-//        if (view == null) {
-//            view = new View(activity);
-//        }
-//        if (imm != null) {
-//            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-//        }
-//        view.clearFocus();
-//    }
-// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
 }

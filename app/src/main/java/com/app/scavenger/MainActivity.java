@@ -19,22 +19,11 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, LikesAdapter.UpdateSearch, LikesAdapter.CheckZeroLikes, SearchAdapter.UpdateQuery {
 
-    //private static final String TAG = "LOG: ";
-
-// --Commented out by Inspection START (7/2/2020 12:42 PM):
-// --Commented out by Inspection START (7/2/2020 12:42 PM):
-////    // --Commented out by Inspection (7/2/2020 12:42 PM):private static final String ITEM_ID = "itemId";
-////    private static final String USER_COLLECTION = "Users";
-// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
-// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
-    //private static final String USER_FAVORITES = "Favorites";
-
     private Fragment fragment1 = null;
     private Fragment fragment2 = null;
     private Fragment fragment3 = null;
     private final FragmentManager fm = getSupportFragmentManager();
     private Fragment active = null;
-    private FirebaseAuth mAuth;
     private SharedPreferences sharedPreferences;
 
     private boolean doubleBackToExitPressedOnce;
@@ -49,11 +38,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
     // Shared Preferences Data
     //-----------------------------------------
-    private String userId = null;
-    private boolean logged = false;
     private boolean match = false;
-    private int numLikes = 0;
-    private int actualNumLikes = 0;
     private boolean refresh = false;
     //------------------------------------------
 
@@ -61,11 +46,6 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     protected void onStart() {
         super.onStart();
         getInfoFromSharedPrefs();
-        if (logged) {
-            userId = mAuth.getUid();
-        }
-
-
     }
 
     @Override
@@ -80,21 +60,12 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
         setContentView(R.layout.activity_main);
 
-        // Initialize the Google Mobile Ads SDK
-        //MobileAds.initialize(this, getString(R.string.admob_app_id));
-
         DatabaseHelper myDb = DatabaseHelper.getInstance(this);
-        mAuth = FirebaseAuth.getInstance();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         myDb.removeAllItemsFromRemoveTable();
 
         BottomNavigationView mNavView = findViewById(R.id.bottom_nav_view);
-
-        //private FirebaseFirestore db = FirebaseFirestore.getInstance();
-        //ArrayList<String> itemIds = new ArrayList<>();
-
-        getInfoFromSharedPrefs();
 
         if (match) {
             toastMessage("Match ingredients is On");
@@ -129,15 +100,9 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                     }
                     active = fragment1;
                     return true;
-                case R.id.action_favorites:
-                    //getInfoFromSharedPrefs();
+                case R.id.action_likes:
                     if (active != fragment2) {
                         fm.beginTransaction().hide(active).show(fragment2).commit();
-                        /*if (logged && (numLikes != actualNumLikes)) {
-                            fm.beginTransaction().hide(active).detach(fragment2).attach(fragment2).show(fragment2).commit();
-                        } else {
-                            fm.beginTransaction().hide(active).show(fragment2).commit();
-                        }*/
                     }
                     active = fragment2;
                     return true;
@@ -153,10 +118,6 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
         match = sharedPreferences.getBoolean("match", false);
-        logged = sharedPreferences.getBoolean("logged", false);
-        userId = sharedPreferences.getString("userId", null);
-        numLikes = sharedPreferences.getInt("numLikes", 0);
-        actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
         refresh = sharedPreferences.getBoolean("refresh", false);
     }
 
@@ -182,19 +143,6 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
         mHandler.postDelayed(mRunnable, 2000);
     }
-
-    /*private void retrieveLikesFromFirebase() {
-        CollectionReference favoritesRef = db.collection(USER_COLLECTION).document(userId).collection(USER_FAVORITES);
-        favoritesRef.get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    actualNumLikes = queryDocumentSnapshots.size();
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
-                    editor.apply();
-                    Log.d("Retrieve from Firebase", "actual Number of Likes: " + queryDocumentSnapshots.size());
-                });
-        numLikes = actualNumLikes;
-    }*/
 
     //method for creating a Toast
     private void toastMessage(String message) {

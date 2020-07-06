@@ -24,7 +24,6 @@
         <activity android:name=".ForgotPassword" />
         <activity android:name=".SignInActivity" />
         <activity android:name=".SignUpActivity" />
-        <activity android:name=".Legal" />
         <activity android:name=".Help" />
         <activity android:name=".About" />
         <activity
