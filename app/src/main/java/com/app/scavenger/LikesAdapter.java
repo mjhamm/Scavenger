@@ -256,7 +256,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         private final TextView recipeFat;
         private final TextView recipeProtein;
         private final TextView recipeAttributes;
-        private final ImageView recipeImage;
+        private final ImageView recipeImage, edamamBranding;
         private RecipeItem recipeItem;
         private final CardView mBottomCard;
         private final ImageButton more_button;
@@ -272,6 +272,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             more_button = itemView.findViewById(R.id.more_button);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
+            edamamBranding = itemView.findViewById(R.id.edamam_branding);
             recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
             recipeCarbs = itemView.findViewById(R.id.carbs_amount);
             recipeFat = itemView.findViewById(R.id.fat_amount);
@@ -296,17 +297,17 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             });
 
             favorite_button.setOnClickListener(v -> {
+                int position = getAdapterPosition();
                 // Gets the item at the position
                 if (!con.connectedToInternet()) {
                     new MaterialAlertDialogBuilder(mContext)
-                            .setTitle("No Internet connection found")
-                            .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                            .setTitle(Constants.noInternetTitle)
+                            .setMessage(Constants.noInternetMessage)
                             .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                             .create()
                             .show();
                 } else {
-                    recipeItem = mRecipeItems.get(getAdapterPosition());
-                    String recipeItemId = recipeItem.getItemId();
+                    recipeItem = mRecipeItems.get(position);
                     new MaterialAlertDialogBuilder(mContext)
                             .setTitle("Remove this recipe from your Likes?")
                             .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
@@ -323,23 +324,39 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                 // Let search adapter know that something has changed
                                 update();
 
-                                for (Iterator<RecipeItem> iterator = mRecipeItemsFull.iterator(); iterator.hasNext();) {
-                                    if (iterator.next().getItemId().equals(recipeItemId)) {
-                                        iterator.remove();
+                                Iterator<RecipeItem> i = mRecipeItems.iterator();
+                                while (i.hasNext()) {
+                                    RecipeItem item = i.next();
+                                    if (item.getItemId().equals(recipeItem.getItemId())) {
+                                        i.remove();
                                     }
                                 }
-                                if (!mRecipeItems.isEmpty()) {
-                                    mRecipeItems.remove(getAdapterPosition());
+
+                                Iterator<RecipeItem> fullIterator = mRecipeItemsFull.iterator();
+                                while (fullIterator.hasNext()) {
+                                    RecipeItem item = fullIterator.next();
+                                    if (item.getItemId().equals(recipeItem.getItemId())) {
+                                        fullIterator.remove();
+                                    }
                                 }
+
+                                notifyItemRemoved(position);
+
+                                /*if (!mRecipeItems.isEmpty()) {
+                                    mRecipeItems.remove(getAdapterPosition());
+                                }*/
+
                                 if (mRecipeItemsFull.isEmpty()) {
                                     checkZeroLikes();
                                 }
+
                                 int actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
                                 actualNumLikes -= 1;
                                 SharedPreferences.Editor editor = sharedPreferences.edit();
                                 editor.putInt("actualNumLikes", actualNumLikes);
+                                editor.putInt("numLikes", actualNumLikes);
                                 editor.apply();
-                                notifyDataSetChanged();
+
                             })
                             .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                             .create()
@@ -371,21 +388,21 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 popupMenu.show();
             });
 
+            edamamBranding.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
+                    .setTitle(Constants.nutritionInformationTitle)
+                    .setMessage(Constants.nutritionInformation)
+                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
+                    .show());
+
             mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle("Some Information about Our Data")
-                    .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
-                            "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
-                            "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
-                            "as well as the number of servings the amount of ingredients can make.")
+                    .setTitle(Constants.nutritionInformationTitle)
+                    .setMessage(Constants.nutritionInformation)
                     .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
                     .show());
 
             recipeServings.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle("Some Information about Our Data")
-                    .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
-                            "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
-                            "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
-                            "as well as the number of servings the amount of ingredients can make.")
+                    .setTitle(Constants.nutritionInformationTitle)
+                    .setMessage(Constants.nutritionInformation)
                     .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
                     .show());
 
@@ -403,8 +420,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         private void reportRecipe() {
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(mContext)
-                        .setTitle("No Internet connection found")
-                        .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
@@ -428,8 +445,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                         .setPositiveButton("Report",(dialog, which) -> {
                             if (!con.connectedToInternet()) {
                                 new MaterialAlertDialogBuilder(mContext)
-                                        .setTitle("No Internet connection found")
-                                        .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                                        .setTitle(Constants.noInternetTitle)
+                                        .setMessage(Constants.noInternetMessage)
                                         .setPositiveButton("OK", (dialog1, which1) -> dialog1.dismiss())
                                         .create()
                                         .show();

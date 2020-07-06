@@ -105,7 +105,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         logged = currentUser != null;
-        //myDb.removeAllItemsFromRemoveTable();
 
         recipeItemArrayList = new ArrayList<>();
         itemIds = new ArrayList<>();
@@ -126,18 +125,19 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
         startup_message = view.findViewById(R.id.startup_message);
         mSearchView = view.findViewById(R.id.search_searchView);
-        mSearchView.setMaxWidth(Integer.MAX_VALUE);
         shimmer = view.findViewById(R.id.search_shimmerLayout);
         matchMessage = view.findViewById(R.id.match_message);
         mProgressBar = view.findViewById(R.id.main_progressBar);
+        mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mSearchView.setMaxWidth(Integer.MAX_VALUE);
+        mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
+        //mSearchRecyclerView.setLayoutManager(mLayoutManager);
 
         noRecipesFound = "We Couldn't Find Any Recipes :(\n" + "Sorry About That!";
 
         mProgressBar.setVisibility(View.GONE);
-
-        mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
 
         Random random_start_number = new Random();
 
@@ -162,16 +162,15 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                 break;
         }
 
-        mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
+
         mSearchRecyclerView.setHasFixedSize(true);
+        mSearchRecyclerView.setItemViewCacheSize(10);
+        mSearchRecyclerView.setLayoutManager(mLayoutManager);
 
         RecyclerView.ItemAnimator animator = mSearchRecyclerView.getItemAnimator();
-
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
-
-        mSearchRecyclerView.setItemViewCacheSize(10);
 
         mSearchRecyclerView.setOnTouchListener((v, event) -> {
             mSearchView.clearFocus();
@@ -206,6 +205,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                 if (adapter != null) {
                     adapter = null;
                 }
+
                 getIngredients();
                 return false;
             }
@@ -234,61 +234,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         super.onSaveInstanceState(outState);
         outState.putString("query", queryString);
     }
-
-    /*private void insertAdsInRecipeItems() {
-        if (mNativeAds.size() <= 0) {
-            return;
-        }
-
-        int offset = 4;
-        for (UnifiedNativeAd ad : mNativeAds) {
-            recipeItemArrayList.add(adIndex, ad);
-            adIndex = adIndex + offset;
-        }
-    }*/
-
-    /*private void loadNativeAds() {
-
-        AdLoader.Builder builder = new AdLoader.Builder(mContext, getString(R.string.ad_unit_id));
-        adLoader = builder.forUnifiedNativeAd(
-                unifiedNativeAd -> {
-                    // A native ad loaded successfully, check if the ad loader has finished loading
-                    // and if so, insert the ads into the list.
-                    mNativeAds.add(unifiedNativeAd);
-                    if (!adLoader.isLoading()) {
-                        insertAdsInRecipeItems();
-                        *//*if (adapter == null) {
-                            adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
-                            mSearchRecyclerView.setAdapter(adapter);
-                            mSearchRecyclerView.setLayoutManager(mLayoutManager);
-                        }*//*
-                        shimmer.stopShimmer();
-                        shimmer.setVisibility(View.GONE);
-                    }
-                }).withAdListener(
-                new AdListener() {
-                    @Override
-                    public void onAdFailedToLoad(int errorCode) {
-                        // A native ad failed to load, check if the ad loader has finished loading
-                        // and if so, insert the ads into the list.
-                        Log.e("MainActivity", "The previous native ad failed to load. Attempting to"
-                                + " load another.");
-                        if (!adLoader.isLoading()) {
-                            insertAdsInRecipeItems();
-                            if (adapter == null) {
-                                adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
-                                mSearchRecyclerView.setAdapter(adapter);
-                                mSearchRecyclerView.setLayoutManager(mLayoutManager);
-                            }
-                            shimmer.stopShimmer();
-                            shimmer.setVisibility(View.GONE);
-                        }
-                    }
-                }).build();
-
-        // Load the Native Express ad.
-        adLoader.loadAds(new AdRequest.Builder().build(), NUMBER_OF_ADS);
-    }*/
 
     public void updateSearchFrag() {
         if (!recipeItemArrayList.isEmpty()) {
@@ -344,8 +289,8 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private void getIngredients() {
         if (!con.connectedToInternet()) {
             new MaterialAlertDialogBuilder(mContext)
-                    .setTitle("No Internet connection found")
-                    .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                    .setTitle(Constants.noInternetTitle)
+                    .setMessage(Constants.noInternetMessage)
                     .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                     .create()
                     .show();
@@ -358,16 +303,13 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             if (adapter != null) {
                 adapter.notifyDataSetChanged();
             }
-
             // Updates Endless Scroll Listener
             scrollListener.resetState();
-
             startup_message.setVisibility(View.GONE);
             matchMessage.setVisibility(View.GONE);
             shimmer.setVisibility(View.VISIBLE);
             shimmer.startShimmer();
             Retrofit retrofit = NetworkClient.getRetrofitClient();
-
             ApiService apiService = retrofit.create(ApiService.class);
 
             fromIngr = 0;
@@ -388,9 +330,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                             if (adapter == null) {
                                 adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
                                 mSearchRecyclerView.setAdapter(adapter);
-                                mSearchRecyclerView.setLayoutManager(mLayoutManager);
                             }
-
                             if (recipeItemArrayList.isEmpty()) {
                                 startup_message.setVisibility(View.VISIBLE);
                                 startup_message.setText(noRecipesFound);
@@ -398,7 +338,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                             }
 
                             numItemsBefore = recipeItemArrayList.size();
-
                             shimmer.stopShimmer();
                             shimmer.setVisibility(View.GONE);
                         } else {

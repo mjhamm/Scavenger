@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -52,6 +53,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.opencensus.internal.Utils;
+
 public class SignInActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 101;
@@ -61,6 +64,7 @@ public class SignInActivity extends AppCompatActivity {
     private MaterialButton signInButton;
     private EditText emailEdit, passEdit;
     private FrameLayout progressHolder;
+    private TextView signInTerms;
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
@@ -71,54 +75,12 @@ public class SignInActivity extends AppCompatActivity {
     private CallbackManager callbackManager;
     private ConnectionDetector con;
 
-    // Shared Preferences Data
-    //-----------------------------------------
-//    private String userId = null;
-//    private boolean logged = false;
-    //------------------------------------------
-
-    public SignInActivity() {
-        // Required empty public constructor
-    }
+    // Required empty public constructor
+    public SignInActivity() {}
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sign_in);
-
-        // Google Info
-        MaterialButton mGoogleSignIn = findViewById(R.id.google_signIn);
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestProfile()
-                .requestEmail()
-                .requestIdToken(getString(R.string.clientId_web_googleSignIn))
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-
-        // Facebook Info
-        MaterialButton mFacebookSignIn = findViewById(R.id.facebook_signIn);
-        callbackManager = CallbackManager.Factory.create();
-
-        con = new ConnectionDetector(this);
-
-        mAuth = FirebaseAuth.getInstance();
-        myDb = DatabaseHelper.getInstance(this);
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        signInButton = findViewById(R.id.signIn_Button);
-        // Views from Sign In activity
-        TextView signUpText = findViewById(R.id.signUp_text);
-        TextView forgotPass = findViewById(R.id.forgot_signIn);
-        emailEdit = findViewById(R.id.email_editText);
-        passEdit = findViewById(R.id.password_editText);
-        TextView signInTerms = findViewById(R.id.accept_terms_signin);
-        progressHolder = findViewById(R.id.signIn_progressHolder);
-        ImageButton backButton = findViewById(R.id.signIn_back);
-
-        // CHECK: Let search fragment know to reload on sign in
-
-        backButton.setOnClickListener(v -> finish());
+    protected void onStart() {
+        super.onStart();
 
         String termsText = "By Signing In, you agree to Scavenger's Terms & Conditions and Privacy Policy.";
         SpannableString termsSS = new SpannableString(termsText);
@@ -156,14 +118,60 @@ public class SignInActivity extends AppCompatActivity {
 
         signInTerms.setText(termsSS);
         signInTerms.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Update to the status bar on lower SDK's
+        // Makes bar on lower SDK's black with white icons
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
+        }
+        setContentView(R.layout.activity_sign_in);
+
+        // Google Info
+        MaterialButton mGoogleSignIn = findViewById(R.id.google_signIn);
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestProfile()
+                .requestEmail()
+                .requestIdToken(getString(R.string.clientId_web_googleSignIn))
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        // Facebook Info
+        MaterialButton mFacebookSignIn = findViewById(R.id.facebook_signIn);
+        callbackManager = CallbackManager.Factory.create();
+
+        con = new ConnectionDetector(this);
+
+        mAuth = FirebaseAuth.getInstance();
+        myDb = DatabaseHelper.getInstance(this);
+
+
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        signInButton = findViewById(R.id.signIn_Button);
+        // Views from Sign In activity
+        TextView signUpText = findViewById(R.id.signUp_text);
+        TextView forgotPass = findViewById(R.id.forgot_signIn);
+        emailEdit = findViewById(R.id.email_editText);
+        passEdit = findViewById(R.id.password_editText);
+        signInTerms = findViewById(R.id.accept_terms_signin);
+        progressHolder = findViewById(R.id.signIn_progressHolder);
+        ImageButton backButton = findViewById(R.id.signIn_back);
+
+        backButton.setOnClickListener(v -> finish());
 
         // Sign in with email button ---------------------------------------------------------------
         signInButton.setOnClickListener(v -> {
             hideKeyboard(SignInActivity.this);
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found")
-                        .setMessage("You don't have an Internet connection. Please reconnect and try to Sign In again.")
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
@@ -223,8 +231,8 @@ public class SignInActivity extends AppCompatActivity {
         mFacebookSignIn.setOnClickListener(v ->{
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found")
-                        .setMessage("You don't have an Internet connection. Please reconnect and try to Sign In again.")
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
@@ -239,8 +247,8 @@ public class SignInActivity extends AppCompatActivity {
         mGoogleSignIn.setOnClickListener(v -> {
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found")
-                        .setMessage("You don't have an Internet connection. Please reconnect and try to Sign In again.")
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
@@ -259,16 +267,6 @@ public class SignInActivity extends AppCompatActivity {
             data.put("name", user.getDisplayName());
             data.put("email", user.getEmail());
             db.collection("Users").document(user.getUid()).set(data);
-//            db.collection("Users").whereEqualTo("userId", user.getUid()).get()
-//                    .addOnCompleteListener(task -> {
-//                        if (task.isSuccessful()) {
-//                            if (task.getResult().getDocuments().size() == 0) {
-//                                db.collection("Users").document(user.getUid()).set(data);
-//                            }
-//                        } else {
-//                            Log.d(TAG, "error: task not successful");
-//                        }
-//                    });
         }
     }
 
@@ -457,4 +455,15 @@ public class SignInActivity extends AppCompatActivity {
         view.clearFocus();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        signInTerms.setText("");
+        signInTerms.setMovementMethod(null);
+
+        if (callbackManager != null) {
+            callbackManager = null;
+        }
+    }
 }

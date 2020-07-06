@@ -38,6 +38,13 @@ public class SendFeedback extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Update to the status bar on lower SDK's
+        // Makes bar on lower SDK's black with white icons
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
+        }
+
         setContentView(R.layout.activity_send_feedback);
 
         feedbackEditText = findViewById(R.id.feedback_editText);
@@ -81,8 +88,8 @@ public class SendFeedback extends AppCompatActivity {
         submit_textButton.setOnClickListener(v -> {
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found")
-                        .setMessage("You don't have an Internet connection. Please reconnect in order to Submit Feedback.")
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();

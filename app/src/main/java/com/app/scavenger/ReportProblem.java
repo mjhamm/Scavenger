@@ -39,6 +39,13 @@ public class ReportProblem extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Update to the status bar on lower SDK's
+        // Makes bar on lower SDK's black with white icons
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
+        }
+
         setContentView(R.layout.activity_report_problem);
 
         reportEditText = findViewById(R.id.report_editText);
@@ -82,8 +89,8 @@ public class ReportProblem extends AppCompatActivity {
         submit_buttonText.setOnClickListener(v -> {
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found")
-                        .setMessage("You don't have an Internet connection. Please reconnect in order to Report a Problem.")
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();

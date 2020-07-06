@@ -26,21 +26,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.cardview.widget.CardView;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-//import com.google.android.gms.ads.formats.MediaView;
-//import com.google.android.gms.ads.formats.NativeAd;
-//import com.google.android.gms.ads.formats.UnifiedNativeAd;
-//import com.google.android.gms.ads.formats.UnifiedNativeAdView;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -285,7 +278,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         private final TextView recipeFat;
         private final TextView recipeProtein;
         private final TextView recipeAttributes;
-        private final ImageView recipeImage;
+        private final ImageView recipeImage, edamamBranding;
         private RecipeItem item;
         private final ImageButton more_button;
         private final ImageButton favorite_button;
@@ -301,6 +294,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             favorite_button = itemView.findViewById(R.id.recipe_favorite);
             more_button = itemView.findViewById(R.id.more_button);
             CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
+            edamamBranding = itemView.findViewById(R.id.edamam_branding);
             mBottomCard = itemView.findViewById(R.id.bottomCardView);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
@@ -333,8 +327,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             favorite_button.setOnClickListener(v -> {
                 if (!con.connectedToInternet()) {
                     new MaterialAlertDialogBuilder(mContext)
-                            .setTitle("No Internet connection found")
-                            .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                            .setTitle(Constants.noInternetTitle)
+                            .setMessage(Constants.noInternetMessage)
                             .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                             .create()
                             .show();
@@ -403,21 +397,21 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 popupMenu.show();
             });
 
+            edamamBranding.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
+                    .setTitle(Constants.nutritionInformationTitle)
+                    .setMessage(Constants.nutritionInformation)
+                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
+                    .show());
+
             mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle("Some Information about Our Data")
-                    .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
-                            "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
-                            "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
-                            "as well as the number of servings the amount of ingredients can make.")
+                    .setTitle(Constants.nutritionInformationTitle)
+                    .setMessage(Constants.nutritionInformation)
                     .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
                     .show());
 
             recipeServings.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle("Some Information about Our Data")
-                    .setMessage("Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
-                            "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
-                            "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
-                            "as well as the number of servings the amount of ingredients can make.")
+                    .setTitle(Constants.nutritionInformationTitle)
+                    .setMessage(Constants.nutritionInformation)
                     .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
                     .show());
 
@@ -436,8 +430,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         private void reportRecipe() {
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(mContext)
-                        .setTitle("No Internet connection found")
-                        .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
@@ -461,8 +455,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                         .setPositiveButton("Report",(dialog, which) -> {
                             if (!con.connectedToInternet()) {
                                 new MaterialAlertDialogBuilder(mContext)
-                                        .setTitle("No Internet connection found")
-                                        .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                                        .setTitle(Constants.noInternetTitle)
+                                        .setMessage(Constants.noInternetMessage)
                                         .setPositiveButton("OK", (dialog1, which1) -> dialog1.dismiss())
                                         .create()
                                         .show();
@@ -556,34 +550,5 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             return item.getmRecipeName();
         }
     }
-
-    // LOADING VIEW HOLDER
-    /*private static class UnifiedNativeAdHolder extends RecyclerView.ViewHolder {
-
-        private UnifiedNativeAdView adView;
-
-        public UnifiedNativeAdView getAdView() {
-            return adView;
-        }
-
-        public UnifiedNativeAdHolder(@NonNull View view) {
-            super(view);
-            adView = (UnifiedNativeAdView) view.findViewById(R.id.ad_view);
-
-            // The MediaView will display a video asset if one is present in the ad, and the
-            // first image asset otherwise.
-            adView.setMediaView((MediaView) adView.findViewById(R.id.ad_media));
-
-            // Register the view used for each individual asset.
-            adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
-            adView.setBodyView(adView.findViewById(R.id.ad_body));
-            adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
-            adView.setIconView(adView.findViewById(R.id.ad_icon));
-            adView.setPriceView(adView.findViewById(R.id.ad_price));
-            adView.setStarRatingView(adView.findViewById(R.id.ad_stars));
-            adView.setStoreView(adView.findViewById(R.id.ad_store));
-            adView.setAdvertiserView(adView.findViewById(R.id.ad_advertiser));
-        }
-    }*/
 }
 

@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -17,6 +18,13 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Update to the status bar on lower SDK's
+        // Makes bar on lower SDK's black with white icons
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
+        }
+
         setContentView(R.layout.activity_help);
 
         RecyclerView helpRecycler = findViewById(R.id.help_list);

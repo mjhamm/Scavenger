@@ -106,8 +106,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         signOut.setOnPreferenceClickListener(v -> {
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(mContext)
-                        .setTitle("No Internet connection found")
-                        .setMessage("You don't have an Internet connection. Please reconnect and try again.")
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();

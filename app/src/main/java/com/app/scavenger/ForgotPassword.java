@@ -3,6 +3,7 @@ package com.app.scavenger;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -27,6 +28,13 @@ public class ForgotPassword extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Update to the status bar on lower SDK's
+        // Makes bar on lower SDK's black with white icons
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
+        }
+
         setContentView(R.layout.activity_forgot_password);
 
         forgot_editText = findViewById(R.id.forgot_editText);

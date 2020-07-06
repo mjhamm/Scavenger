@@ -55,13 +55,6 @@ public class AboutAdapter extends RecyclerView.Adapter<AboutAdapter.ViewHolder> 
         }
     }
 
-// --Commented out by Inspection START (7/2/2020 12:38 PM):
-//    // convenience method for getting data at click position
-//    String getItem(int id) {
-//        return mData.get(id);
-//    }
-// --Commented out by Inspection STOP (7/2/2020 12:38 PM)
-
     // allows clicks events to be caught
     void setClickListener(ItemClickListener itemClickListener) {
         this.mClickListener = itemClickListener;

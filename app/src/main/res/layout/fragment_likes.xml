@@ -22,8 +22,7 @@
             android:layout_height="?android:attr/actionBarSize"
             app:queryHint="Search Likes"
             app:iconifiedByDefault="false"
-            app:queryBackground="@android:color/transparent"
-            android:elevation="8dp"/>
+            app:queryBackground="@android:color/transparent"/>
 
     </com.google.android.material.card.MaterialCardView>
 

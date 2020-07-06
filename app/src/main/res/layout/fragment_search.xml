@@ -74,6 +74,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_below="@id/shimmer_item2"/>
             <include layout="@layout/row_shimmer_item"
+                android:id="@+id/shimmer_item4"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:layout_alignParentStart="true"

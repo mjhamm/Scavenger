@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
@@ -65,7 +66,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     // Views from Sign Up activity
     private EditText fullName, emailEdit, passEdit, passConfirmEdit;
-    private TextView passNoMatch;
+    private TextView passNoMatch, termsTextView;
     private MaterialCheckBox termsCheck;
     private FrameLayout progressHolder;
     private MaterialButton signUpButton;
@@ -98,6 +99,13 @@ public class SignUpActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Update to the status bar on lower SDK's
+        // Makes bar on lower SDK's black with white icons
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
+        }
+
         setContentView(R.layout.activity_sign_up);
 
         //mContext = SignUpActivity.this;
@@ -128,7 +136,7 @@ public class SignUpActivity extends AppCompatActivity {
         passEdit = findViewById(R.id.password_editText);
         passConfirmEdit = findViewById(R.id.passwordConfirm_editText);
         passNoMatch = findViewById(R.id.passNoMatch);
-        TextView termsTextView = findViewById(R.id.signUpTerms);
+        termsTextView = findViewById(R.id.signUpTerms);
         termsCheck = findViewById(R.id.signUpCheckbox);
         signUpButton = findViewById(R.id.signUp_Button);
         MaterialButton facebookSignUpButton = findViewById(R.id.facebook_signUp);
@@ -192,8 +200,8 @@ public class SignUpActivity extends AppCompatActivity {
         googleSignUpButton.setOnClickListener(v -> {
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found")
-                        .setMessage("You don't have an Internet connection. Please reconnect and try to Sign Up again.")
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
@@ -210,8 +218,8 @@ public class SignUpActivity extends AppCompatActivity {
         facebookSignUpButton.setOnClickListener(v ->{
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found")
-                        .setMessage("You don't have an Internet connection. Please reconnect and try to Sign Up again.")
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
@@ -229,8 +237,8 @@ public class SignUpActivity extends AppCompatActivity {
         signUpButton.setOnClickListener(v -> {
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
-                        .setTitle("No Internet connection found")
-                        .setMessage("You don't have an Internet connection. Please reconnect and try to Sign Up again.")
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
@@ -487,5 +495,17 @@ public class SignUpActivity extends AppCompatActivity {
     //method for creating a Toast
     private void toastMessage(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        termsTextView.setText("");
+        termsTextView.setMovementMethod(null);
+
+        if (callbackManager != null) {
+            callbackManager = null;
+        }
     }
 }

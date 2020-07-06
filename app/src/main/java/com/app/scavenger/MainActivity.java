@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Update to the status bar on lower SDK's
+        // Makes bar on lower SDK's black with white icons
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
         }
