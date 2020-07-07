@@ -70,9 +70,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
     private DatabaseHelper myDb;
 
-    /*private AdLoader adLoader;
-    private List<UnifiedNativeAd> mNativeAds = new ArrayList<>();*/
-
     // Shared Preferences Data
     //-----------------------------------------
     private String userId = null;
@@ -133,7 +130,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         mSearchView.setMaxWidth(Integer.MAX_VALUE);
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
-        //mSearchRecyclerView.setLayoutManager(mLayoutManager);
 
         noRecipesFound = "We Couldn't Find Any Recipes :(\n" + "Sorry About That!";
 
@@ -498,13 +494,4 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private void toastMessage() {
         Toast.makeText(mContext, "Failed to load more recipes. Please check your Internet connection.", Toast.LENGTH_SHORT).show();
     }
-
-// --Commented out by Inspection START (7/2/2020 12:42 PM):
-//    // Sets all variables related to logged status and user info
-//    private void getInfoFromSharedPrefs() {
-//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-//        logged = sharedPreferences.getBoolean("logged", false);
-//        userId = sharedPreferences.getString("userId", null);
-//    }
-// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
 }

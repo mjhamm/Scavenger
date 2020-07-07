@@ -409,19 +409,26 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 }
             });
 
+            // More Button Click Listener
             more_button.setOnClickListener(v -> {
+                // get adapter position of the item in the list
                 int position = getAdapterPosition();
+                // get the recipe item at the position
                 recipeItem = mRecipeItems.get(position);
 
+                // create a menu with options (copy, share, report)
                 PopupMenu popupMenu = new PopupMenu(mContext, more_button);
                 popupMenu.setOnMenuItemClickListener(item -> {
                     switch (item.getItemId()) {
+                        // copy the recipe url
                         case R.id.fav_menu_copy:
                             copyRecipe();
                             return true;
+                            // share the recipe through text, email, facebook
                         case R.id.fav_menu_share:
                             shareRecipe();
                             return true;
+                            // report the recipe for profanity, nudity, or website
                         case R.id.fav_menu_report:
                             reportRecipe();
                             return true;
@@ -433,36 +440,51 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 popupMenu.show();
             });
 
+            // Branding for Edamam Click Listener
+            // shows information about how we get our data
             edamamBranding.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
                     .setTitle(Constants.nutritionInformationTitle)
                     .setMessage(Constants.nutritionInformation)
                     .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
                     .show());
 
+            // Nutrition Card Click Listener
+            // shows information about how we get our data
             mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
                     .setTitle(Constants.nutritionInformationTitle)
                     .setMessage(Constants.nutritionInformation)
                     .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
                     .show());
 
+            // Servings Click Listener
+            // shows information about how we get our data
             recipeServings.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
                     .setTitle(Constants.nutritionInformationTitle)
                     .setMessage(Constants.nutritionInformation)
                     .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
                     .show());
 
+            // View Recipe Click Listener
             mViewRecipe.setOnClickListener(v -> {
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
                 boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
+                // checks if the default browser is on or off
+                // if in app browsing is on
+                // open in custom chrome tabs
                 if (inAppBrowsingOn) {
                     openURLInChromeCustomTab(mContext, retrieveRecipeUrl());
+                    // else - open in the users default browser
                 } else {
                     openInDefaultBrowser(mContext, retrieveRecipeUrl());
                 }
             });
         }
 
+        // Method for reporting a recipe
         private void reportRecipe() {
+            // check if the device is connected to the internet
+            // if not connected
+            // display alert box alerting the user they are not connected
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(mContext)
                         .setTitle(Constants.noInternetTitle)
@@ -470,6 +492,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
+                // if connected
+                // display an alert asking the user what they want to report the recipe for
             } else {
                 final CharSequence[] listItems = {"Inappropriate Image","Inappropriate Website","Profanity"};
                 new MaterialAlertDialogBuilder(mContext)
@@ -496,6 +520,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                         .create()
                                         .show();
                             } else {
+                                // sends the report to firebase
                                 sendReportToDb(reportReason, recipeItem);
                             }
                         })
@@ -507,33 +532,43 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
 
         // Send report to Server under reports with Phone information
         private void sendReportToDb(String reason, RecipeItem item) {
-            Calendar calendar = Calendar.getInstance();
 
+            // Get the current date and time
+            Calendar calendar = Calendar.getInstance();
             int month = calendar.get(Calendar.MONTH);
             int day = calendar.get(Calendar.DAY_OF_MONTH);
             int year = calendar.get(Calendar.YEAR);
-
             calendar.clear();
             calendar.set(year, month, day);
-
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
             String strDate = simpleDateFormat.format(calendar.getTime());
 
+            // Create a timestamp for Firebase object
             Date now = new Date();
             Timestamp timestamp = new Timestamp(now);
 
+            // Create a Hashmap that holds the information for the report
             Map<String, Object> reportInfo = new HashMap<>();
 
-            CollectionReference reportingReference = db.collection("RecipeReports").document(strDate).collection("reports");
+            // reference to the path of the Reports document on Firebase
+            CollectionReference reportingReference = db.collection(Constants.firebaseRecipeReports).document(strDate).collection(Constants.firebaseReports);
 
+            // Reason
             reportInfo.put("Recipe Report Reason", reason);
+            // Timestamp
             reportInfo.put("Timestamp", timestamp);
+            // Recipe Image URL
             reportInfo.put("Recipe Image", item.getmImageUrl());
+            // Recipe Name
             reportInfo.put("Recipe Name", item.getmRecipeName());
-            reportInfo.put("Recipe Source", item.getmSourceName());
+            // Recipe Source
+            reportInfo.put("RecipeSource", item.getmSourceName());
+            // Recipe Ingredients
             reportInfo.put("Recipe Ingredients", item.getmIngredients());
+            // Recipe URL
             reportInfo.put("Recipe URL", item.getmRecipeURL());
 
+            // Send the data to Firebase
             reportingReference.document().set(reportInfo)
                     .addOnSuccessListener(aVoid -> {
                         Log.d(TAG,"Report saved to Firebase");
@@ -545,6 +580,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                     });
         }
 
+        // Copies the Recipe URL
         private void copyRecipe() {
             ClipboardManager clipboardManager = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clipData = ClipData.newPlainText("Copy URL", retrieveRecipeUrl());
@@ -554,26 +590,33 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             toastMessage("Recipe URL copied");
         }
 
+        // share your recipe
         private void shareRecipe() {
             Intent sharingIntent = new Intent(Intent.ACTION_SEND);
             sharingIntent.setType("text/plain");
+            // Subject
             String shareSub = "Check out this awesome recipe from Scavenger!";
+            // Body
             String shareBody = retrieveRecipeName() + "\n" + "Made By: " + retrieveRecipeSource() + "\n\n" + retrieveRecipeUrl();
             sharingIntent.putExtra(Intent.EXTRA_SUBJECT,shareSub);
             sharingIntent.putExtra(Intent.EXTRA_TEXT,shareBody);
             mContext.startActivity(Intent.createChooser(sharingIntent, "Share Using:"));
         }
 
+
+        // Gets the Recipe Item's URL
         private String retrieveRecipeUrl() {
             recipeItem = mRecipeItems.get(getAdapterPosition());
             return recipeItem.getmRecipeURL();
         }
 
+        // Gets the Recipe Item's Source
         private String retrieveRecipeSource() {
             recipeItem = mRecipeItems.get(getAdapterPosition());
             return recipeItem.getmSourceName();
         }
 
+        // Gets the Recipe Item's Name
         private String retrieveRecipeName() {
             recipeItem = mRecipeItems.get(getAdapterPosition());
             return recipeItem.getmRecipeName();

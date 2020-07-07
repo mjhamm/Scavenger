@@ -49,8 +49,6 @@ public class LikesFragment extends Fragment {
     private static final String ITEM_PROTEIN = "protein";
     private static final String ITEM_ATT = "attributes";
     private static final String ITEM_INGR = "ingredients";
-    private static final String USER_COLLECTION = "Users";
-    private static final String USER_LIKES = "Likes";
     //-----------------------------------------------------------------------------
 
     // Shared Preferences Data
@@ -85,11 +83,11 @@ public class LikesFragment extends Fragment {
     // Liked Items
     private final ArrayList<RecipeItem> recipeItemList = new ArrayList<>();
 
-    public LikesFragment() {
-        // Required empty public constructor
-    }
+    // Required empty public constructor
+    public LikesFragment() {}
 
     // Create a new instance of Likes Fragment
+    // Add a bundle if you want to pass through variables on creation
     static LikesFragment newInstance() {
         return new LikesFragment();
     }
@@ -104,8 +102,11 @@ public class LikesFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
+        // checks the Shared Preferences
         getInfoFromSharedPrefs();
 
+        // if connected to the internet and logged in
+        // retrieve the Likes of the User from Firebase
         if (con.connectedToInternet() && logged) {
             retrieveLikesFromFirebase();
         }
@@ -115,6 +116,8 @@ public class LikesFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
+        // check if the SearchView isn't empty
+        // if not, empty the query so the filter doesn't get messed up
         if (!mLikeSearch.getQuery().toString().isEmpty()) {
             mLikeSearch.setQuery("", false);
         }
@@ -123,17 +126,12 @@ public class LikesFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        // TODO: Check to see if this can be done once and only changed if info from sharedPrefs changes
+        // when the Like fragment becomes unhidden
+        // check shared preferences and go through all other options to see if the fragment should retrieve the Likes of the user from Firebase
         if (!hidden) {
             getInfoFromSharedPrefs();
             checkingStatus();
         }
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -275,57 +273,59 @@ public class LikesFragment extends Fragment {
                         }
                         mLikesRecyclerView.setAdapter(null);
                     } else {
-                        recipeItemList.clear();
-                        if (adapter != null) {
-                            adapter.clearList();
-                        }
-                        likes_message.setVisibility(View.GONE);
-                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            RecipeItem item = new RecipeItem();
-                            itemId = documentSnapshot.getString(ITEM_ID);
-                            name = documentSnapshot.getString(ITEM_NAME);
-                            source = documentSnapshot.getString(ITEM_SOURCE);
-                            image = documentSnapshot.getString(ITEM_IMAGE);
-                            url = documentSnapshot.getString(ITEM_URL);
-                            if (documentSnapshot.getLong(ITEM_YIELD) != null) {
-                                serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
+                        if (queryDocumentSnapshots.size() != numLikes) {
+                            recipeItemList.clear();
+                            if (adapter != null) {
+                                adapter.clearList();
                             }
-                            if (documentSnapshot.getLong(ITEM_CAL) != null) {
-                                cals = documentSnapshot.getLong(ITEM_CAL).intValue();
-                            }
-                            if (documentSnapshot.getLong(ITEM_CARB) != null) {
-                                carb = documentSnapshot.getLong(ITEM_CARB).intValue();
-                            }
-                            if (documentSnapshot.getLong(ITEM_FAT) != null) {
-                                fat = documentSnapshot.getLong(ITEM_FAT).intValue();
-                            }
-                            if (documentSnapshot.getLong(ITEM_PROTEIN) != null) {
-                                protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
-                            }
-                            if (documentSnapshot.exists()) {
-                                att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
-                                ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
-                            }
-                            item.setItemId(itemId);
-                            item.setmRecipeName(name);
-                            item.setmSourceName(source);
-                            item.setmImageUrl(image);
-                            item.setmRecipeURL(url);
-                            item.setmServings(serves);
-                            item.setmCalories(cals);
-                            item.setmCarbs(carb);
-                            item.setmFat(fat);
-                            item.setmProtein(protein);
-                            item.setmRecipeAttributes(att);
-                            item.setmIngredients(ingr);
+                            likes_message.setVisibility(View.GONE);
+                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                RecipeItem item = new RecipeItem();
+                                itemId = documentSnapshot.getString(ITEM_ID);
+                                name = documentSnapshot.getString(ITEM_NAME);
+                                source = documentSnapshot.getString(ITEM_SOURCE);
+                                image = documentSnapshot.getString(ITEM_IMAGE);
+                                url = documentSnapshot.getString(ITEM_URL);
+                                if (documentSnapshot.getLong(ITEM_YIELD) != null) {
+                                    serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
+                                }
+                                if (documentSnapshot.getLong(ITEM_CAL) != null) {
+                                    cals = documentSnapshot.getLong(ITEM_CAL).intValue();
+                                }
+                                if (documentSnapshot.getLong(ITEM_CARB) != null) {
+                                    carb = documentSnapshot.getLong(ITEM_CARB).intValue();
+                                }
+                                if (documentSnapshot.getLong(ITEM_FAT) != null) {
+                                    fat = documentSnapshot.getLong(ITEM_FAT).intValue();
+                                }
+                                if (documentSnapshot.getLong(ITEM_PROTEIN) != null) {
+                                    protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
+                                }
+                                if (documentSnapshot.exists()) {
+                                    att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
+                                    ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
+                                }
+                                item.setItemId(itemId);
+                                item.setmRecipeName(name);
+                                item.setmSourceName(source);
+                                item.setmImageUrl(image);
+                                item.setmRecipeURL(url);
+                                item.setmServings(serves);
+                                item.setmCalories(cals);
+                                item.setmCarbs(carb);
+                                item.setmFat(fat);
+                                item.setmProtein(protein);
+                                item.setmRecipeAttributes(att);
+                                item.setmIngredients(ingr);
 
-                            if (!recipeItemList.contains(item)) {
-                                recipeItemList.add(item);
+                                if (!recipeItemList.contains(item)) {
+                                    recipeItemList.add(item);
+                                }
                             }
+                            adapter = new LikesAdapter(mContext, recipeItemList, userId);
+                            mLikesRecyclerView.setVisibility(View.VISIBLE);
+                            mLikesRecyclerView.setAdapter(adapter);
                         }
-                        adapter = new LikesAdapter(mContext, recipeItemList, userId);
-                        mLikesRecyclerView.setVisibility(View.VISIBLE);
-                        mLikesRecyclerView.setAdapter(adapter);
                     }
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putInt("actualNumLikes", queryDocumentSnapshots.size());

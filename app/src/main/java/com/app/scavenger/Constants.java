@@ -9,6 +9,8 @@ public class Constants {
     // Common String Information
     public static final String firebaseUser = "Users";
     public static final String firebaseLikes = "Likes";
+    public static final String firebaseRecipeReports = "RecipeReports";
+    public static final String firebaseReports = "reports";
     public static final String firebaseTime = "Timestamp";
 
     // Internet Error Messages

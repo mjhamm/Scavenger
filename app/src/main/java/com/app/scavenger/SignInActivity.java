@@ -266,7 +266,7 @@ public class SignInActivity extends AppCompatActivity {
             Map<String, Object> data = new HashMap<>();
             data.put("name", user.getDisplayName());
             data.put("email", user.getEmail());
-            db.collection("Users").document(user.getUid()).set(data);
+            db.collection(Constants.firebaseUser).document(user.getUid()).set(data);
         }
     }
 
