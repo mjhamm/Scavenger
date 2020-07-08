@@ -99,12 +99,12 @@ public class LikesFragment extends Fragment {
         mContext = getContext();
     }
 
-    @Override
+    /*@Override
     public void onStart() {
         super.onStart();
 
         // checks the Shared Preferences
-        /*getInfoFromSharedPrefs();
+        *//*getInfoFromSharedPrefs();
 
         numLikes = 0;
 
@@ -112,8 +112,8 @@ public class LikesFragment extends Fragment {
         // retrieve the Likes of the User from Firebase
         if (con.connectedToInternet() && logged) {
             retrieveLikesFromFirebase();
-        }*/
-    }
+        }*//*
+    }*/
 
     @Override
     public void onResume() {
@@ -151,7 +151,6 @@ public class LikesFragment extends Fragment {
 
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        //editor = sharedPreferences.edit();
         con = new ConnectionDetector(mContext);
         adapter = new LikesAdapter(mContext, recipeItemList, userId);
 
@@ -249,16 +248,14 @@ public class LikesFragment extends Fragment {
                 likes_message.setText(R.string.not_signed_in);
             } else {
                 if (recipeItemList.isEmpty() || numLikes != actualNumLikes) {
-                    retryConButton.setVisibility(View.GONE);
-                    likes_message.setVisibility(View.GONE);
 
                     shimmer.setVisibility(View.VISIBLE);
                     shimmer.startShimmer();
 
-                    retrieveLikesFromFirebase();
+                    retryConButton.setVisibility(View.GONE);
+                    likes_message.setVisibility(View.GONE);
 
-                    shimmer.stopShimmer();
-                    shimmer.setVisibility(View.GONE);
+                    retrieveLikesFromFirebase();
                 }
             }
         }
@@ -333,9 +330,11 @@ public class LikesFragment extends Fragment {
                     editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
                     editor.putInt("numLikes", queryDocumentSnapshots.size());
                     editor.apply(); // apply
-                    Log.d(TAG, "Recipe List Size: " + recipeItemList.size());
 
                     numLikes = actualNumLikes;
+
+                    shimmer.stopShimmer();
+                    shimmer.setVisibility(View.GONE);
                 });
     }
 
