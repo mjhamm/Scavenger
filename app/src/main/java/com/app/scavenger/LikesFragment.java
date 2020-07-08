@@ -70,6 +70,7 @@ public class LikesFragment extends Fragment {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
     private ConnectionDetector con;
     private String itemId, name, source, image, url;
     private int serves = 0;
@@ -103,13 +104,15 @@ public class LikesFragment extends Fragment {
         super.onStart();
 
         // checks the Shared Preferences
-        getInfoFromSharedPrefs();
+        /*getInfoFromSharedPrefs();
+
+        numLikes = 0;
 
         // if connected to the internet and logged in
         // retrieve the Likes of the User from Firebase
         if (con.connectedToInternet() && logged) {
             retrieveLikesFromFirebase();
-        }
+        }*/
     }
 
     @Override
@@ -148,6 +151,7 @@ public class LikesFragment extends Fragment {
 
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        //editor = sharedPreferences.edit();
         con = new ConnectionDetector(mContext);
         adapter = new LikesAdapter(mContext, recipeItemList, userId);
 
@@ -273,7 +277,6 @@ public class LikesFragment extends Fragment {
                         }
                         mLikesRecyclerView.setAdapter(null);
                     } else {
-                        if (queryDocumentSnapshots.size() != numLikes) {
                             recipeItemList.clear();
                             if (adapter != null) {
                                 adapter.clearList();
@@ -325,20 +328,19 @@ public class LikesFragment extends Fragment {
                             adapter = new LikesAdapter(mContext, recipeItemList, userId);
                             mLikesRecyclerView.setVisibility(View.VISIBLE);
                             mLikesRecyclerView.setAdapter(adapter);
-                        }
                     }
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor = sharedPreferences.edit();
                     editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
                     editor.putInt("numLikes", queryDocumentSnapshots.size());
                     editor.apply(); // apply
                     Log.d(TAG, "Recipe List Size: " + recipeItemList.size());
+
+                    numLikes = actualNumLikes;
                 });
-        numLikes = actualNumLikes;
     }
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", "");
         numLikes = sharedPreferences.getInt("numLikes", 0);

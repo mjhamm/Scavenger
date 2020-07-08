@@ -167,7 +167,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
             myDb.clearData();
 
-            // CHECK: Let search fragment know to reload on sign out
             refresh();
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -176,13 +175,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             editor.putString("email", null);
             editor.putString("userId", null);
             editor.putBoolean("refresh", false);
+            editor.putInt("actualNumLikes", 0);
+            editor.putInt("numLikes", 0);
             editor.apply();
-        boolean logged = false;
-        String name = null;
-        String email = null;
-        // Shared Preferences Data
-        //-----------------------------------------
-        String userId = null;
+
             toastMessage();
             signOut.setVisible(false);
             signIn.setVisible(true);

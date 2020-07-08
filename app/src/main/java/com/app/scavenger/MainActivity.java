@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     private final FragmentManager fm = getSupportFragmentManager();
     private Fragment active = null;
     private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
 
     private boolean doubleBackToExitPressedOnce;
     private final Handler mHandler = new Handler();
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
         DatabaseHelper myDb = DatabaseHelper.getInstance(this);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        editor = sharedPreferences.edit();
 
         myDb.removeAllItemsFromRemoveTable();
 
@@ -89,8 +91,6 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                             SearchFragment searchFragment = (SearchFragment) fragment1;
                             searchFragment.refreshFrag();
                         }
-                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putBoolean("refresh", false);
                         editor.apply();
                     }
@@ -123,12 +123,14 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("actualNumLikes", 0);
+        editor.putInt("numLikes", 0);
         editor.apply();
 
         if (mHandler != null) { mHandler.removeCallbacks(mRunnable); }
+
+        super.onDestroy();
     }
 
     @Override
