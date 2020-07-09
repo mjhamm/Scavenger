@@ -65,7 +65,7 @@
         android:elevation="6dp"
         android:translationZ="6dp"
         android:fontFamily="@font/roboto_condensed_regular"
-        android:maxLines="1"
+        android:maxLines="2"
         android:textColor="@android:color/white"
         android:textSize="20sp"
         android:textStyle="bold"/>
@@ -143,12 +143,12 @@
 
             <ImageView
                 android:id="@+id/edamam_branding"
-                android:layout_width="wrap_content"
+                android:layout_width="100dp"
                 android:layout_height="wrap_content"
-                android:src="@drawable/badge"
+                android:src="@drawable/edamam_badge"
                 android:elevation="6dp"
                 android:translationZ="6dp"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="8dp"
                 android:contentDescription="@string/edamam_branding"
                 android:layout_alignBottom="@id/nutritionFacts_main_title"
                 android:layout_alignTop="@id/nutritionFacts_main_title"

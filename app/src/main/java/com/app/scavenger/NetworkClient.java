@@ -4,6 +4,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
+// class that handles the API networking for Edamam using RetroFit
 class NetworkClient {
 
     private static final String BASE_URL = "https://api.edamam.com/";

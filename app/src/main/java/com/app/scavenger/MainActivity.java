@@ -19,17 +19,18 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, LikesAdapter.UpdateSearch, LikesAdapter.CheckZeroLikes, SearchAdapter.UpdateQuery {
 
+    // Fragment variables
     private Fragment fragment1 = null;
     private Fragment fragment2 = null;
     private Fragment fragment3 = null;
-    private final FragmentManager fm = getSupportFragmentManager();
     private Fragment active = null;
-    private SharedPreferences sharedPreferences;
-    private SharedPreferences.Editor editor;
+    private final FragmentManager fm = getSupportFragmentManager();
 
+    // boolean for exit application
     private boolean doubleBackToExitPressedOnce;
-    private final Handler mHandler = new Handler();
 
+    // Handler and runnable to check if the user has double hit back to exit the application
+    private final Handler mHandler = new Handler();
     private final Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
@@ -39,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
     // Shared Preferences Data
     //-----------------------------------------
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
     private boolean match = false;
     private boolean refresh = false;
     //------------------------------------------
@@ -46,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     @Override
     protected void onStart() {
         super.onStart();
+        // Get information from shared preferences
         getInfoFromSharedPrefs();
     }
 
@@ -61,53 +65,87 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
         setContentView(R.layout.activity_main);
 
+        // create instance of Database
         DatabaseHelper myDb = DatabaseHelper.getInstance(this);
+        // create instance of shared preferences and editor
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         editor = sharedPreferences.edit();
 
+        // remove all the items in the Database inside of the Removed Items table
+        // this makes it so new recipes that are and aren't liked are not confused
         myDb.removeAllItemsFromRemoveTable();
 
         BottomNavigationView mNavView = findViewById(R.id.bottom_nav_view);
 
+        // check if the user has the match ingredients option on or not
+        // if they do -
+        // alert them and let them know
         if (match) {
             toastMessage("Match ingredients is On");
         }
 
+        // create new instances of each fragment
         fragment1 = SearchFragment.newInstance();
         fragment2 = LikesFragment.newInstance();
         fragment3 = new SettingsFragment();
+        // setup the search fragment as the active fragment
         active = fragment1;
 
+        // add each fragment to the activity
+        // this will make showing and hiding inside of the fragment container easier when the user
+        // clicks on the corresponding item in the bottom nav bar
         fm.beginTransaction().add(R.id.fragment_container, fragment3, "3").hide(fragment3).commit();
         fm.beginTransaction().add(R.id.fragment_container, fragment2, "2").hide(fragment2).commit();
         fm.beginTransaction().add(R.id.fragment_container, fragment1, "1").commit();
 
+        // select listener for the bottom nav view
         mNavView.setOnNavigationItemSelectedListener(item -> {
+            // checks each menu item's id name
             switch(item.getItemId()) {
+                // search fragment
                 case R.id.action_search:
+                    // get the search preferences when the user selects the search fragment
                     getInfoFromSharedPrefs();
+                    // if refresh is true -
+                    // if the fragment isn't null -
+                    // refresh the search fragment
+                    // this will make it so when the user signs in and signs out, it doesn't have
+                    // a problem telling whether or not the user has things liked or not
                     if (refresh) {
                         if (fragment1 != null) {
                             SearchFragment searchFragment = (SearchFragment) fragment1;
                             searchFragment.refreshFrag();
                         }
+                        // put false in the refresh shared preference
                         editor.putBoolean("refresh", false);
                         editor.apply();
                     }
+                    // hide whatever fragment is active and show the search fragment
                     fm.beginTransaction().hide(active).show(fragment1).commit();
+                    // checks the match ingredients option
+                    // if it is on -
+                    // alert the user
                     if (match) {
                         toastMessage("Match Ingredients is On");
                     }
+                    // make the active fragment Search Fragment
                     active = fragment1;
                     return true;
+                    // Likes Fragment
                 case R.id.action_likes:
+                    // if the active fragment isn't the Likes Fragment
+                    // hide the active fragment and show the Likes Fragment
                     if (active != fragment2) {
                         fm.beginTransaction().hide(active).show(fragment2).commit();
                     }
+                    // Make the Likes fragment the active fragment
                     active = fragment2;
                     return true;
+                    // Settings fragment
                 case R.id.action_settings:
+                    // hide the active fragment and show the Settings Fragment
                     fm.beginTransaction().hide(active).show(fragment3).commit();
+                    // make the Settings fragment the active fragment
                     active = fragment3;
                     return true;
             }
@@ -121,25 +159,36 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         refresh = sharedPreferences.getBoolean("refresh", false);
     }
 
+    // cleans up any open callbacks as well as updates likes information inside of shared preferences
     @Override
     protected void onDestroy() {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+        // updates the shared preferences "numLikes" and "actualNumLikes" to 0
+        // this is so on startup of the app again, this information is then found again to be up-to-date
+        // and not out of sync with the info stored on the device
         editor.putInt("actualNumLikes", 0);
         editor.putInt("numLikes", 0);
         editor.apply();
 
+        // checks to see if the handler is not null and removes the runnable callback
         if (mHandler != null) { mHandler.removeCallbacks(mRunnable); }
 
         super.onDestroy();
     }
 
+    // On Back Pressed
     @Override
     public void onBackPressed() {
+        // checks if boolean for doubleBack is true -
+        // if true -
+        // close the application like normal
         if (doubleBackToExitPressedOnce) {
             super.onBackPressed();
             return;
         }
 
+        // if it was false -
+        // set it to true, alert the user and if the user presses back again within 2 seconds
+        // close the app
         this.doubleBackToExitPressedOnce = true;
         toastMessage("Back one more time to exit");
 

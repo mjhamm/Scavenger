@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.Preference;
@@ -44,7 +45,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         signOut = findPreference("signOut");
         help = findPreference("help");
         about = findPreference("about");
-        //SwitchPreference matchIngr = findPreference("match");
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
@@ -52,7 +52,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        //getInfoFromSharedPrefs();
 
         if (sharedPreferences.getBoolean("logged", false)) {
             signOut.setVisible(true);
@@ -154,7 +153,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     private void signOut() {
-            //refresh();
             mAuth.signOut();
 
             if (GoogleSignIn.getLastSignedInAccount(mContext) != null) {
@@ -179,7 +177,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             editor.putInt("numLikes", 0);
             editor.apply();
 
-            toastMessage();
+        Toast.makeText(mContext, "Successfully signed out", Toast.LENGTH_SHORT).show();
             signOut.setVisible(false);
             signIn.setVisible(true);
     }
@@ -202,7 +200,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     @Override
     public void onResume() {
         super.onResume();
-        //getInfoFromSharedPrefs();
 
         if (sharedPreferences.getBoolean("logged", false)) {
             signOut.setVisible(true);
@@ -242,21 +239,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     public void onDestroy() {
         super.onDestroy();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-    }
-
-    //method for creating a Toast
-    private void toastMessage() {
-// --Commented out by Inspection START (7/2/2020 12:42 PM):
-//        Toast.makeText(mContext, "Successfully signed out", Toast.LENGTH_SHORT).show();
-//    }
-//
-//    // Sets all variables related to logged status and user info
-//    private void getInfoFromSharedPrefs() {
-//        logged = sharedPreferences.getBoolean("logged", false);
-//        userId = sharedPreferences.getString("userId", null);
-//        email = sharedPreferences.getString("email", null);
-//        name = sharedPreferences.getString("name", null);
-// --Commented out by Inspection STOP (7/2/2020 12:42 PM)
     }
 
     public void refresh() {

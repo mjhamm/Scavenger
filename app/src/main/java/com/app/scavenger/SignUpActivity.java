@@ -125,11 +125,11 @@ public class SignUpActivity extends AppCompatActivity {
                 .requestEmail()
                 .build();
         mGoogleSignUpClient = GoogleSignIn.getClient(this, gso);
-
-        callbackManager = CallbackManager.Factory.create();
+        MaterialButton googleSignUpButton = findViewById(R.id.google_signUp);
 
         // Facebook Info
-        MaterialButton mFacebookSignIn = findViewById(R.id.facebook_signIn);
+        MaterialButton facebookSignUpButton = findViewById(R.id.facebook_signUp);
+        callbackManager = CallbackManager.Factory.create();
 
         fullName = findViewById(R.id.fullName_editText);
         emailEdit = findViewById(R.id.email_editText);
@@ -139,8 +139,7 @@ public class SignUpActivity extends AppCompatActivity {
         termsTextView = findViewById(R.id.signUpTerms);
         termsCheck = findViewById(R.id.signUpCheckbox);
         signUpButton = findViewById(R.id.signUp_Button);
-        MaterialButton facebookSignUpButton = findViewById(R.id.facebook_signUp);
-        MaterialButton googleSignUpButton = findViewById(R.id.google_signUp);
+
         progressHolder = findViewById(R.id.signUp_progressHolder);
         ImageButton backButton = findViewById(R.id.signUp_back);
 

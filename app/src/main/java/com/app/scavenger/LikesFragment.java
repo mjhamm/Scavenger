@@ -32,9 +32,7 @@ import java.util.ArrayList;
 
 public class LikesFragment extends Fragment {
 
-    private static final String TAG = "Likes Fragment: ";
-    private LikesAdapter adapter;
-    private Context mContext;
+    //private static final String TAG = "Likes Fragment: ";
 
     // Firestore Labels ----------------------------------------------------------
     private static final String ITEM_ID = "itemId";
@@ -65,10 +63,11 @@ public class LikesFragment extends Fragment {
     private TextView likes_message;
     private MaterialButton retryConButton;
     private ShimmerFrameLayout shimmer;
-    private LinearLayoutManager mLayoutManager;
     //--------------------------------------------
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private LikesAdapter adapter;
+    private Context mContext;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
     private ConnectionDetector con;
@@ -98,22 +97,6 @@ public class LikesFragment extends Fragment {
         super.onCreate(savedInstanceState);
         mContext = getContext();
     }
-
-    /*@Override
-    public void onStart() {
-        super.onStart();
-
-        // checks the Shared Preferences
-        *//*getInfoFromSharedPrefs();
-
-        numLikes = 0;
-
-        // if connected to the internet and logged in
-        // retrieve the Likes of the User from Firebase
-        if (con.connectedToInternet() && logged) {
-            retrieveLikesFromFirebase();
-        }*//*
-    }*/
 
     @Override
     public void onResume() {
@@ -147,13 +130,14 @@ public class LikesFragment extends Fragment {
         retryConButton = view.findViewById(R.id.fav_retry_con_button);
         shimmer = view.findViewById(R.id.likes_shimmerLayout);
         mLikesRecyclerView = view.findViewById(R.id.likes_recyclerView);
-        mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
 
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         con = new ConnectionDetector(mContext);
         adapter = new LikesAdapter(mContext, recipeItemList, userId);
 
+        // sets the width of the SearchView to be the width of the screen
         mLikeSearch.setMaxWidth(Integer.MAX_VALUE);
 
         mLikesRecyclerView.setHasFixedSize(true);
@@ -165,8 +149,11 @@ public class LikesFragment extends Fragment {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
 
+        // when there is no internet connection the button allows user to attempt to reconnect and see their likes
         retryConButton.setOnClickListener(v -> retryConnection());
 
+        // SearchView that takes the input and filters the data inside of the recipe item list
+        // returns items that have the input data in it
         mLikeSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -175,8 +162,10 @@ public class LikesFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
+                // only runs when logged in and adapter isn't null
                 if (logged) {
                     if (adapter != null) {
+                        // filter the text through the adapter and return items
                         adapter.getFilter().filter(newText);
                     }
 
@@ -185,6 +174,7 @@ public class LikesFragment extends Fragment {
             }
         });
 
+        // clears the focus of the SearchView when the recyclerview is touched
         mLikesRecyclerView.setOnTouchListener((v, event) -> {
             mLikeSearch.clearFocus();
             return false;
@@ -193,6 +183,9 @@ public class LikesFragment extends Fragment {
         return view;
     }
 
+    // checks if the recipe item list is empty
+    // if empty - set the adapter to null
+    // show the likes message and let the user know they have no likes
     public void hasZeroLikes() {
         if (logged) {
             if (adapter != null) {
@@ -203,6 +196,7 @@ public class LikesFragment extends Fragment {
         }
     }
 
+    // clears the text inside the SearchView and clears it's focus
     public void clearFilter() {
         if (mLikeSearch != null) {
             mLikeSearch.setQuery("", false);
@@ -211,12 +205,20 @@ public class LikesFragment extends Fragment {
 
     }
 
+    // method that refreshes the fragment when the user is reconnected to the internet
     private void retryConnection() {
         checkingStatus();
     }
 
+    // checks if the user is connected to the internet
     private void checkingStatus() {
+        // if not connected to the internet
         if (!con.connectedToInternet()) {
+            // if user isn't logged in -
+            // clear the list
+            // clear the adapter
+            // nullify the recyclerview adapter
+            // let user know they aren't signed in
             if (!logged) {
                 recipeItemList.clear();
                 if (adapter != null) {
@@ -225,19 +227,35 @@ public class LikesFragment extends Fragment {
                 mLikesRecyclerView.setAdapter(null);
                 likes_message.setVisibility(View.VISIBLE);
                 likes_message.setText(R.string.not_signed_in);
+                // if user is logged in -
+                // check if the list is empty
+                // if true -
+                // let the user know they aren't connected to the internet and their likes will be loaded when they reconnect
             } else {
                 if (recipeItemList.isEmpty()) {
                     likes_message.setText(R.string.likes_not_connected);
                     likes_message.setVisibility(View.VISIBLE);
                     retryConButton.setVisibility(View.VISIBLE);
+                    // if false -
+                    // show the list in the recyclerview
+                    // they won't be able to remove likes when they aren't connected to the internet
+                    // should be allowed to use offline if list isn't empty
                 } else {
                     likes_message.setVisibility(View.GONE);
                     retryConButton.setVisibility(View.GONE);
                 }
             }
+            // if connected to the internet
         } else {
+            // always hide retry connection button
+            // clear text of likes message
             retryConButton.setVisibility(View.GONE);
             likes_message.setText("");
+            // if not logged in -
+            // clear list
+            // clear adapter
+            // nullify recyclerview adapter
+            // let user know they are not signed in
             if (!logged) {
                 recipeItemList.clear();
                 if (adapter != null) {
@@ -246,13 +264,17 @@ public class LikesFragment extends Fragment {
                 mLikesRecyclerView.setAdapter(null);
                 likes_message.setVisibility(View.VISIBLE);
                 likes_message.setText(R.string.not_signed_in);
+            // if logged in -
+                // if the list is empty and the numLikes from search is != actualNumLikes the user has from Firebase
+                // start shimmerview
+                // hide likes message
+                // retrieve users likes from Firebase
             } else {
                 if (recipeItemList.isEmpty() || numLikes != actualNumLikes) {
 
                     shimmer.setVisibility(View.VISIBLE);
                     shimmer.startShimmer();
 
-                    retryConButton.setVisibility(View.GONE);
                     likes_message.setVisibility(View.GONE);
 
                     retrieveLikesFromFirebase();
@@ -261,10 +283,17 @@ public class LikesFragment extends Fragment {
         }
     }
 
+    // Retrieves the user's likes from Firebase using their userId
     private void retrieveLikesFromFirebase() {
+        // reference to the users likes
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
+        // orders those likes by timestamp in descending order to show the most recent like on top
         likesRef.orderBy(Constants.firebaseTime, Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    // if the number of likes the user has is 0
+                    // display likes message and let user know they have 0 likes
+                    // clear list and adapter
+                    // this is so no possible overlap of another user can come through
                     if (queryDocumentSnapshots.isEmpty()) {
                         likes_message.setVisibility(View.VISIBLE);
                         likes_message.setText(R.string.no_likes);
@@ -273,13 +302,19 @@ public class LikesFragment extends Fragment {
                             adapter.clearList();
                         }
                         mLikesRecyclerView.setAdapter(null);
+                        // if the number of likes the user has is not 0
+                        // clear the list and adapter
+                        // hide likes message
                     } else {
                             recipeItemList.clear();
                             if (adapter != null) {
                                 adapter.clearList();
                             }
                             likes_message.setVisibility(View.GONE);
+
+                            // go through each item in the snapshot from Firebase and set a new recipe item with the information
                             for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                // creates a new recipe item for each item in the snapshot
                                 RecipeItem item = new RecipeItem();
                                 itemId = documentSnapshot.getString(ITEM_ID);
                                 name = documentSnapshot.getString(ITEM_NAME);
@@ -318,21 +353,31 @@ public class LikesFragment extends Fragment {
                                 item.setmRecipeAttributes(att);
                                 item.setmIngredients(ingr);
 
+                                // in order to make sure there is no doubles of items in the user's list
+                                // if the list already contains the exact item, it won't add it
                                 if (!recipeItemList.contains(item)) {
                                     recipeItemList.add(item);
                                 }
                             }
+                            // create the adapter with the new list
                             adapter = new LikesAdapter(mContext, recipeItemList, userId);
+                            // show the recyclerview and set adapter
                             mLikesRecyclerView.setVisibility(View.VISIBLE);
                             mLikesRecyclerView.setAdapter(adapter);
                     }
+
+                    // edit sharedPreferences
+                    // add actualNumLikes and numLikes as the number of items received from the snapshot
                     editor = sharedPreferences.edit();
                     editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
                     editor.putInt("numLikes", queryDocumentSnapshots.size());
                     editor.apply(); // apply
 
+                    // set numLikes = actualNumLikes
+                    // this is so the code to run retrieve doesn't constantly run
                     numLikes = actualNumLikes;
 
+                    // stop shimmerview
                     shimmer.stopShimmer();
                     shimmer.setVisibility(View.GONE);
                 });
