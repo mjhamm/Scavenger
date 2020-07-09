@@ -278,7 +278,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         private final TextView recipeFat;
         private final TextView recipeProtein;
         private final TextView recipeAttributes;
-        private final ImageView recipeImage, edamamBranding;
+        private final ImageView recipeImage;
         private RecipeItem item;
         private final ImageButton more_button;
         private final ImageButton like_button;
@@ -294,7 +294,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             like_button = itemView.findViewById(R.id.recipe_like);
             more_button = itemView.findViewById(R.id.more_button);
             CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
-            edamamBranding = itemView.findViewById(R.id.edamam_branding);
+            ImageView edamamBranding = itemView.findViewById(R.id.edamam_branding);
             mBottomCard = itemView.findViewById(R.id.bottomCardView);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
@@ -416,7 +416,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     .show());
 
             mViewRecipe.setOnClickListener(v -> {
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
                 boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
                 if (inAppBrowsingOn) {
                     openURLInChromeCustomTab(mContext, retrieveRecipeUrl());

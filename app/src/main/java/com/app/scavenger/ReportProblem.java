@@ -34,7 +34,6 @@ public class ReportProblem extends AppCompatActivity {
     private EditText reportEditText;
     private TextView submit_buttonText;
     private ConnectionDetector con;
-    // --Commented out by Inspection (7/2/2020 12:42 PM):private String reportText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,20 +57,23 @@ public class ReportProblem extends AppCompatActivity {
 
         con = new ConnectionDetector(this);
 
+        // button that closes the activity on click
         backButton.setOnClickListener(v -> finish());
 
         // Checks for whether or not the edit text is empty or not and changes the appearance of the submit button
         reportEditText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // if the text inside is not empty
+                // enable the submit button
                 if (s.toString().trim().length() != 0) {
                     submit_buttonText.setEnabled(true);
                     submit_buttonText.setTextColor(Color.BLUE);
+                    // if the text is empty
+                    // disable the submit button
                 } else {
                     submit_buttonText.setEnabled(false);
                     submit_buttonText.setTextColor(Color.GRAY);
@@ -80,13 +82,13 @@ public class ReportProblem extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-
-            }
+            public void afterTextChanged(Editable s) {}
         });
 
         // Submits Report
         submit_buttonText.setOnClickListener(v -> {
+            // if user is not connected to the internet
+            // alert the user
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle(Constants.noInternetTitle)
@@ -94,8 +96,8 @@ public class ReportProblem extends AppCompatActivity {
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .create()
                         .show();
-            } else {
                 // Send problem to server
+            } else {
                 sendReport();
                 finish();
             }

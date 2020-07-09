@@ -22,6 +22,7 @@ public class OpenSourceLibraries extends AppCompatActivity {
 
         ImageButton backButton = findViewById(R.id.osl_back);
 
+        // button that closes the activity on press
         backButton.setOnClickListener(v -> finish());
     }
 }

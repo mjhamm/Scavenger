@@ -105,8 +105,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
         recipeItemArrayList = new ArrayList<>();
         itemIds = new ArrayList<>();
-
-        con = new ConnectionDetector(mContext);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -129,51 +127,13 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         mSearchView.setMaxWidth(Integer.MAX_VALUE);
+
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
-
-        noRecipesFound = "We Couldn't Find Any Recipes :(\n" + "Sorry About That!";
-
-        mProgressBar.setVisibility(View.GONE);
-
-        Random random_start_number = new Random();
-
-        //creates a random number and sets the welcome text to a specific text based on number
-        int start_message_int = random_start_number.nextInt(5);
-
-        switch (start_message_int) {
-            case 0:
-                startup_message.setText(R.string.startup_message_1);
-                break;
-            case 1:
-                startup_message.setText(R.string.startup_message_2);
-                break;
-            case 2:
-                startup_message.setText(R.string.startup_message_3);
-                break;
-            case 3:
-                startup_message.setText(R.string.startup_message_4);
-                break;
-            case 4:
-                startup_message.setText(R.string.startup_message_5);
-                break;
-        }
-
-
-        mSearchRecyclerView.setHasFixedSize(true);
-        mSearchRecyclerView.setItemViewCacheSize(10);
         mSearchRecyclerView.setLayoutManager(mLayoutManager);
 
-        RecyclerView.ItemAnimator animator = mSearchRecyclerView.getItemAnimator();
-        if (animator instanceof SimpleItemAnimator) {
-            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
-        }
+        con = new ConnectionDetector(mContext);
 
-        mSearchRecyclerView.setOnTouchListener((v, event) -> {
-            mSearchView.clearFocus();
-            return false;
-        });
-
-        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar, mContext) {
+        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar, con) {
 
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -193,11 +153,31 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
         mSearchRecyclerView.addOnScrollListener(scrollListener);
 
+        noRecipesFound = "We Couldn't Find Any Recipes.\n" + "Sorry About That!";
+
+        mProgressBar.setVisibility(View.GONE);
+
+        mSearchRecyclerView.setHasFixedSize(true);
+        mSearchRecyclerView.setItemViewCacheSize(10);
+
+        RecyclerView.ItemAnimator animator = mSearchRecyclerView.getItemAnimator();
+        if (animator instanceof SimpleItemAnimator) {
+            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+        }
+
+        mSearchRecyclerView.setOnTouchListener((v, event) -> {
+            if (mSearchView != null) {
+                mSearchView.clearFocus();
+            }
+            return false;
+        });
+
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 mSearchView.clearFocus();
                 mSearchView.setImeOptions(6);
+
                 if (adapter != null) {
                     adapter = null;
                 }
@@ -211,6 +191,8 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                 return false;
             }
         });
+
+        setMessageToRandom();
 
         return view;
     }
@@ -252,17 +234,49 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         }
     }
 
-    public void refreshFrag() {
-        try {
-            // Reload the fragment
-            mSearchView.setQuery("", false);
-            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-            mSearchRecyclerView.setAdapter(null);
-            ft.detach(this).attach(this).commit();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            Log.d(TAG, e.toString());
+    private void setMessageToRandom() {
+        // Random number
+        Random random_start_number = new Random();
+
+        //creates a random number 0-4 and sets the welcome text to a specific text based on number
+        int start_message_int = random_start_number.nextInt(5);
+
+        switch (start_message_int) {
+            case 0:
+                startup_message.setText(R.string.startup_message_1);
+                break;
+            case 1:
+                startup_message.setText(R.string.startup_message_2);
+                break;
+            case 2:
+                startup_message.setText(R.string.startup_message_3);
+                break;
+            case 3:
+                startup_message.setText(R.string.startup_message_4);
+                break;
+            case 4:
+                startup_message.setText(R.string.startup_message_5);
+                break;
         }
+    }
+
+    // Refreshes the Search Fragment when a user signs in or signs up
+    public void refreshFrag() {
+        // sets query to empty
+        mSearchView.setQuery("", false);
+        // clears recipe list and adapter
+        recipeItemArrayList.clear();
+        if (adapter != null) {
+            adapter = null;
+        }
+        // sets recyclerview adapter to null
+        mSearchRecyclerView.setAdapter(null);
+        // shows startup message
+        startup_message.setVisibility(View.VISIBLE);
+        // hides match message if being shown
+        matchMessage.setVisibility(View.GONE);
+        // sets startup message to random message
+        setMessageToRandom();
     }
 
     private int checkNumIngredients() {
@@ -325,14 +339,13 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                             writeRecycler(result);
                             if (adapter == null) {
                                 adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
-                                mSearchRecyclerView.setAdapter(adapter);
                             }
+                            mSearchRecyclerView.setAdapter(adapter);
                             if (recipeItemArrayList.isEmpty()) {
                                 startup_message.setVisibility(View.VISIBLE);
                                 startup_message.setText(noRecipesFound);
                                 matchMessage.setVisibility(View.VISIBLE);
                             }
-
                             numItemsBefore = recipeItemArrayList.size();
                             shimmer.stopShimmer();
                             shimmer.setVisibility(View.GONE);
@@ -437,8 +450,12 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     }
 
     boolean isLastVisible() {
+        int numItems = 0;
         int pos = mLayoutManager.findLastCompletelyVisibleItemPosition();
-        int numItems =  adapter.getItemCount();
+        if (adapter != null) {
+            numItems =  adapter.getItemCount();
+        }
+
         return (pos >= numItems - 1);
     }
 

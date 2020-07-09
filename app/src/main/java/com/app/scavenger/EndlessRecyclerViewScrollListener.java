@@ -1,6 +1,5 @@
 package com.app.scavenger;
 
-import android.content.Context;
 import android.os.Handler;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -24,14 +23,13 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
 
     private final ProgressBar mProgressBar;
     private final ConnectionDetector con;
-    //private final int toIngr;
     
     final RecyclerView.LayoutManager mLayoutManager;
 
-    public EndlessRecyclerViewScrollListener(LinearLayoutManager layoutManager, ProgressBar progressBar, Context context) {
+    public EndlessRecyclerViewScrollListener(LinearLayoutManager layoutManager, ProgressBar progressBar, ConnectionDetector con) {
         this.mLayoutManager = layoutManager;
         this.mProgressBar = progressBar;
-        con = new ConnectionDetector(context);
+        this.con = con;
     }
 
 //    public EndlessRecyclerViewScrollListener(GridLayoutManager layoutManager) {
