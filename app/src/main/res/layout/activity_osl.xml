@@ -39,6 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/osl_toolbar"
+            android:overScrollMode="never"
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true">
 

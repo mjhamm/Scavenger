@@ -77,13 +77,6 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
         BottomNavigationView mNavView = findViewById(R.id.bottom_nav_view);
 
-        // check if the user has the match ingredients option on or not
-        // if they do -
-        // alert them and let them know
-        if (match) {
-            toastMessage("Match ingredients is On");
-        }
-
         // create new instances of each fragment
         fragment1 = SearchFragment.newInstance();
         fragment2 = LikesFragment.newInstance();

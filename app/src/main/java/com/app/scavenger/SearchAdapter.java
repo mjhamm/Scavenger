@@ -48,6 +48,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     public static final String TAG = "SEARCH_ADAPTER";
 
+    // Recipe Item View Type
     private final int VIEW_TYPE_ITEM = 0;
 
     // Firestore Labels ----------------------------------------------------------
@@ -65,25 +66,33 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private static final String ITEM_INGR = "ingredients";
     //-----------------------------------------------------------------------------
 
-    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private String userId;
-    private boolean logged;
-    private UpdateQuery mUpdateQuery;
-    private ConnectionDetector con;
-    private SharedPreferences sharedPreferences;
+    // variables for constructor
     private final ArrayList<Object> mRecipeItems;
     private final Context mContext;
+    private String userId;
+    private boolean logged;
+
+    // Database
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private DatabaseHelper myDb;
+
+    private ConnectionDetector con;
+    private SharedPreferences sharedPreferences;
+
+    // Callbacks
+    private UpdateQuery mUpdateQuery;
 
     interface UpdateQuery {
         void updateQuery();
     }
 
+    // Constructor
     SearchAdapter(Context context, ArrayList<Object> recipeItems , String userId, boolean logged) {
         this.userId = userId;
         this.mContext = context;
         this.mRecipeItems = recipeItems;
         this.logged = logged;
+        // sets stableIds to true for better scrolling
         this.setHasStableIds(true);
     }
 
@@ -91,9 +100,12 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        // get information from shared preferences
         getInfoFromSharedPrefs();
+        // get instance of Database
         myDb = DatabaseHelper.getInstance(mContext);
         con = new ConnectionDetector(mContext);
+        // set up callback
         mUpdateQuery = (UpdateQuery) mContext;
 
         View cardItemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_card_item, parent, false);
@@ -102,6 +114,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        // populate information for the Recipe Item
         populateItemData((ItemViewHolder) holder, position);
     }
 
@@ -111,11 +124,14 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return mRecipeItems == null ? 0 : mRecipeItems.size();
     }
 
+    // get the itemview type
+    // has the chance to return multiple view types (ads)
     @Override
     public int getItemViewType(int position) {
         return VIEW_TYPE_ITEM;
     }
 
+    // returns the hashcode of the item
     @Override
     public long getItemId(int position) {
         if (mRecipeItems.get(position) != null) {
@@ -132,38 +148,62 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     // Code for adding Recipe Items inside of the Search Recyclerview
     private void populateItemData(ItemViewHolder holder, int position) {
+        // gets the item at the list's position
         RecipeItem item = (RecipeItem) mRecipeItems.get(position);
 
+        // boolean for whether or not the item at the list position is expanded or not
         boolean isExpanded = ((RecipeItem) mRecipeItems.get(position)).isClicked();
+        // if the isExpanded boolean is true -
+        // Show the bottom card
+        // else
+        // hide the bottom card
         holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
 
+        // checks if the item at the list position is liked or not
+        // if it is liked
         if (item.isLiked()) {
+            // set the image to filled
             holder.like_button.setTag(position);
             holder.like_button.setImageResource(R.mipmap.heart_icon_filled);
+            // if item isn't liked
         } else {
+            // set the image to outline
             holder.like_button.setTag(position);
             holder.like_button.setImageResource(R.mipmap.heart_icon_outline_white);
         }
 
+        // if the item's image url isn't null
+        // use picasso to load the image into the imageview
         if (item.getmImageUrl() != null) {
             Picasso.get()
                     .load(item.getmImageUrl())
                     .fit()
                     .config(Bitmap.Config.RGB_565)
                     .into(holder.recipeImage);
+            // show nothing if the url is null
+            // prevents crashes if the url is null
         } else {
             holder.recipeImage.setImageDrawable(null);
         }
 
+        // sets the info for each item
+        // name
         holder.recipeName.setText(item.getmRecipeName());
+        // source
         holder.recipeSource.setText(item.getmSourceName());
+        // servings
         holder.recipeServings.setText(String.format(mContext.getString(R.string.servings_text),item.getmServings()));
-
+        // calories
         holder.recipeCalories.setText(String.valueOf(item.getmCalories()));
+        // carbs
         holder.recipeCarbs.setText(String.valueOf(item.getmCarbs()));
+        // fat
         holder.recipeFat.setText(String.valueOf(item.getmFat()));
+        // protein
         holder.recipeProtein.setText(String.valueOf(item.getmProtein()));
+        // ingredients
         holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
+        // attributes
         holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
     }
 
@@ -173,13 +213,18 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         userId = sharedPreferences.getString("userId", null);
     }
 
+    // saves an item to Firebase
     private void saveDataToFirebase(String itemId, String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
+        // create new hashmap that holds the item information that will be saved to Firebase
         Map<String, Object> itemMap = new HashMap<>();
+        // reference to the likes on Firebase
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
 
+        // creates a new date and timestamp to be used to order the likes
         Date now = new Date();
         Timestamp timestamp = new Timestamp(now);
 
+        // each part of the recipe item to be put into the hashmap for Firebase
         itemMap.put(ITEM_ID, itemId);
         itemMap.put(ITEM_NAME, name);
         itemMap.put(ITEM_SOURCE, source);
@@ -194,12 +239,17 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         itemMap.put(ITEM_INGR, ingredients);
         itemMap.put("Timestamp", timestamp);
 
+        // sets the data in Firebase
         likesRef.document(itemId).set(itemMap)
                 .addOnSuccessListener(aVoid -> {
+                    // clears the query inside of the likes fragment and clears focus
+                    // this avoids problems with potential filtering of the likes fragment when adding a new item to likes
                     updateQuery();
                     Log.d("LOG: ", "Item saved to Firebase");
+                    // add 1 to numLikes
                     int likes = sharedPreferences.getInt("numLikes", 0);
                     likes += 1;
+                    // add it to numLikes
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putInt("numLikes", likes);
                     editor.apply();
@@ -210,16 +260,23 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 });
     }
 
+    // removes an item from Firebase
     private void removeDataFromFirebase(RecipeItem recipeItem) {
+        // reference for likes in firebase
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
 
+        // deletes the document in firebase with the matching item id
         likesRef.document(recipeItem.getItemId())
                 .delete()
                 .addOnSuccessListener(aVoid -> {
+                    // updates the query inside of likes fragment
+                    // this avoids problems with potential filtering of the likes fragment when removing an item from likes
                     updateQuery();
                     Log.d(TAG, "Successfully removed Like");
+                    // remove 1 from numLikes
                     int likes = sharedPreferences.getInt("numLikes", 0);
                     likes -= 1;
+                    // add it to numLikes
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putInt("numLikes", likes);
                     editor.apply();
@@ -227,6 +284,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 .addOnFailureListener(e -> Log.d(TAG, "Failed to remove Like" + e.toString()));
     }
 
+    // open the recipe in the App Browser
     private static void openInDefaultBrowser(Context context, String url) {
         try {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -237,6 +295,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
+    // opens the recipe in the users default browser
     private static void openURLInChromeCustomTab(Context context, String url) {
         try {
             CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
@@ -257,6 +316,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
     }
 
+    // callback for clear the query in the likes fragment
     public void updateQuery() {
         mUpdateQuery.updateQuery();
     }
@@ -269,21 +329,18 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     // ITEM VIEW HOLDER
     public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private final TextView recipeName;
-        private final TextView recipeSource;
-        private final TextView recipeServings;
-        private final TextView recipeCalories;
-        private final TextView recipeIngredients;
-        private final TextView recipeCarbs;
-        private final TextView recipeFat;
-        private final TextView recipeProtein;
-        private final TextView recipeAttributes;
+        // views inside recipeCardItem
+        private final TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
         private final ImageView recipeImage;
-        private RecipeItem item;
-        private final ImageButton more_button;
-        private final ImageButton like_button;
+        private final ImageButton more_button, like_button;
         private final CardView mBottomCard;
+
+        // recipe item
+        private RecipeItem item;
+
+        // reason for report from user
         private String reportReason = null;
+        // variable that checks whether or not the like button has been clicked in the last 1 second
         private long mLastClickTime = 0;
 
         ItemViewHolder( @NonNull View itemView) {
@@ -305,6 +362,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             CardView mNutritionCard = itemView.findViewById(R.id.facts_cardView);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
 
+            // sets the click listener for the recipe item
             itemView.setOnClickListener(this);
 
             // Recipe Image Click Listener
@@ -319,12 +377,17 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 notifyItemChanged(position);
             });
 
-            //Creates animation for Love button - Animation to grow and shrink heart when clicked - light
+            // Creates animation for Like button - Animation to grow and shrink heart when clicked
             Animation scaleAnimation_Like = new ScaleAnimation(0, 1, 0, 1, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+            // sets the amount of time that the animation will play for
             scaleAnimation_Like.setDuration(500);
+            // create an overshoot interpolator to give like animation growing look
             OvershootInterpolator overshootInterpolator_Like = new OvershootInterpolator(4);
             scaleAnimation_Like.setInterpolator(overshootInterpolator_Like);
+
+            // like button on click listener
             like_button.setOnClickListener(v -> {
+                // checks whether or not the device is connected to the internet
                 if (!con.connectedToInternet()) {
                     new MaterialAlertDialogBuilder(mContext)
                             .setTitle(Constants.noInternetTitle)

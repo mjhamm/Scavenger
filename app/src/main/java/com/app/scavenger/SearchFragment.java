@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,6 +52,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private SearchAdapter adapter;
     private Context mContext;
     private SearchView mSearchView;
+    private ImageView mSearch_mainBG;
     private ProgressBar mProgressBar;
     private TextView startup_message, matchMessage;
     private ShimmerFrameLayout shimmer;
@@ -66,7 +68,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private boolean numItemsChanged = true;
     private SharedPreferences sharedPreferences;
     private EndlessRecyclerViewScrollListener scrollListener;
-    private String noRecipesFound;
 
     private DatabaseHelper myDb;
 
@@ -123,10 +124,21 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         shimmer = view.findViewById(R.id.search_shimmerLayout);
         matchMessage = view.findViewById(R.id.match_message);
         mProgressBar = view.findViewById(R.id.main_progressBar);
+        mSearch_mainBG = view.findViewById(R.id.search_mainBG);
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
+
+        // sets BG Image to default
+        changeBGImage(0);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         mSearchView.setMaxWidth(Integer.MAX_VALUE);
+
+        // check if the user has the match ingredients option on or not
+        // if they do -
+        // alert them and let them know
+        if (sharedPreferences.getBoolean("match", false)) {
+            toastMessage("Match ingredients is On");
+        }
 
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         mSearchRecyclerView.setLayoutManager(mLayoutManager);
@@ -139,7 +151,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (isLastVisible() && !con.connectedToInternet()) {
-                    toastMessage();
+                    toastMessage("Failed to load more recipes. Please check your Internet connection.");
                 }
             }
 
@@ -152,8 +164,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         };
 
         mSearchRecyclerView.addOnScrollListener(scrollListener);
-
-        noRecipesFound = "We Couldn't Find Any Recipes.\n" + "Sorry About That!";
 
         mProgressBar.setVisibility(View.GONE);
 
@@ -195,6 +205,45 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         setMessageToRandom();
 
         return view;
+    }
+
+    private void changeBGImage(int image) {
+
+        mSearch_mainBG.setVisibility(View.VISIBLE);
+        switch (image) {
+            // default
+            case 0:
+                matchMessage.setVisibility(View.GONE);
+                startup_message.setVisibility(View.VISIBLE);
+                setMessageToRandom();
+                mSearch_mainBG.setImageDrawable(getResources().getDrawable(R.drawable.default_bg_screen));
+                break;
+                // no recipes
+            case 1:
+                matchMessage.setVisibility(View.VISIBLE);
+                startup_message.setVisibility(View.VISIBLE);
+                startup_message.setText(R.string.no_recipes_found);
+                mSearch_mainBG.setImageDrawable(getResources().getDrawable(R.drawable.no_recipes_bg_screen));
+                break;
+                // no internet
+            case 2:
+                matchMessage.setVisibility(View.GONE);
+                startup_message.setVisibility(View.VISIBLE);
+                startup_message.setText(R.string.no_internet_connection);
+                mSearch_mainBG.setImageDrawable(getResources().getDrawable(R.drawable.no_internet_bg_screen));
+                break;
+        }
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+
+        if (!hidden) {
+            if (!con.connectedToInternet() && recipeItemArrayList.isEmpty()) {
+                changeBGImage(2);
+            }
+        }
     }
 
     @Override
@@ -262,21 +311,21 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
     // Refreshes the Search Fragment when a user signs in or signs up
     public void refreshFrag() {
-        // sets query to empty
-        mSearchView.setQuery("", false);
-        // clears recipe list and adapter
-        recipeItemArrayList.clear();
-        if (adapter != null) {
-            adapter = null;
+        if (!recipeItemArrayList.isEmpty()) {
+            // sets query to empty
+            mSearchView.setQuery("", false);
+            // clears recipe list and adapter
+            recipeItemArrayList.clear();
+            if (adapter != null) {
+                adapter = null;
+            }
+            // sets recyclerview adapter to null
+            mSearchRecyclerView.setAdapter(null);
+            // set BG Image to default
+            changeBGImage(0);
+            // sets startup message to random message
+            setMessageToRandom();
         }
-        // sets recyclerview adapter to null
-        mSearchRecyclerView.setAdapter(null);
-        // shows startup message
-        startup_message.setVisibility(View.VISIBLE);
-        // hides match message if being shown
-        matchMessage.setVisibility(View.GONE);
-        // sets startup message to random message
-        setMessageToRandom();
     }
 
     private int checkNumIngredients() {
@@ -298,12 +347,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
     private void getIngredients() {
         if (!con.connectedToInternet()) {
-            new MaterialAlertDialogBuilder(mContext)
-                    .setTitle(Constants.noInternetTitle)
-                    .setMessage(Constants.noInternetMessage)
-                    .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                    .create()
-                    .show();
+            changeBGImage(2);
         } else {
             if (logged) {
                 itemsFromDB();
@@ -317,6 +361,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             scrollListener.resetState();
             startup_message.setVisibility(View.GONE);
             matchMessage.setVisibility(View.GONE);
+            mSearch_mainBG.setVisibility(View.GONE);
             shimmer.setVisibility(View.VISIBLE);
             shimmer.startShimmer();
             Retrofit retrofit = NetworkClient.getRetrofitClient();
@@ -342,8 +387,8 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                             }
                             mSearchRecyclerView.setAdapter(adapter);
                             if (recipeItemArrayList.isEmpty()) {
-                                startup_message.setVisibility(View.VISIBLE);
-                                startup_message.setText(noRecipesFound);
+                                // sets BG Image to No Recipes Image
+                                changeBGImage(1);
                                 matchMessage.setVisibility(View.VISIBLE);
                             }
                             numItemsBefore = recipeItemArrayList.size();
@@ -508,7 +553,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     }
 
     //method for creating a Toast
-    private void toastMessage() {
-        Toast.makeText(mContext, "Failed to load more recipes. Please check your Internet connection.", Toast.LENGTH_SHORT).show();
+    private void toastMessage(String message) {
+        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
     }
 }
