@@ -53,8 +53,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.opencensus.internal.Utils;
-
 public class SignInActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 101;

@@ -81,12 +81,6 @@ public class SignUpActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private CallbackManager callbackManager;
 
-    // Shared Preferences Data
-    //-----------------------------------------
-//    private boolean logged = false;
-//    private String userId = null;
-    //------------------------------------------
-
     @Override
     protected void onStart() {
         super.onStart();

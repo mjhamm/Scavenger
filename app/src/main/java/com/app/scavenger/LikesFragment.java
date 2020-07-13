@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -63,6 +64,7 @@ public class LikesFragment extends Fragment {
     private TextView likes_message;
     private MaterialButton retryConButton;
     private ShimmerFrameLayout shimmer;
+    private ImageView mLikes_BG;
     //--------------------------------------------
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -129,6 +131,7 @@ public class LikesFragment extends Fragment {
         mLikeSearch = view.findViewById(R.id.likes_searchView);
         retryConButton = view.findViewById(R.id.fav_retry_con_button);
         shimmer = view.findViewById(R.id.likes_shimmerLayout);
+        mLikes_BG = view.findViewById(R.id.likes_mainBG);
         mLikesRecyclerView = view.findViewById(R.id.likes_recyclerView);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
 
@@ -191,8 +194,35 @@ public class LikesFragment extends Fragment {
             if (adapter != null) {
                 adapter = null;
             }
-            likes_message.setVisibility(View.VISIBLE);
-            likes_message.setText(R.string.no_likes);
+            changeBGImage(1);
+        }
+    }
+
+    private void changeBGImage(int image) {
+
+        mLikes_BG.setVisibility(View.VISIBLE);
+        switch (image) {
+            // default
+            case 0:
+                likes_message.setVisibility(View.VISIBLE);
+                likes_message.setText(R.string.not_signed_in);
+                retryConButton.setVisibility(View.GONE);
+                mLikes_BG.setImageDrawable(getResources().getDrawable(R.drawable.not_signedin_bg_screen));
+                break;
+            // no likes
+            case 1:
+                likes_message.setVisibility(View.VISIBLE);
+                likes_message.setText(R.string.no_likes);
+                retryConButton.setVisibility(View.GONE);
+                mLikes_BG.setImageDrawable(getResources().getDrawable(R.drawable.no_likes_bg_screen));
+                break;
+            // no internet
+            case 2:
+                likes_message.setVisibility(View.VISIBLE);
+                likes_message.setText(R.string.likes_not_connected);
+                retryConButton.setVisibility(View.VISIBLE);
+                mLikes_BG.setImageDrawable(getResources().getDrawable(R.drawable.no_internet_bg_screen));
+                break;
         }
     }
 
@@ -225,17 +255,14 @@ public class LikesFragment extends Fragment {
                     adapter.clearList();
                 }
                 mLikesRecyclerView.setAdapter(null);
-                likes_message.setVisibility(View.VISIBLE);
-                likes_message.setText(R.string.not_signed_in);
+                changeBGImage(0);
                 // if user is logged in -
                 // check if the list is empty
                 // if true -
                 // let the user know they aren't connected to the internet and their likes will be loaded when they reconnect
             } else {
                 if (recipeItemList.isEmpty()) {
-                    likes_message.setText(R.string.likes_not_connected);
-                    likes_message.setVisibility(View.VISIBLE);
-                    retryConButton.setVisibility(View.VISIBLE);
+                    changeBGImage(2);
                     // if false -
                     // show the list in the recyclerview
                     // they won't be able to remove likes when they aren't connected to the internet
@@ -249,7 +276,6 @@ public class LikesFragment extends Fragment {
         } else {
             // always hide retry connection button
             // clear text of likes message
-            retryConButton.setVisibility(View.GONE);
             likes_message.setText("");
             // if not logged in -
             // clear list
@@ -262,8 +288,7 @@ public class LikesFragment extends Fragment {
                     adapter.clearList();
                 }
                 mLikesRecyclerView.setAdapter(null);
-                likes_message.setVisibility(View.VISIBLE);
-                likes_message.setText(R.string.not_signed_in);
+                changeBGImage(0);
             // if logged in -
                 // if the list is empty and the numLikes from search is != actualNumLikes the user has from Firebase
                 // start shimmerview
@@ -272,10 +297,12 @@ public class LikesFragment extends Fragment {
             } else {
                 if (recipeItemList.isEmpty() || numLikes != actualNumLikes) {
 
+                    mLikes_BG.setVisibility(View.GONE);
                     shimmer.setVisibility(View.VISIBLE);
                     shimmer.startShimmer();
 
                     likes_message.setVisibility(View.GONE);
+                    retryConButton.setVisibility(View.GONE);
 
                     retrieveLikesFromFirebase();
                 }
@@ -295,8 +322,7 @@ public class LikesFragment extends Fragment {
                     // clear list and adapter
                     // this is so no possible overlap of another user can come through
                     if (queryDocumentSnapshots.isEmpty()) {
-                        likes_message.setVisibility(View.VISIBLE);
-                        likes_message.setText(R.string.no_likes);
+                        changeBGImage(1);
                         recipeItemList.clear();
                         if (adapter != null) {
                             adapter.clearList();
@@ -311,6 +337,7 @@ public class LikesFragment extends Fragment {
                                 adapter.clearList();
                             }
                             likes_message.setVisibility(View.GONE);
+                            mLikes_BG.setVisibility(View.GONE);
 
                             // go through each item in the snapshot from Firebase and set a new recipe item with the information
                             for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {

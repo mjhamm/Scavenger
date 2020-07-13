@@ -127,8 +127,17 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         mSearch_mainBG = view.findViewById(R.id.search_mainBG);
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
 
+        mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
+        mSearchRecyclerView.setLayoutManager(mLayoutManager);
+
+        con = new ConnectionDetector(mContext);
+
         // sets BG Image to default
-        changeBGImage(0);
+        if (!con.connectedToInternet()) {
+            changeBGImage(2);
+        } else {
+            changeBGImage(0);
+        }
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         mSearchView.setMaxWidth(Integer.MAX_VALUE);
@@ -140,17 +149,12 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             toastMessage("Match ingredients is On");
         }
 
-        mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
-        mSearchRecyclerView.setLayoutManager(mLayoutManager);
-
-        con = new ConnectionDetector(mContext);
-
         scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar, con) {
 
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                if (isLastVisible() && !con.connectedToInternet()) {
+                if (!recipeItemArrayList.isEmpty() && isLastVisible() && !con.connectedToInternet()) {
                     toastMessage("Failed to load more recipes. Please check your Internet connection.");
                 }
             }
@@ -242,6 +246,9 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         if (!hidden) {
             if (!con.connectedToInternet() && recipeItemArrayList.isEmpty()) {
                 changeBGImage(2);
+            }
+            else if (con.connectedToInternet()) {
+                changeBGImage(0);
             }
         }
     }
