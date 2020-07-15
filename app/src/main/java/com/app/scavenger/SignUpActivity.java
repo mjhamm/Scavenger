@@ -84,8 +84,11 @@ public class SignUpActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        // Gets the Firebase user
         FirebaseUser currentUser = mAuth.getCurrentUser();
+        // checks if the user isn't null
         if (currentUser != null) {
+            // update the shared preferences with the user's userId
             updatePrefInfo(currentUser.getUid());
         }
     }
@@ -102,14 +105,15 @@ public class SignUpActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_sign_up);
 
-        //mContext = SignUpActivity.this;
+        // get the instance of Firebase
         mAuth = FirebaseAuth.getInstance();
 
+        // get the instance of shared preferences
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        //getInfoFromSharedPrefs();
-
+        // instance of Database
         myDb = DatabaseHelper.getInstance(this);
+        // connection detector for whether or not the device is connected to the internet
         con = new ConnectionDetector(this);
 
         // Google information
@@ -125,6 +129,7 @@ public class SignUpActivity extends AppCompatActivity {
         MaterialButton facebookSignUpButton = findViewById(R.id.facebook_signUp);
         callbackManager = CallbackManager.Factory.create();
 
+
         fullName = findViewById(R.id.fullName_editText);
         emailEdit = findViewById(R.id.email_editText);
         passEdit = findViewById(R.id.password_editText);
@@ -137,15 +142,20 @@ public class SignUpActivity extends AppCompatActivity {
         progressHolder = findViewById(R.id.signUp_progressHolder);
         ImageButton backButton = findViewById(R.id.signUp_back);
 
+        // button to finish the activity
         backButton.setOnClickListener(v -> finish());
 
+        // check box for terms
         termsCheck.setOnCheckedChangeListener((buttonView, isChecked) -> checkFieldsForEmpty());
 
+        // set up for terms string
+        // this will allow users to click the privacy policy and terms
         String termsText = "By Signing Up, you agree to Scavenger's Terms & Conditions and Privacy Policy.";
         SpannableString termsSS = new SpannableString(termsText);
 
         ClickableSpan clickableSpanTerms = new ClickableSpan() {
             @Override
+            // send users to Terms & Conditions
             public void onClick(@NonNull View widget) {
                 toastMessage("Terms & Conditions");
             }
@@ -160,6 +170,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         ClickableSpan clickableSpanPrivacy = new ClickableSpan() {
             @Override
+            // send users to Privacy Policy
             public void onClick(@NonNull View widget) {
                 toastMessage("Privacy Policy");
             }

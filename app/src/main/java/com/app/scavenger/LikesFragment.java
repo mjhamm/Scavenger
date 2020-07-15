@@ -79,6 +79,7 @@ public class LikesFragment extends Fragment {
     private int carb = 1;
     private int fat = 1;
     private int protein = 1;
+    private boolean firstLoad = false;
     private ArrayList<String> att = new ArrayList<>();
     private ArrayList<String> ingr = new ArrayList<>();
 
@@ -275,8 +276,10 @@ public class LikesFragment extends Fragment {
             // if connected to the internet
         } else {
             // always hide retry connection button
+            retryConButton.setVisibility(View.GONE);
             // clear text of likes message
-            likes_message.setText("");
+            // CHECK THIS
+            //likes_message.setText("");
             // if not logged in -
             // clear list
             // clear adapter
@@ -289,20 +292,21 @@ public class LikesFragment extends Fragment {
                 }
                 mLikesRecyclerView.setAdapter(null);
                 changeBGImage(0);
-            // if logged in -
+                // if logged in -
                 // if the list is empty and the numLikes from search is != actualNumLikes the user has from Firebase
                 // start shimmerview
                 // hide likes message
                 // retrieve users likes from Firebase
             } else {
-                if (recipeItemList.isEmpty() || numLikes != actualNumLikes) {
-
-                    mLikes_BG.setVisibility(View.GONE);
+                if (!firstLoad) {
                     shimmer.setVisibility(View.VISIBLE);
                     shimmer.startShimmer();
-
-                    likes_message.setVisibility(View.GONE);
-                    retryConButton.setVisibility(View.GONE);
+                }
+                if (recipeItemList.isEmpty()) {
+                    retrieveLikesFromFirebase();
+                } else if (numLikes != actualNumLikes) {
+                    shimmer.setVisibility(View.VISIBLE);
+                    shimmer.startShimmer();
 
                     retrieveLikesFromFirebase();
                 }
@@ -312,6 +316,9 @@ public class LikesFragment extends Fragment {
 
     // Retrieves the user's likes from Firebase using their userId
     private void retrieveLikesFromFirebase() {
+
+        firstLoad = true;
+
         // reference to the users likes
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
         // orders those likes by timestamp in descending order to show the most recent like on top
@@ -332,65 +339,64 @@ public class LikesFragment extends Fragment {
                         // clear the list and adapter
                         // hide likes message
                     } else {
-                            recipeItemList.clear();
-                            if (adapter != null) {
-                                adapter.clearList();
-                            }
-                            likes_message.setVisibility(View.GONE);
-                            mLikes_BG.setVisibility(View.GONE);
+                        recipeItemList.clear();
+                        if (adapter != null) {
+                            adapter.clearList();
+                        }
+                        likes_message.setVisibility(View.GONE);
+                        mLikes_BG.setVisibility(View.GONE);
 
-                            // go through each item in the snapshot from Firebase and set a new recipe item with the information
-                            for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                                // creates a new recipe item for each item in the snapshot
-                                RecipeItem item = new RecipeItem();
-                                itemId = documentSnapshot.getString(ITEM_ID);
-                                name = documentSnapshot.getString(ITEM_NAME);
-                                source = documentSnapshot.getString(ITEM_SOURCE);
-                                image = documentSnapshot.getString(ITEM_IMAGE);
-                                url = documentSnapshot.getString(ITEM_URL);
-                                if (documentSnapshot.getLong(ITEM_YIELD) != null) {
-                                    serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
-                                }
-                                if (documentSnapshot.getLong(ITEM_CAL) != null) {
-                                    cals = documentSnapshot.getLong(ITEM_CAL).intValue();
-                                }
-                                if (documentSnapshot.getLong(ITEM_CARB) != null) {
-                                    carb = documentSnapshot.getLong(ITEM_CARB).intValue();
-                                }
-                                if (documentSnapshot.getLong(ITEM_FAT) != null) {
-                                    fat = documentSnapshot.getLong(ITEM_FAT).intValue();
-                                }
-                                if (documentSnapshot.getLong(ITEM_PROTEIN) != null) {
-                                    protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
-                                }
-                                if (documentSnapshot.exists()) {
-                                    att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
-                                    ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
-                                }
-                                item.setItemId(itemId);
-                                item.setmRecipeName(name);
-                                item.setmSourceName(source);
-                                item.setmImageUrl(image);
-                                item.setmRecipeURL(url);
-                                item.setmServings(serves);
-                                item.setmCalories(cals);
-                                item.setmCarbs(carb);
-                                item.setmFat(fat);
-                                item.setmProtein(protein);
-                                item.setmRecipeAttributes(att);
-                                item.setmIngredients(ingr);
-
-                                // in order to make sure there is no doubles of items in the user's list
-                                // if the list already contains the exact item, it won't add it
-                                if (!recipeItemList.contains(item)) {
-                                    recipeItemList.add(item);
-                                }
+                        // go through each item in the snapshot from Firebase and set a new recipe item with the information
+                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            // creates a new recipe item for each item in the snapshot
+                            RecipeItem item = new RecipeItem();
+                            itemId = documentSnapshot.getString(ITEM_ID);
+                            name = documentSnapshot.getString(ITEM_NAME);
+                            source = documentSnapshot.getString(ITEM_SOURCE);
+                            image = documentSnapshot.getString(ITEM_IMAGE);
+                            url = documentSnapshot.getString(ITEM_URL);
+                            if (documentSnapshot.getLong(ITEM_YIELD) != null) {
+                                serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
                             }
-                            // create the adapter with the new list
-                            adapter = new LikesAdapter(mContext, recipeItemList, userId);
-                            // show the recyclerview and set adapter
-                            mLikesRecyclerView.setVisibility(View.VISIBLE);
-                            mLikesRecyclerView.setAdapter(adapter);
+                            if (documentSnapshot.getLong(ITEM_CAL) != null) {
+                                cals = documentSnapshot.getLong(ITEM_CAL).intValue();
+                            }
+                            if (documentSnapshot.getLong(ITEM_CARB) != null) {
+                                carb = documentSnapshot.getLong(ITEM_CARB).intValue();
+                            }
+                            if (documentSnapshot.getLong(ITEM_FAT) != null) {
+                                fat = documentSnapshot.getLong(ITEM_FAT).intValue();
+                            }
+                            if (documentSnapshot.getLong(ITEM_PROTEIN) != null) {
+                                protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
+                            }
+                            if (documentSnapshot.exists()) {
+                                att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
+                                ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
+                            }
+                            item.setItemId(itemId);
+                            item.setmRecipeName(name);
+                            item.setmSourceName(source);
+                            item.setmImageUrl(image);
+                            item.setmRecipeURL(url);
+                            item.setmServings(serves);
+                            item.setmCalories(cals);
+                            item.setmCarbs(carb);
+                            item.setmFat(fat);
+                            item.setmProtein(protein);
+                            item.setmRecipeAttributes(att);
+                            item.setmIngredients(ingr);
+
+                            // in order to make sure there is no doubles of items in the user's list
+                            // if the list already contains the exact item, it won't add it
+                            if (!recipeItemList.contains(item)) {
+                                recipeItemList.add(item);
+                            }
+                        }
+                        // create the adapter with the new list
+                        adapter = new LikesAdapter(mContext, recipeItemList, userId);
+                        // set adapter
+                        mLikesRecyclerView.setAdapter(adapter);
                     }
 
                     // edit sharedPreferences

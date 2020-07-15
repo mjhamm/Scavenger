@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
 
@@ -19,12 +20,17 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, LikesAdapter.UpdateSearch, LikesAdapter.CheckZeroLikes, SearchAdapter.UpdateQuery {
 
+    //public static final String TAG = "Main Activity";
+
     // Fragment variables
     private Fragment fragment1 = null;
     private Fragment fragment2 = null;
     private Fragment fragment3 = null;
     private Fragment active = null;
     private final FragmentManager fm = getSupportFragmentManager();
+
+    // Reference to Database
+    DatabaseHelper myDb;
 
     // boolean for exit application
     private boolean doubleBackToExitPressedOnce;
@@ -66,14 +72,10 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         setContentView(R.layout.activity_main);
 
         // create instance of Database
-        DatabaseHelper myDb = DatabaseHelper.getInstance(this);
+        myDb = DatabaseHelper.getInstance(this);
         // create instance of shared preferences and editor
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         editor = sharedPreferences.edit();
-
-        // remove all the items in the Database inside of the Removed Items table
-        // this makes it so new recipes that are and aren't liked are not confused
-        myDb.removeAllItemsFromRemoveTable();
 
         BottomNavigationView mNavView = findViewById(R.id.bottom_nav_view);
 
@@ -155,6 +157,10 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     // cleans up any open callbacks as well as updates likes information inside of shared preferences
     @Override
     protected void onDestroy() {
+        // remove all the items in the Database inside of the Removed Items table
+        // this makes it so new recipes that are and aren't liked are not confused
+        myDb.removeAllItemsFromRemoveTable();
+
         // updates the shared preferences "numLikes" and "actualNumLikes" to 0
         // this is so on startup of the app again, this information is then found again to be up-to-date
         // and not out of sync with the info stored on the device

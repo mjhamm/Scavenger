@@ -63,6 +63,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private String queryString = null;
     private FirebaseAuth mAuth;
     private ConnectionDetector con;
+    private boolean doneLoading = false;
     private int numItemsBefore = 0;
     private int numItemsAfter = 0;
     private boolean numItemsChanged = true;
@@ -162,7 +163,8 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                 if (con.connectedToInternet() && numItemsChanged) {
-                    getMoreRecipes();
+                    getMoreAsync();
+                    //getMoreRecipes();
                 }
             }
         };
@@ -197,6 +199,8 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                 }
 
                 getIngredients();
+                callToApi();
+
                 return false;
             }
 
@@ -246,9 +250,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         if (!hidden) {
             if (!con.connectedToInternet() && recipeItemArrayList.isEmpty()) {
                 changeBGImage(2);
-            }
-            else if (con.connectedToInternet()) {
-                changeBGImage(0);
             }
         }
     }
@@ -352,6 +353,54 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         return numIngr;
     }
 
+    private void callToApi() {
+
+        Retrofit retrofit = NetworkClient.getRetrofitClient();
+        ApiService apiService = retrofit.create(ApiService.class);
+
+        fromIngr = 0;
+        toIngr = 10;
+
+        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
+        queryString = getIngredientsSearch();
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(@NotNull Call<String> call, @NotNull Response<String> response) {
+                if (response.isSuccessful()) {
+                    if (response.body() != null) {
+                        String result = response.body();
+
+                        recipeItemArrayList.clear();
+
+                        numItemsChanged = true;
+                        numItemsBefore = 0;
+
+                        writeRecycler(result);
+
+                        if (adapter == null) {
+                            adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
+                        }
+
+                        mSearchRecyclerView.setAdapter(adapter);
+                        if (recipeItemArrayList.isEmpty()) {
+                            // sets BG Image to No Recipes Image
+                            changeBGImage(1);
+                            matchMessage.setVisibility(View.VISIBLE);
+                        }
+                        numItemsBefore = recipeItemArrayList.size();
+                        shimmer.stopShimmer();
+                        shimmer.setVisibility(View.GONE);
+                    } else {
+                        Log.i("onEmptyResponse", "Returned Empty Response");
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull Throwable t) {}
+        });
+    }
+
     private void getIngredients() {
         if (!con.connectedToInternet()) {
             changeBGImage(2);
@@ -371,45 +420,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             mSearch_mainBG.setVisibility(View.GONE);
             shimmer.setVisibility(View.VISIBLE);
             shimmer.startShimmer();
-            Retrofit retrofit = NetworkClient.getRetrofitClient();
-            ApiService apiService = retrofit.create(ApiService.class);
 
-            fromIngr = 0;
-            toIngr = 10;
-
-            Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
-            queryString = getIngredientsSearch();
-            call.enqueue(new Callback<String>() {
-                @Override
-                public void onResponse(@NotNull Call<String> call, @NotNull Response<String> response) {
-                    if (response.isSuccessful()) {
-                        if (response.body() != null) {
-                            String result = response.body();
-                            recipeItemArrayList.clear();
-                            numItemsChanged = true;
-                            numItemsBefore = 0;
-                            writeRecycler(result);
-                            if (adapter == null) {
-                                adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
-                            }
-                            mSearchRecyclerView.setAdapter(adapter);
-                            if (recipeItemArrayList.isEmpty()) {
-                                // sets BG Image to No Recipes Image
-                                changeBGImage(1);
-                                matchMessage.setVisibility(View.VISIBLE);
-                            }
-                            numItemsBefore = recipeItemArrayList.size();
-                            shimmer.stopShimmer();
-                            shimmer.setVisibility(View.GONE);
-                        } else {
-                            Log.i("onEmptyResponse", "Returned Empty Response");
-                        }
-                    }
-                }
-
-                @Override
-                public void onFailure(@NotNull Call call, @NotNull Throwable t) {}
-            });
         }
     }
 
@@ -524,6 +535,15 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     //Gets the input from Searchview and returns it as string
     private String getIngredientsSearch() {
         return mSearchView.getQuery().toString();
+    }
+
+    private void getMoreAsync() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                getMoreRecipes();
+            }
+        }).start();
     }
 
     private void getMoreRecipes() {

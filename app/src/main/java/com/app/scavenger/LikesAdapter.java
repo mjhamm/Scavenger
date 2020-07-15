@@ -360,6 +360,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                 myDb.removeDataFromView(recipeItem.getItemId());
                                 // add the item to the removed table in Database
                                 myDb.addRemovedItem(recipeItem.getItemId());
+
                                 // Let search adapter know that something has changed
                                 update();
 
