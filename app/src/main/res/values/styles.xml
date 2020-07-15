@@ -9,6 +9,11 @@
         <item name="android:windowAnimationStyle">@style/CustomActivityAnimation</item>
     </style>
 
+    <style name="GrayBackground" parent="AppTheme">
+        <item name="android:background">@color/bg_gray</item>
+        <item name="background">@color/bg_gray</item>
+    </style>
+
     <!-- Custom Preference Theme -->
 
     <!-- Reminder Alert Theme -->
