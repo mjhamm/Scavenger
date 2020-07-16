@@ -14,6 +14,7 @@ import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextPaint;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
@@ -456,6 +457,10 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        // this clears TextLine Cache for memory leak
+        // possible bug in the future
+        Utils.clearTextLineCache();
 
         signInTerms.setText("");
         signInTerms.setMovementMethod(null);

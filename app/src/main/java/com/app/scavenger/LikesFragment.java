@@ -251,6 +251,9 @@ public class LikesFragment extends Fragment {
             // nullify the recyclerview adapter
             // let user know they aren't signed in
             if (!logged) {
+                // stop shimmerview
+                shimmer.stopShimmer();
+                shimmer.setVisibility(View.GONE);
                 recipeItemList.clear();
                 if (adapter != null) {
                     adapter.clearList();
@@ -271,6 +274,9 @@ public class LikesFragment extends Fragment {
                 } else {
                     likes_message.setVisibility(View.GONE);
                     retryConButton.setVisibility(View.GONE);
+                    // stop shimmerview
+                    shimmer.stopShimmer();
+                    shimmer.setVisibility(View.GONE);
                 }
             }
             // if connected to the internet

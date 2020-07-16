@@ -6,4 +6,5 @@
     <color name="link_blue">#448AFF</color>
     <color name="dark_gray">#7D7D7D</color>
     <color name="bg_gray">#E3E3E3</color>
+    <color name="splashScreenRed">#ED2024</color>
 </resources>
