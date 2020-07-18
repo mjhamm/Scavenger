@@ -3,7 +3,7 @@
     android:opacity="opaque">
 
     <item android:drawable="@color/splashScreenRed"/>
-    <item android:drawable="@drawable/splash_screen_icon"
+    <item android:drawable="@drawable/ic_scavenger_icon_outline"
         android:gravity="center"/>
 
 </layer-list>

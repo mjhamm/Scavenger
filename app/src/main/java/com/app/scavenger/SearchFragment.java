@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,7 +26,6 @@ import com.facebook.shimmer.ShimmerFrameLayout;
 //import com.google.android.gms.ads.AdLoader;
 //import com.google.android.gms.ads.AdRequest;
 //import com.google.android.gms.ads.formats.UnifiedNativeAd;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import org.jetbrains.annotations.NotNull;
@@ -74,7 +72,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
     // Shared Preferences Data
     //-----------------------------------------
-    private String userId = null;
+    private final String userId = null;
     private boolean logged = false;
     //------------------------------------------
 
@@ -210,7 +208,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             }
         });
 
-        setMessageToRandom();
+        //setMessageToRandom();
 
         return view;
     }
@@ -319,7 +317,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
     // Refreshes the Search Fragment when a user signs in or signs up
     public void refreshFrag() {
-        if (!recipeItemArrayList.isEmpty()) {
             // sets query to empty
             mSearchView.setQuery("", false);
             // clears recipe list and adapter
@@ -333,7 +330,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             changeBGImage(0);
             // sets startup message to random message
             setMessageToRandom();
-        }
     }
 
     private int checkNumIngredients() {
@@ -378,14 +374,14 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                         writeRecycler(result);
 
                         if (adapter == null) {
-                            adapter = new SearchAdapter(mContext, recipeItemArrayList, userId, logged);
+                            adapter = new SearchAdapter(mContext, recipeItemArrayList, logged);
                         }
 
                         mSearchRecyclerView.setAdapter(adapter);
                         if (recipeItemArrayList.isEmpty()) {
                             // sets BG Image to No Recipes Image
                             changeBGImage(1);
-                            matchMessage.setVisibility(View.VISIBLE);
+                            //matchMessage.setVisibility(View.VISIBLE);
                         }
                         numItemsBefore = recipeItemArrayList.size();
                         shimmer.stopShimmer();
@@ -538,12 +534,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     }
 
     private void getMoreAsync() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                getMoreRecipes();
-            }
-        }).start();
+        new Thread(this::getMoreRecipes).start();
     }
 
     private void getMoreRecipes() {

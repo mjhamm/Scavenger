@@ -48,9 +48,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     public static final String TAG = "SEARCH_ADAPTER";
 
-    // Recipe Item View Type
-    private final int VIEW_TYPE_ITEM = 0;
-
     // Firestore Labels ----------------------------------------------------------
     private static final String ITEM_ID = "itemId";
     private static final String ITEM_NAME = "name";
@@ -87,8 +84,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     // Constructor
-    SearchAdapter(Context context, ArrayList<Object> recipeItems , String userId, boolean logged) {
-        this.userId = userId;
+    SearchAdapter(Context context, ArrayList<Object> recipeItems, boolean logged) {
+        //this.userId = userId;
         this.mContext = context;
         this.mRecipeItems = recipeItems;
         this.logged = logged;
@@ -128,7 +125,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     // has the chance to return multiple view types (ads)
     @Override
     public int getItemViewType(int position) {
-        return VIEW_TYPE_ITEM;
+        // Recipe Item View Type
+        return 0;
     }
 
     // returns the hashcode of the item
@@ -164,12 +162,12 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         if (item.isLiked()) {
             // set the image to filled
             holder.like_button.setTag(position);
-            holder.like_button.setImageResource(R.mipmap.heart_icon_filled);
+            holder.like_button.setImageResource(R.drawable.like_filled);
             // if item isn't liked
         } else {
             // set the image to outline
             holder.like_button.setTag(position);
-            holder.like_button.setImageResource(R.mipmap.heart_icon_outline_white);
+            holder.like_button.setImageResource(R.drawable.like_outline);
         }
 
         // if the item's image url isn't null
@@ -406,7 +404,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     if (logged) {
                         v.startAnimation(scaleAnimation_Like);
                         if (item.isLiked()) {
-                            like_button.setImageResource(R.mipmap.heart_icon_outline_white);
+                            like_button.setImageResource(R.drawable.like_outline);
                             item.setLiked(false);
                             try {
                                 removeDataFromFirebase(item);
@@ -415,7 +413,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                                 e.printStackTrace();
                             }
                         } else {
-                            like_button.setImageResource(R.mipmap.heart_icon_filled);
+                            like_button.setImageResource(R.drawable.like_filled);
                             item.setLiked(true);
                             try {
                                 saveDataToFirebase(item.getItemId(), item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),

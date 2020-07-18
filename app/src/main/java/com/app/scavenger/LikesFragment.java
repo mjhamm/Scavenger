@@ -4,14 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
@@ -21,13 +19,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.facebook.shimmer.ShimmerFrameLayout;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
@@ -362,22 +358,29 @@ public class LikesFragment extends Fragment {
                             image = documentSnapshot.getString(ITEM_IMAGE);
                             url = documentSnapshot.getString(ITEM_URL);
                             if (documentSnapshot.getLong(ITEM_YIELD) != null) {
+                                //noinspection ConstantConditions
                                 serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
                             }
                             if (documentSnapshot.getLong(ITEM_CAL) != null) {
+                                //noinspection ConstantConditions
                                 cals = documentSnapshot.getLong(ITEM_CAL).intValue();
                             }
                             if (documentSnapshot.getLong(ITEM_CARB) != null) {
+                                //noinspection ConstantConditions
                                 carb = documentSnapshot.getLong(ITEM_CARB).intValue();
                             }
                             if (documentSnapshot.getLong(ITEM_FAT) != null) {
+                                //noinspection ConstantConditions
                                 fat = documentSnapshot.getLong(ITEM_FAT).intValue();
                             }
                             if (documentSnapshot.getLong(ITEM_PROTEIN) != null) {
+                                //noinspection ConstantConditions
                                 protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
                             }
                             if (documentSnapshot.exists()) {
+                                //noinspection unchecked
                                 att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
+                                //noinspection unchecked
                                 ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
                             }
                             item.setItemId(itemId);

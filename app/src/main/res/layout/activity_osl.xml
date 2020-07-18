@@ -73,7 +73,7 @@
                     android:text="@string/osl_header_detail" />
 
                 <TextView
-                    android:id="@+id/picasso_att"
+                    android:id="@+id/apache_license"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="12dp"
@@ -83,7 +83,7 @@
                     android:layout_alignParentEnd="true"
                     android:background="@drawable/text_bg"
                     android:textColor="@android:color/black"
-                    android:text="@string/picasso_license_info"
+                    android:text="@string/apache_license"
                     android:autoLink="web"
                     android:textColorLink="@color/link_blue"/>
 
@@ -93,7 +93,7 @@
                     android:layout_height="wrap_content"
                     android:padding="12dp"
                     android:layout_marginTop="16dp"
-                    android:layout_below="@id/picasso_att"
+                    android:layout_below="@id/apache_license"
                     android:layout_alignParentStart="true"
                     android:layout_alignParentEnd="true"
                     android:background="@drawable/text_bg"
@@ -103,7 +103,7 @@
                     android:textColorLink="@color/link_blue"/>
 
                 <TextView
-                    android:id="@+id/shimmer_att"
+                    android:id="@+id/picasso_att"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="12dp"
@@ -113,7 +113,7 @@
                     android:layout_alignParentEnd="true"
                     android:background="@drawable/text_bg"
                     android:textColor="@android:color/black"
-                    android:text="@string/shimmer_license"
+                    android:text="@string/picasso_license_info"
                     android:autoLink="web"
                     android:textColorLink="@color/link_blue"/>
 
@@ -123,7 +123,7 @@
                     android:layout_height="wrap_content"
                     android:padding="12dp"
                     android:layout_marginTop="16dp"
-                    android:layout_below="@id/shimmer_att"
+                    android:layout_below="@id/picasso_att"
                     android:layout_alignParentStart="true"
                     android:layout_alignParentEnd="true"
                     android:background="@drawable/text_bg"
@@ -148,7 +148,7 @@
                     android:textColorLink="@color/link_blue"/>
 
                 <TextView
-                    android:id="@+id/apache_license"
+                    android:id="@+id/shimmer_att"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="12dp"
@@ -158,7 +158,7 @@
                     android:layout_alignParentEnd="true"
                     android:background="@drawable/text_bg"
                     android:textColor="@android:color/black"
-                    android:text="@string/apache_license"
+                    android:text="@string/shimmer_license"
                     android:autoLink="web"
                     android:textColorLink="@color/link_blue"/>
 
@@ -167,7 +167,7 @@
                     android:layout_height="wrap_content"
                     android:padding="12dp"
                     android:layout_marginTop="16dp"
-                    android:layout_below="@id/apache_license"
+                    android:layout_below="@id/shimmer_att"
                     android:layout_alignParentStart="true"
                     android:layout_alignParentEnd="true"
                     android:background="@drawable/text_bg"

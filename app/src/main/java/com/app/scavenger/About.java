@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -55,7 +54,7 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
     }
 
     @Override
-    public void onItemClick(View view, int position) {
+    public void onItemClick(int position) {
 
         switch (position) {
             // Terms and Conditions

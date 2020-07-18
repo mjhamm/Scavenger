@@ -45,59 +45,15 @@
         android:adjustViewBounds="true"
         android:src="@drawable/default_bg_screen"/>
 
-    <com.facebook.shimmer.ShimmerFrameLayout
+    <include layout="@layout/shimmer_layout"
         android:id="@+id/search_shimmerLayout"
         android:layout_width="match_parent"
-        app:layout_constraintTop_toBottomOf="@id/search_cardView"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:layout_height="0dp"
-        android:clickable="false"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
         android:visibility="gone"
-        app:shimmer_duration="1400">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clickable="false"
-            android:focusableInTouchMode="false"
-            android:focusable="false">
-
-            <include layout="@layout/row_shimmer_item"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentTop="true"
-                android:id="@+id/shimmer_item1"/>
-            <include layout="@layout/row_shimmer_item"
-                android:id="@+id/shimmer_item2"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@id/shimmer_item1"/>
-            <include layout="@layout/row_shimmer_item"
-                android:id="@+id/shimmer_item3"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@id/shimmer_item2"/>
-            <include layout="@layout/row_shimmer_item"
-                android:id="@+id/shimmer_item4"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@id/shimmer_item3"/>
-
-        </RelativeLayout>
-
-    </com.facebook.shimmer.ShimmerFrameLayout>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_cardView"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline1"
@@ -108,7 +64,7 @@
 
     <TextView
         android:id="@+id/startup_message"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="@id/guideline1"
         app:layout_constraintStart_toStartOf="parent"
@@ -122,7 +78,7 @@
 
     <TextView
         android:id="@+id/match_message"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/startup_message"
         app:layout_constraintStart_toStartOf="parent"

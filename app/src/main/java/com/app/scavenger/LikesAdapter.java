@@ -182,7 +182,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         // set their tag to the position of the item in the list
         holder.like_button.setTag(position);
         // sets the image of the button to the filled heart icon
-        holder.like_button.setImageResource(R.mipmap.heart_icon_filled);
+        holder.like_button.setImageResource(R.drawable.like_filled);
 
         // checks if the image url at that position is not null
         // if not null - load the image from the url into the recipeImageView
