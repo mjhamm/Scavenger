@@ -422,22 +422,22 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 popupMenu.setOnMenuItemClickListener(item -> {
                     switch (item.getItemId()) {
                         // copy the recipe url
-                        case R.id.fav_menu_copy:
+                        case R.id.menu_copy:
                             copyRecipe();
                             return true;
                             // share the recipe through text, email, facebook
-                        case R.id.fav_menu_share:
+                        case R.id.menu_share:
                             shareRecipe();
                             return true;
                             // report the recipe for profanity, nudity, or website
-                        case R.id.fav_menu_report:
+                        case R.id.menu_report:
                             reportRecipe();
                             return true;
                     }
                     return false;
                 });
                 MenuInflater inflater = popupMenu.getMenuInflater();
-                inflater.inflate(R.menu.like_menu, popupMenu.getMenu());
+                inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
                 popupMenu.show();
             });
 

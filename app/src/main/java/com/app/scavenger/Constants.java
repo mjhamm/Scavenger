@@ -29,8 +29,8 @@ public class Constants {
 
     // Nutrition Data
     public static final String nutritionInformationTitle = "Some information about our data";
-    public static final String nutritionInformation = "Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you" +
-            "the best information we can find. However, sometimes this information may not be 100% accurate. Using" +
-            "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information" +
+    public static final String nutritionInformation = "Scavenger uses Edamam Search and your search criteria to look throughout the Internet in order to bring you " +
+            "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
+            "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information " +
             "as well as the number of servings the amount of ingredients can make.";
 }
