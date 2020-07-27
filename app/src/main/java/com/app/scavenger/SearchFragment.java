@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -41,7 +42,7 @@ import retrofit2.Retrofit;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
-public class SearchFragment extends Fragment /*implements SignInActivity.RefreshSearchFrag*/ {
+public class SearchFragment extends Fragment {
 
     private static final String TAG = "SEARCH_FRAGMENT: ";
 
@@ -51,7 +52,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private Context mContext;
     private SearchView mSearchView;
     private ImageView mSearch_mainBG;
-    private ProgressBar mProgressBar;
     private TextView startup_message, matchMessage;
     private ShimmerFrameLayout shimmer;
     private int fromIngr = 0;
@@ -59,22 +59,15 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     private LinearLayoutManager mLayoutManager;
     private ArrayList<Object> recipeItemArrayList;
     private String queryString = null;
-    private FirebaseAuth mAuth;
     private ConnectionDetector con;
-    private boolean doneLoading = false;
     private int numItemsBefore = 0;
     private int numItemsAfter = 0;
     private boolean numItemsChanged = true;
     private SharedPreferences sharedPreferences;
     private EndlessRecyclerViewScrollListener scrollListener;
+    private boolean logged = false;
 
     private DatabaseHelper myDb;
-
-    // Shared Preferences Data
-    //-----------------------------------------
-    private final String userId = null;
-    private boolean logged = false;
-    //------------------------------------------
 
     interface ApiService {
         @GET("/search?")
@@ -93,13 +86,13 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getContext();
-        mAuth = FirebaseAuth.getInstance();
         myDb = DatabaseHelper.getInstance(mContext);
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         logged = currentUser != null;
 
@@ -122,7 +115,7 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
         mSearchView = view.findViewById(R.id.search_searchView);
         shimmer = view.findViewById(R.id.search_shimmerLayout);
         matchMessage = view.findViewById(R.id.match_message);
-        mProgressBar = view.findViewById(R.id.main_progressBar);
+        ProgressBar mProgressBar = view.findViewById(R.id.main_progressBar);
         mSearch_mainBG = view.findViewById(R.id.search_mainBG);
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
 
@@ -162,7 +155,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                 if (con.connectedToInternet() && numItemsChanged) {
                     getMoreAsync();
-                    //getMoreRecipes();
                 }
             }
         };
@@ -207,8 +199,6 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                 return false;
             }
         });
-
-        //setMessageToRandom();
 
         return view;
     }
@@ -366,26 +356,12 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
                     if (response.body() != null) {
                         String result = response.body();
 
-                        recipeItemArrayList.clear();
-
                         numItemsChanged = true;
                         numItemsBefore = 0;
 
-                        writeRecycler(result);
+                        recipeItemArrayList.clear();
 
-                        if (adapter == null) {
-                            adapter = new SearchAdapter(mContext, recipeItemArrayList, logged);
-                        }
-
-                        mSearchRecyclerView.setAdapter(adapter);
-                        if (recipeItemArrayList.isEmpty()) {
-                            // sets BG Image to No Recipes Image
-                            changeBGImage(1);
-                            //matchMessage.setVisibility(View.VISIBLE);
-                        }
-                        numItemsBefore = recipeItemArrayList.size();
-                        shimmer.stopShimmer();
-                        shimmer.setVisibility(View.GONE);
+                        writeRecyclerAsync(result);
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");
                     }
@@ -422,6 +398,32 @@ public class SearchFragment extends Fragment /*implements SignInActivity.Refresh
 
     private String randomItemId(RecipeItem item) {
         return item.getmRecipeURL().replace("/", "");
+    }
+
+    private void writeRecyclerAsync(String response) {
+        new Thread(() -> {
+            writeRecycler(response);
+            try {
+                if (isAdded()) {
+                    getActivity().runOnUiThread(() -> {
+                        if (adapter == null) {
+                            adapter = new SearchAdapter(mContext, recipeItemArrayList, logged);
+                        }
+
+                        mSearchRecyclerView.setAdapter(adapter);
+                        if (recipeItemArrayList.isEmpty()) {
+                            // sets BG Image to No Recipes Image
+                            changeBGImage(1);
+                        }
+                        numItemsBefore = recipeItemArrayList.size();
+                        shimmer.stopShimmer();
+                        shimmer.setVisibility(View.GONE);
+                    });
+                }
+            } catch (final Exception e) {
+                Log.i(TAG, "Exception in Thread");
+            }
+        }).start();
     }
 
     private void writeRecycler(String response) {

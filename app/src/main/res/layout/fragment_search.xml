@@ -9,36 +9,26 @@
     android:layout_height="match_parent"
     tools:context=".SearchFragment">
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/search_cardView"
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/search_searchView"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
+        app:queryHint="Search Ingredients or Recipes"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:cardCornerRadius="0dp"
-        app:cardElevation="12dp">
-
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/search_searchView"
-            android:layout_width="match_parent"
-            android:layout_height="?android:attr/actionBarSize"
-            app:queryHint="Search Ingredients or Recipes"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:elevation="12dp"
-            app:iconifiedByDefault="false"
-            app:queryBackground="@android:color/transparent"/>
-
-    </com.google.android.material.card.MaterialCardView>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:elevation="12dp"
+        android:translationZ="12dp"
+        android:background="@android:color/white"
+        app:iconifiedByDefault="false"
+        app:queryBackground="@android:color/transparent"/>
 
     <ImageView
         android:id="@+id/search_mainBG"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:contentDescription="@string/main_search_background"
-        app:layout_constraintTop_toBottomOf="@id/search_cardView"
+        app:layout_constraintTop_toBottomOf="@id/search_searchView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -53,7 +43,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/search_cardView"/>
+        app:layout_constraintTop_toBottomOf="@id/search_searchView"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline1"
@@ -80,16 +70,15 @@
         android:id="@+id/match_message"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/startup_message"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/startup_message"
+        app:layout_constraintEnd_toEndOf="@id/startup_message"
         app:layout_constraintTop_toBottomOf="@id/startup_message"
         android:fontFamily="@font/roboto_condensed_regular"
         android:textSize="18sp"
+        android:gravity="center"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:textColor="@android:color/black"
-        android:layout_centerInParent="true"
         android:visibility="gone"
         android:text="@string/match_ingredients_on_search"/>
 
@@ -99,12 +88,8 @@
         android:orientation="vertical"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/search_cardView"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/search_cardView"
-        android:layout_alignParentBottom="true">
+        app:layout_constraintTop_toBottomOf="@id/search_searchView"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/search_recyclerView"

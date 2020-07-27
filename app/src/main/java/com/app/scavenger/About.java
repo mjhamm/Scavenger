@@ -1,21 +1,28 @@
 package com.app.scavenger;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageButton;
-import android.widget.Toast;
-
 import java.util.ArrayList;
 
 // About activity that lists information about Scavenger
 
 public class About extends AppCompatActivity implements AboutAdapter.ItemClickListener {
+
+    private boolean inAppBrowsingOn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +38,7 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
 
         RecyclerView aboutRecycler = findViewById(R.id.about_list);
         ImageButton backButton = findViewById(R.id.about_back);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Add options inside of the recyclerview
         ArrayList<String> options = new ArrayList<>();
@@ -48,6 +56,9 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
         aboutRecycler.addItemDecoration(dividerItemDecoration);
         aboutRecycler.setLayoutManager(layoutManager);
 
+        inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
+
+
         // Close activity through back button
         backButton.setOnClickListener(v -> finish());
 
@@ -59,11 +70,21 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
         switch (position) {
             // Terms and Conditions
             case 0:
-                toastMessage(getResources().getString(R.string.terms_and_conditions));
+                String termsUrl = "https://www.thescavengerapp.com/terms-and-conditions";
+                if (inAppBrowsingOn) {
+                    openURLInChromeCustomTab(this, termsUrl);
+                } else {
+                    openInDefaultBrowser(this, termsUrl);
+                }
                 break;
                 // Privacy Policy
             case 1:
-                toastMessage(getResources().getString(R.string.privacy_policy));
+                String privacyUrl = "https://www.thescavengerapp.com/privacy-policy";
+                if (inAppBrowsingOn) {
+                    openURLInChromeCustomTab(this, privacyUrl);
+                } else {
+                    openInDefaultBrowser(this, privacyUrl);
+                }
                 break;
                 // Open Source Libraries
             case 2:
@@ -72,14 +93,36 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
         }
     }
 
-    // Method for creating a Toast
-    private void toastMessage(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-
     // Method for opening the Open Source Libraries activity
     private void openOSL() {
         Intent intent = new Intent(this, OpenSourceLibraries.class);
         startActivity(intent);
+    }
+
+    // opens the recipe in the users default browser
+    private void openURLInChromeCustomTab(Context context, String url) {
+        try {
+            CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
+            CustomTabsIntent customTabsIntent = builder1.build();
+            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            builder1.setInstantAppsEnabled(true);
+            customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
+            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
+            customTabsIntent.launchUrl(context, Uri.parse(url));
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Log.e("ChromeCustomTabError: ", "Activity Error");
+        }
+    }
+
+    // open the recipe in the App Browser
+    private void openInDefaultBrowser(Context context, String url) {
+        try {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            context.startActivity(browserIntent);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Log.e("DefaultBrowserError: ", "Activity Error");
+        }
     }
 }

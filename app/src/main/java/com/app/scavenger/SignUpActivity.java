@@ -3,12 +3,17 @@ package com.app.scavenger;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
@@ -59,10 +64,8 @@ import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity {
 
-    private static final int RC_SIGN_UP = 102;
+    private final int RC_SIGN_UP = 102;
     public static final String TAG = "LOG: ";
-    private static final String EMAIL = "email";
-    private static final String PUBLIC_PROFILE = "public_profile";
 
     // Views from Sign Up activity
     private EditText fullName, emailEdit, passEdit, passConfirmEdit;
@@ -157,7 +160,12 @@ public class SignUpActivity extends AppCompatActivity {
             @Override
             // send users to Terms & Conditions
             public void onClick(@NonNull View widget) {
-                toastMessage("Terms & Conditions");
+                String termsUrl = "https://www.thescavengerapp.com/terms-and-conditions";
+                if (sharedPreferences.getBoolean("inAppBrowser", true)) {
+                    openURLInChromeCustomTab(SignUpActivity.this, termsUrl);
+                } else {
+                    openInDefaultBrowser(SignUpActivity.this, termsUrl);
+                }
             }
 
             @Override
@@ -172,7 +180,12 @@ public class SignUpActivity extends AppCompatActivity {
             @Override
             // send users to Privacy Policy
             public void onClick(@NonNull View widget) {
-                toastMessage("Privacy Policy");
+                String privacyUrl = "https://www.thescavengerapp.com/privacy-policy";
+                if (sharedPreferences.getBoolean("inAppBrowser", true)) {
+                    openURLInChromeCustomTab(SignUpActivity.this, privacyUrl);
+                } else {
+                    openInDefaultBrowser(SignUpActivity.this, privacyUrl);
+                }
             }
 
             @Override
@@ -291,7 +304,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     // Sends user information to Firebase
     private void sendDataToFirebase(FirebaseUser user) {
-        Map<String, Object> data = new HashMap<>();
+        HashMap<String, Object> data = new HashMap<>();
         data.put("name", name);
         data.put("email", email);
         db.collection("Users").document(user.getUid()).set(data);
@@ -339,6 +352,8 @@ public class SignUpActivity extends AppCompatActivity {
         callbackManager = CallbackManager.Factory.create();
 
         // Set Permissions
+        String EMAIL = "email";
+        String PUBLIC_PROFILE = "public_profile";
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList(EMAIL, PUBLIC_PROFILE));
 
         LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
@@ -350,14 +365,10 @@ public class SignUpActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancel() {
-
-            }
+            public void onCancel() {}
 
             @Override
-            public void onError(FacebookException error) {
-
-            }
+            public void onError(FacebookException error) {}
         });
     }
 
@@ -483,7 +494,7 @@ public class SignUpActivity extends AppCompatActivity {
                 });
     }
 
-    public static void hideKeyboard(Activity activity) {
+    public void hideKeyboard(Activity activity) {
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
         //Find the currently focused view, so we can grab the correct window token from it.
         View view = activity.getCurrentFocus();
@@ -500,6 +511,33 @@ public class SignUpActivity extends AppCompatActivity {
     //method for creating a Toast
     private void toastMessage(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    // opens the recipe in the users default browser
+    private void openURLInChromeCustomTab(Context context, String url) {
+        try {
+            CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
+            CustomTabsIntent customTabsIntent = builder1.build();
+            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            builder1.setInstantAppsEnabled(true);
+            customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
+            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
+            customTabsIntent.launchUrl(context, Uri.parse(url));
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Log.e("ChromeCustomTabError: ", "Activity Error");
+        }
+    }
+
+    // open the recipe in the App Browser
+    private void openInDefaultBrowser(Context context, String url) {
+        try {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            context.startActivity(browserIntent);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Log.e("DefaultBrowserError: ", "Activity Error");
+        }
     }
 
     @Override

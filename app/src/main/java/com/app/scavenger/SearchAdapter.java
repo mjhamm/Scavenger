@@ -48,21 +48,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     public static final String TAG = "SEARCH_ADAPTER";
 
-    // Firestore Labels ----------------------------------------------------------
-    private static final String ITEM_ID = "itemId";
-    private static final String ITEM_NAME = "name";
-    private static final String ITEM_SOURCE = "source";
-    private static final String ITEM_IMAGE = "image";
-    private static final String ITEM_URL = "url";
-    private static final String ITEM_YIELD = "servings";
-    private static final String ITEM_CAL = "calories";
-    private static final String ITEM_CARB = "carbs";
-    private static final String ITEM_FAT = "fat";
-    private static final String ITEM_PROTEIN = "protein";
-    private static final String ITEM_ATT = "attributes";
-    private static final String ITEM_INGR = "ingredients";
-    //-----------------------------------------------------------------------------
-
     // variables for constructor
     private final ArrayList<Object> mRecipeItems;
     private final Context mContext;
@@ -214,7 +199,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     // saves an item to Firebase
     private void saveDataToFirebase(String itemId, String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
         // create new hashmap that holds the item information that will be saved to Firebase
-        Map<String, Object> itemMap = new HashMap<>();
+        HashMap<String, Object> itemMap = new HashMap<>();
         // reference to the likes on Firebase
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
 
@@ -223,18 +208,18 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         Timestamp timestamp = new Timestamp(now);
 
         // each part of the recipe item to be put into the hashmap for Firebase
-        itemMap.put(ITEM_ID, itemId);
-        itemMap.put(ITEM_NAME, name);
-        itemMap.put(ITEM_SOURCE, source);
-        itemMap.put(ITEM_IMAGE, image);
-        itemMap.put(ITEM_URL, url);
-        itemMap.put(ITEM_YIELD, servings);
-        itemMap.put(ITEM_CAL, calories);
-        itemMap.put(ITEM_CARB, carbs);
-        itemMap.put(ITEM_FAT, fat);
-        itemMap.put(ITEM_PROTEIN, protein);
-        itemMap.put(ITEM_ATT, attributes);
-        itemMap.put(ITEM_INGR, ingredients);
+        itemMap.put(Constants.ITEM_ID, itemId);
+        itemMap.put(Constants.ITEM_NAME, name);
+        itemMap.put(Constants.ITEM_SOURCE, source);
+        itemMap.put(Constants.ITEM_IMAGE, image);
+        itemMap.put(Constants.ITEM_URL, url);
+        itemMap.put(Constants.ITEM_YIELD, servings);
+        itemMap.put(Constants.ITEM_CAL, calories);
+        itemMap.put(Constants.ITEM_CARB, carbs);
+        itemMap.put(Constants.ITEM_FAT, fat);
+        itemMap.put(Constants.ITEM_PROTEIN, protein);
+        itemMap.put(Constants.ITEM_ATT, attributes);
+        itemMap.put(Constants.ITEM_INGR, ingredients);
         itemMap.put("Timestamp", timestamp);
 
         // sets the data in Firebase
@@ -283,7 +268,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     // open the recipe in the App Browser
-    private static void openInDefaultBrowser(Context context, String url) {
+    private void openInDefaultBrowser(Context context, String url) {
         try {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             context.startActivity(browserIntent);
@@ -294,7 +279,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     // opens the recipe in the users default browser
-    private static void openURLInChromeCustomTab(Context context, String url) {
+    private void openURLInChromeCustomTab(Context context, String url) {
         try {
             CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
             CustomTabsIntent customTabsIntent = builder1.build();
@@ -357,7 +342,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             recipeCarbs = itemView.findViewById(R.id.carbs_amount);
             recipeFat = itemView.findViewById(R.id.fat_amount);
             recipeProtein = itemView.findViewById(R.id.protein_amount);
-            CardView mNutritionCard = itemView.findViewById(R.id.facts_cardView);
+            CardView mNutritionCard = itemView.findViewById(R.id.nutritionCard);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
 
             // sets the click listener for the recipe item
@@ -548,7 +533,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             Date now = new Date();
             Timestamp timestamp = new Timestamp(now);
 
-            Map<String, Object> reportInfo = new HashMap<>();
+            HashMap<String, Object> reportInfo = new HashMap<>();
 
             CollectionReference reportingReference = db.collection("RecipeReports").document(strDate).collection("reports");
 

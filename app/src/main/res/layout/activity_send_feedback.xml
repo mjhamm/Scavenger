@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".SendFeedback">
 
-    <com.google.android.material.card.MaterialCardView
+    <androidx.cardview.widget.CardView
         android:id="@+id/sendFeedback_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
@@ -44,7 +44,7 @@
             android:layout_gravity="end|center_vertical"
             android:layout_marginEnd="16dp"/>
 
-    </com.google.android.material.card.MaterialCardView>
+    </androidx.cardview.widget.CardView>
 
     <EditText
         android:id="@+id/feedback_editText"

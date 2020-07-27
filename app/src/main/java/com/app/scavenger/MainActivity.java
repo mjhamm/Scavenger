@@ -25,14 +25,11 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     private Fragment active = null;
     private final FragmentManager fm = getSupportFragmentManager();
 
-    // Reference to Database
-    DatabaseHelper myDb;
-
     // boolean for exit application
     private boolean doubleBackToExitPressedOnce;
 
     // Handler and runnable to check if the user has double hit back to exit the application
-    private final Handler mHandler = new Handler();
+    private static final Handler mHandler = new Handler();
     private final Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
@@ -67,8 +64,6 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
         setContentView(R.layout.activity_main);
 
-        // create instance of Database
-        myDb = DatabaseHelper.getInstance(this);
         // create instance of shared preferences and editor
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         editor = sharedPreferences.edit();
@@ -126,9 +121,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                 case R.id.action_likes:
                     // if the active fragment isn't the Likes Fragment
                     // hide the active fragment and show the Likes Fragment
-                    if (active != fragment2) {
-                        fm.beginTransaction().hide(active).show(fragment2).commit();
-                    }
+                    fm.beginTransaction().hide(active).show(fragment2).commit();
                     // Make the Likes fragment the active fragment
                     active = fragment2;
                     return true;
@@ -150,12 +143,20 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         refresh = sharedPreferences.getBoolean("refresh", false);
     }
 
+    private void removeItemsAsync() {
+        new Thread(() -> {
+            // Reference to Database
+            DatabaseHelper myDb = DatabaseHelper.getInstance(this);
+            myDb.removeAllItemsFromRemoveTable();
+        }).start();
+    }
+
     // cleans up any open callbacks as well as updates likes information inside of shared preferences
     @Override
     protected void onDestroy() {
         // remove all the items in the Database inside of the Removed Items table
         // this makes it so new recipes that are and aren't liked are not confused
-        myDb.removeAllItemsFromRemoveTable();
+        removeItemsAsync();
 
         // updates the shared preferences "numLikes" and "actualNumLikes" to 0
         // this is so on startup of the app again, this information is then found again to be up-to-date

@@ -134,7 +134,7 @@ public class ReportProblem extends AppCompatActivity {
         Date now = new Date();
         Timestamp timestamp = new Timestamp(now);
 
-        Map<String, Object> reportInfo = new HashMap<>();
+        HashMap<String, Object> reportInfo = new HashMap<>();
 
         CollectionReference reportingReference = db.collection("Reports").document(strDate).collection("reports");
 

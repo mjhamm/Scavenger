@@ -31,21 +31,6 @@ public class LikesFragment extends Fragment {
 
     //private static final String TAG = "Likes Fragment: ";
 
-    // Firestore Labels ----------------------------------------------------------
-    private static final String ITEM_ID = "itemId";
-    private static final String ITEM_NAME = "name";
-    private static final String ITEM_SOURCE = "source";
-    private static final String ITEM_IMAGE = "image";
-    private static final String ITEM_URL = "url";
-    private static final String ITEM_YIELD = "servings";
-    private static final String ITEM_CAL = "calories";
-    private static final String ITEM_CARB = "carbs";
-    private static final String ITEM_FAT = "fat";
-    private static final String ITEM_PROTEIN = "protein";
-    private static final String ITEM_ATT = "attributes";
-    private static final String ITEM_INGR = "ingredients";
-    //-----------------------------------------------------------------------------
-
     // Shared Preferences Data
     //-----------------------------------------
     private String userId = null;
@@ -67,7 +52,6 @@ public class LikesFragment extends Fragment {
     private LikesAdapter adapter;
     private Context mContext;
     private SharedPreferences sharedPreferences;
-    private SharedPreferences.Editor editor;
     private ConnectionDetector con;
     private String itemId, name, source, image, url;
     private int serves = 0;
@@ -280,8 +264,6 @@ public class LikesFragment extends Fragment {
             // always hide retry connection button
             retryConButton.setVisibility(View.GONE);
             // clear text of likes message
-            // CHECK THIS
-            //likes_message.setText("");
             // if not logged in -
             // clear list
             // clear adapter
@@ -301,8 +283,10 @@ public class LikesFragment extends Fragment {
                 // retrieve users likes from Firebase
             } else {
                 if (!firstLoad) {
+                    likes_message.setVisibility(View.GONE);
                     shimmer.setVisibility(View.VISIBLE);
                     shimmer.startShimmer();
+                    mLikes_BG.setVisibility(View.GONE);
                 }
                 if (recipeItemList.isEmpty()) {
                     retrieveLikesFromFirebase();
@@ -352,36 +336,36 @@ public class LikesFragment extends Fragment {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                             // creates a new recipe item for each item in the snapshot
                             RecipeItem item = new RecipeItem();
-                            itemId = documentSnapshot.getString(ITEM_ID);
-                            name = documentSnapshot.getString(ITEM_NAME);
-                            source = documentSnapshot.getString(ITEM_SOURCE);
-                            image = documentSnapshot.getString(ITEM_IMAGE);
-                            url = documentSnapshot.getString(ITEM_URL);
-                            if (documentSnapshot.getLong(ITEM_YIELD) != null) {
+                            itemId = documentSnapshot.getString(Constants.ITEM_ID);
+                            name = documentSnapshot.getString(Constants.ITEM_NAME);
+                            source = documentSnapshot.getString(Constants.ITEM_SOURCE);
+                            image = documentSnapshot.getString(Constants.ITEM_IMAGE);
+                            url = documentSnapshot.getString(Constants.ITEM_URL);
+                            if (documentSnapshot.getLong(Constants.ITEM_YIELD) != null) {
                                 //noinspection ConstantConditions
-                                serves = documentSnapshot.getLong(ITEM_YIELD).intValue();
+                                serves = documentSnapshot.getLong(Constants.ITEM_YIELD).intValue();
                             }
-                            if (documentSnapshot.getLong(ITEM_CAL) != null) {
+                            if (documentSnapshot.getLong(Constants.ITEM_CAL) != null) {
                                 //noinspection ConstantConditions
-                                cals = documentSnapshot.getLong(ITEM_CAL).intValue();
+                                cals = documentSnapshot.getLong(Constants.ITEM_CAL).intValue();
                             }
-                            if (documentSnapshot.getLong(ITEM_CARB) != null) {
+                            if (documentSnapshot.getLong(Constants.ITEM_CARB) != null) {
                                 //noinspection ConstantConditions
-                                carb = documentSnapshot.getLong(ITEM_CARB).intValue();
+                                carb = documentSnapshot.getLong(Constants.ITEM_CARB).intValue();
                             }
-                            if (documentSnapshot.getLong(ITEM_FAT) != null) {
+                            if (documentSnapshot.getLong(Constants.ITEM_FAT) != null) {
                                 //noinspection ConstantConditions
-                                fat = documentSnapshot.getLong(ITEM_FAT).intValue();
+                                fat = documentSnapshot.getLong(Constants.ITEM_FAT).intValue();
                             }
-                            if (documentSnapshot.getLong(ITEM_PROTEIN) != null) {
+                            if (documentSnapshot.getLong(Constants.ITEM_PROTEIN) != null) {
                                 //noinspection ConstantConditions
-                                protein = documentSnapshot.getLong(ITEM_PROTEIN).intValue();
+                                protein = documentSnapshot.getLong(Constants.ITEM_PROTEIN).intValue();
                             }
                             if (documentSnapshot.exists()) {
                                 //noinspection unchecked
-                                att = (ArrayList<String>) documentSnapshot.get(ITEM_ATT);
+                                att = (ArrayList<String>) documentSnapshot.get(Constants.ITEM_ATT);
                                 //noinspection unchecked
-                                ingr = (ArrayList<String>) documentSnapshot.get(ITEM_INGR);
+                                ingr = (ArrayList<String>) documentSnapshot.get(Constants.ITEM_INGR);
                             }
                             item.setItemId(itemId);
                             item.setmRecipeName(name);
@@ -410,7 +394,7 @@ public class LikesFragment extends Fragment {
 
                     // edit sharedPreferences
                     // add actualNumLikes and numLikes as the number of items received from the snapshot
-                    editor = sharedPreferences.edit();
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putInt("actualNumLikes", queryDocumentSnapshots.size());
                     editor.putInt("numLikes", queryDocumentSnapshots.size());
                     editor.apply(); // apply

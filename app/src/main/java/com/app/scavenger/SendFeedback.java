@@ -131,7 +131,7 @@ public class SendFeedback extends AppCompatActivity {
         Date now = new Date();
         Timestamp timestamp = new Timestamp(now);
 
-        Map<String, Object> feedbackInfo = new HashMap<>();
+        HashMap<String, Object> feedbackInfo = new HashMap<>();
 
         CollectionReference feedbackReference = db.collection("Feedback").document(strDate).collection("feedback");
 

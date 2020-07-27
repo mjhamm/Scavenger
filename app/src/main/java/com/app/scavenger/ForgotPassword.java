@@ -16,11 +16,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class ForgotPassword extends AppCompatActivity {
 
-    private static final String TAG = "FORGOT_PASSWORD";
-
-    private EditText forgot_editText;
-    private MaterialButton forgot_pass_button;
-    private ConnectionDetector con;
+    //private static final String TAG = "FORGOT_PASSWORD";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,10 +30,10 @@ public class ForgotPassword extends AppCompatActivity {
 
         setContentView(R.layout.activity_forgot_password);
 
-        forgot_editText = findViewById(R.id.forgot_editText);
-        forgot_pass_button = findViewById(R.id.forgot_pass_button);
+        EditText forgot_editText = findViewById(R.id.forgot_editText);
+        MaterialButton forgot_pass_button = findViewById(R.id.forgot_pass_button);
         ImageButton backButton = findViewById(R.id.forgotPass_back);
-        con = new ConnectionDetector(this);
+        ConnectionDetector con = new ConnectionDetector(this);
 
         // Close the activity on button click
         backButton.setOnClickListener(v -> finish());
@@ -45,6 +41,7 @@ public class ForgotPassword extends AppCompatActivity {
         // Disable the button on start
         forgot_pass_button.setEnabled(false);
 
+        // Check if text is empty or not
         forgot_editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -77,7 +74,7 @@ public class ForgotPassword extends AppCompatActivity {
             } else {
                 FirebaseAuth.getInstance().sendPasswordResetEmail(forgot_editText.getText().toString().trim())
                         .addOnFailureListener(e -> {
-                            Log.d(TAG, "Email send failure");
+                            //Log.d(TAG, "Email send failure");
                             new MaterialAlertDialogBuilder(ForgotPassword.this, R.style.ReportAlertTheme)
                                     .setTitle(Constants.accountNotFound)
                                     .setMessage(Constants.accountNotFoundMessage)
@@ -88,7 +85,7 @@ public class ForgotPassword extends AppCompatActivity {
                         })
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
-                                Log.d(TAG, "Reset password email sent");
+                                //Log.d(TAG, "Reset password email sent");
                                 new MaterialAlertDialogBuilder(ForgotPassword.this, R.style.ReportAlertTheme)
                                         .setTitle(Constants.resetPassTitle)
                                         .setMessage(Constants.resetPassMessage)

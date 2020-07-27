@@ -19,7 +19,7 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
     // True if we are still waiting for the last set of data to load.
     private boolean loading = true;
     // Sets the starting page index
-    private final int startingPageIndex = 0;
+    private static final int startingPageIndex = 0;
 
     private final ProgressBar mProgressBar;
     private final ConnectionDetector con;
@@ -44,7 +44,8 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
 
     public int getLastVisibleItem(int[] lastVisibleItemPositions) {
         int maxSize = 0;
-        for (int i = 0; i < lastVisibleItemPositions.length; i++) {
+        for (int i : lastVisibleItemPositions) {
+        //for (int i = 0; i < lastVisibleItemPositions.length; i++) {
             if (i == 0) {
                 maxSize = lastVisibleItemPositions[i];
             }
@@ -77,7 +78,7 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
             // If the total item count is zero and the previous isn't, assume the
             // list is invalidated and should be reset back to initial state
             if (totalItemCount < previousTotalItemCount) {
-                this.currentPage = this.startingPageIndex;
+                this.currentPage = startingPageIndex;
                 mProgressBar.setVisibility(View.GONE);
                 this.previousTotalItemCount = totalItemCount;
                 if (totalItemCount == 0) {
@@ -123,7 +124,7 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
 
     // Call this method whenever performing new searches
     public void resetState() {
-        this.currentPage = this.startingPageIndex;
+        this.currentPage = startingPageIndex;
         this.previousTotalItemCount = 0;
         this.loading = true;
     }

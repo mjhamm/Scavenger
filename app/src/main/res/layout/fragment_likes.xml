@@ -9,32 +9,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".LikesFragment">
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/likes_cardView"
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/likes_searchView"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:cardCornerRadius="0dp"
-        app:cardElevation="12dp">
-
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/likes_searchView"
-            android:layout_width="match_parent"
-            android:layout_height="?android:attr/actionBarSize"
-            app:queryHint="Search Likes"
-            app:iconifiedByDefault="false"
-            app:queryBackground="@android:color/transparent"/>
-
-    </com.google.android.material.card.MaterialCardView>
+        app:queryHint="Search Likes"
+        android:elevation="12dp"
+        android:translationZ="12dp"
+        app:iconifiedByDefault="false"
+        android:background="@android:color/white"
+        app:queryBackground="@android:color/transparent"/>
 
     <ImageView
         android:id="@+id/likes_mainBG"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:contentDescription="@string/main_search_background"
-        app:layout_constraintTop_toBottomOf="@id/likes_cardView"
+        app:layout_constraintTop_toBottomOf="@id/likes_searchView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -43,7 +37,7 @@
     <include layout="@layout/shimmer_layout"
         android:id="@+id/likes_shimmerLayout"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/likes_cardView"
+        app:layout_constraintTop_toBottomOf="@id/likes_searchView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -102,7 +96,7 @@
         android:scrollbars="none"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/likes_cardView"
+        app:layout_constraintTop_toBottomOf="@id/likes_searchView"
         app:layout_constraintBottom_toBottomOf="parent"
         android:overScrollMode="never"
         android:animationCache="false"/>

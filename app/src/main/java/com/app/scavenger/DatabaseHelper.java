@@ -94,14 +94,6 @@ class DatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_LIKES, KEY_ITEM_ID + "=?", new String[]{itemId});
     }
 
-// --Commented out by Inspection START (7/18/2020 05:24 PM):
-//    // Removes all items from the Removed Table
-//    void removeAllItemsFromItemTable() {
-//        SQLiteDatabase db = this.getWritableDatabase();
-//        db.execSQL("DELETE FROM " + TABLE_LIKES);
-//    }
-// --Commented out by Inspection STOP (7/18/2020 05:24 PM)
-
     //------------------------------ REMOVED TABLE -------------------------------------------------------------------------------------------
 
     //Retrieve data from Removed Table

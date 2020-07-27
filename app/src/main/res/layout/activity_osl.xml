@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".OpenSourceLibraries">
 
-    <com.google.android.material.card.MaterialCardView
+    <androidx.cardview.widget.CardView
         android:id="@+id/osl_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
@@ -33,14 +33,15 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="8dp"/>
 
-    </com.google.android.material.card.MaterialCardView>
+    </androidx.cardview.widget.CardView>
 
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:overScrollMode="never"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/osl_toolbar"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
             <RelativeLayout
@@ -132,7 +133,7 @@
                     android:autoLink="web"
                     android:textColorLink="@color/link_blue"/>
 
-                <TextView
+                <!--<TextView
                     android:id="@+id/rxjava_att"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -145,7 +146,7 @@
                     android:textColor="@android:color/black"
                     android:text="@string/rxjava_license"
                     android:autoLink="web"
-                    android:textColorLink="@color/link_blue"/>
+                    android:textColorLink="@color/link_blue"/>-->
 
                 <TextView
                     android:id="@+id/shimmer_att"
@@ -153,7 +154,7 @@
                     android:layout_height="wrap_content"
                     android:padding="12dp"
                     android:layout_marginTop="16dp"
-                    android:layout_below="@id/rxjava_att"
+                    android:layout_below="@id/retrofit_att"
                     android:layout_alignParentStart="true"
                     android:layout_alignParentEnd="true"
                     android:background="@drawable/text_bg"

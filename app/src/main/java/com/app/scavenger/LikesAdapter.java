@@ -42,12 +42,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> implements Filterable {
 
-    private static final String TAG = "LOG: ";
+    //private static final String TAG = "LOG: ";
 
     // Database variables
     private FirebaseFirestore db;
@@ -64,7 +63,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     private final LayoutInflater mInflater;
     private final SharedPreferences sharedPreferences;
     private ConnectionDetector con;
-    private int filterCount;
 
     // Interface to update the search fragment if the information in the removed items is not 0
     interface UpdateSearch {
@@ -82,7 +80,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         this.mRecipeItems = recipeItems;
         this.userId = userId;
         this.mRecipeItemsFull = recipeItems;
-        filterCount = mRecipeItemsFull.size();
+        mRecipeItemsFull.size();
         this.setHasStableIds(true);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
@@ -135,7 +133,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         }
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            filterCount = results.count;
             mRecipeItems = (ArrayList<RecipeItem>) results.values;
             notifyDataSetChanged();
         }
@@ -224,12 +221,16 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
 
         likesRef.document(recipeItem.getItemId())
                 .delete()
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Successfully removed like"))
-                .addOnFailureListener(e -> Log.d(TAG, "Failed to remove like" + e.toString()));
+                .addOnSuccessListener(aVoid -> {
+                    //Log.d(TAG, "Successfully removed like");
+                })
+                .addOnFailureListener(e -> {
+                    //Log.d(TAG, "Failed to remove like" + e.toString());
+                });
     }
 
     // Opens the Recipe in the default web browser
-    private static void openInDefaultBrowser(Context context, String url) {
+    private void openInDefaultBrowser(Context context, String url) {
         try {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             context.startActivity(browserIntent);
@@ -240,7 +241,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     }
 
     // Opens the Recipe in Google Chrome
-    private static void openURLInChromeCustomTab(Context context, String url) {
+    private void openURLInChromeCustomTab(Context context, String url) {
         try {
             CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
             CustomTabsIntent customTabsIntent = builder1.build();
@@ -309,7 +310,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             recipeFat = itemView.findViewById(R.id.fat_amount);
             mBottomCard = itemView.findViewById(R.id.bottomCardView);
             recipeProtein = itemView.findViewById(R.id.protein_amount);
-            CardView mNutritionCard = itemView.findViewById(R.id.facts_cardView);
+            CardView mNutritionCard = itemView.findViewById(R.id.nutritionCard);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
             CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
 
@@ -549,7 +550,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             Timestamp timestamp = new Timestamp(now);
 
             // Create a Hashmap that holds the information for the report
-            Map<String, Object> reportInfo = new HashMap<>();
+            HashMap<String, Object> reportInfo = new HashMap<>();
 
             // reference to the path of the Reports document on Firebase
             CollectionReference reportingReference = db.collection(Constants.firebaseRecipeReports).document(strDate).collection(Constants.firebaseReports);
@@ -572,12 +573,12 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             // Send the data to Firebase
             reportingReference.document().set(reportInfo)
                     .addOnSuccessListener(aVoid -> {
-                        Log.d(TAG,"Report saved to Firebase");
+                        //Log.d(TAG,"Report saved to Firebase");
                         toastMessage("Reported for " + reason + ". Thank you");
                     })
                     .addOnFailureListener(e -> {
                         toastMessage("Error sending report");
-                        Log.d(TAG, e.toString());
+                        //Log.d(TAG, e.toString());
                     });
         }
 
