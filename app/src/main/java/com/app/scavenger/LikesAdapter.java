@@ -313,6 +313,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             CardView mNutritionCard = itemView.findViewById(R.id.nutritionCard);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
             CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
+            // CardView mAddToList = itemView.findViewById(R.id.addToList_button);
 
             itemView.setOnClickListener(this);
 

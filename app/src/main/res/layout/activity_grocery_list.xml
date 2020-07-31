@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".GroceryListActivity">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/list_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:cardElevation="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/grocery_list"
+            android:layout_gravity="center"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"
+            android:fontFamily="@font/roboto_medium"/>
+
+        <ImageButton
+            android:id="@+id/list_close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/close_list"
+            android:background="@drawable/ic_baseline_close_24"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"/>
+
+    </androidx.cardview.widget.CardView>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/list_toolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/signIn_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="visible">
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/mid_guideLine"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintGuide_percent=".05"
+                android:orientation="horizontal"/>
+
+            <TextView
+                android:id="@+id/listText1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="@id/mid_guideLine"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:fontFamily="@font/roboto_medium"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:textColor="@android:color/black"
+                android:text="@string/grocery_list_text1" />
+
+            <TextView
+                android:id="@+id/listText2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/listText1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:fontFamily="@font/roboto"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:textColor="@android:color/black"
+                android:text="@string/grocery_list_text2" />
+
+            <TextView
+                android:id="@+id/listText3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/listText2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:fontFamily="@font/roboto"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:textColor="@android:color/black"
+                android:text="@string/grocery_list_text3" />
+
+            <TextView
+                android:id="@+id/listText4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/listText3"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:fontFamily="@font/roboto_medium"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:textColor="@android:color/black"
+                android:text="@string/grocery_list_text4" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/signIn_Button"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                app:layout_constraintTop_toBottomOf="@id/listText4"
+                app:layout_constraintStart_toStartOf="@id/google_signIn"
+                app:layout_constraintEnd_toEndOf="@id/google_signIn"
+                android:text="@string/sign_in_button"
+                android:enabled="true"
+                app:icon="@drawable/ic_mail_white_24dp"
+                app:iconGravity="textStart"
+                android:textAllCaps="false"
+                android:layout_marginTop="16dp"
+                android:paddingBottom="4dp"
+                android:fontFamily="@font/roboto_medium"
+                android:textSize="14sp"
+                app:iconPadding="12dp"
+                app:iconSize="18dp"
+                android:textColor="@android:color/white"/>
+
+            <TextView
+                android:id="@+id/signIn_or"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/signin_or"
+                android:fontFamily="@font/roboto_condensed_regular"
+                android:textColor="@android:color/black"
+                android:textSize="18sp"
+                android:gravity="center"
+                app:layout_constraintTop_toBottomOf="@id/signIn_Button"
+                app:layout_constraintStart_toStartOf="@id/google_signIn"
+                app:layout_constraintEnd_toEndOf="@id/google_signIn"
+                android:layout_marginTop="8dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/google_signIn"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                app:layout_constraintTop_toBottomOf="@id/signIn_or"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginStart="72dp"
+                android:layout_marginEnd="72dp"
+                android:text="@string/sign_in_with_google"
+                app:icon="@drawable/googleg_standard_color_18"
+                app:iconTintMode="multiply"
+                app:iconGravity="textStart"
+                app:iconPadding="24dp"
+                app:iconSize="18dp"
+                android:backgroundTint="@android:color/white"
+                android:textColor="@android:color/black"
+                android:textAllCaps="false"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/roboto_medium"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/facebook_signIn"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:text="@string/sign_in_with_facebook"
+                app:layout_constraintTop_toBottomOf="@id/google_signIn"
+                app:layout_constraintStart_toStartOf="@id/google_signIn"
+                app:layout_constraintEnd_toEndOf="@id/google_signIn"
+                android:drawablePadding="8dp"
+                android:textAllCaps="false"
+                android:elevation="12dp"
+                android:background="@color/com_facebook_blue"
+                app:icon="@drawable/com_facebook_button_icon"
+                app:iconTintMode="multiply"
+                app:iconGravity="textStart"
+                app:iconPadding="24dp"
+                app:iconSize="18dp"
+                android:backgroundTint="@color/com_facebook_blue"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/roboto_medium"
+                android:textSize="14sp"/>
+
+            <TextView
+                android:id="@+id/signUp_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_condensed_regular"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@id/facebook_signIn"
+                app:layout_constraintStart_toStartOf="@id/facebook_signIn"
+                app:layout_constraintEnd_toEndOf="@id/facebook_signIn"
+                android:text="@string/no_account_signup"
+                android:gravity="center"
+                android:layout_marginTop="12dp"/>
+
+            <TextView
+                android:id="@+id/accept_terms_signin"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/signUp_text"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginBottom="12dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:gravity="center"
+                android:textColor="@android:color/black"
+                android:textSize="12sp"
+                android:fontFamily="@font/roboto_condensed_regular"
+                android:layout_marginTop="16dp"
+                android:text="@string/terms_signin"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/grocery_recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:overScrollMode="never"
+        android:background="@android:color/black"
+        app:layout_constraintTop_toBottomOf="@id/list_toolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone"/>
+
+    <FrameLayout
+        android:id="@+id/signIn_progressHolder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:animateLayoutChanges="true"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="12dp"
+        android:background="#90000000">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/progressBarStyleLarge"
+            android:indeterminate="true"
+            android:layout_gravity="center"/>
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

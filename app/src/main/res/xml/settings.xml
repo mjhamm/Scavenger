@@ -15,6 +15,11 @@
             android:title="Sign Out"
             app:iconSpaceReserved="false"/>
 
+        <Preference
+            android:key="groceryList"
+            android:title="Grocery List"
+            app:iconSpaceReserved="false"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Display"

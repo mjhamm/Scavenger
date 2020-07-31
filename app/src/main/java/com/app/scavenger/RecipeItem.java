@@ -112,9 +112,7 @@ class RecipeItem {
         return mRecipeAttributes;
     }
 
-    void setmRecipeAttributes(ArrayList<String> mRecipeAttributes) {
-        this.mRecipeAttributes = mRecipeAttributes;
-    }
+    void setmRecipeAttributes(ArrayList<String> mRecipeAttributes) { this.mRecipeAttributes = mRecipeAttributes; }
 
     ArrayList<String> getmIngredients() {
         return mIngredients;

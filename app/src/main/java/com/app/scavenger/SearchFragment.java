@@ -29,7 +29,6 @@ import com.facebook.shimmer.ShimmerFrameLayout;
 //import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -102,7 +101,7 @@ public class SearchFragment extends Fragment {
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
-    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view;
         try {
             view = inflater.inflate(R.layout.fragment_search, container, false);
@@ -351,7 +350,7 @@ public class SearchFragment extends Fragment {
         queryString = getIngredientsSearch();
         call.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(@NotNull Call<String> call, @NotNull Response<String> response) {
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
                         String result = response.body();
@@ -369,7 +368,7 @@ public class SearchFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(@NotNull Call call, @NotNull Throwable t) {}
+            public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
         });
     }
 
@@ -469,9 +468,13 @@ public class SearchFragment extends Fragment {
                 for (int m = 0; m < ingredientsArray.length(); m++) {
                     ing = ingredientsArray.getJSONObject(m);
                     total_ing = ing.getString("text");
-                    list_ingredients.add("\n\u2022 " + total_ing + "\n");
-                    item.setmIngredients(list_ingredients);
+                    // UPDATE - 1.0.1
+                    // Gets rid of duplicate ingredients in recipe
+                    if (!list_ingredients.contains("\n\u2022 " + total_ing + "\n")) {
+                        list_ingredients.add("\n\u2022 " + total_ing + "\n");
+                    }
                 }
+                item.setmIngredients(list_ingredients);
 
                 totalNutrients = recipes.getJSONObject("totalNutrients");
                 //Carbs
@@ -553,7 +556,7 @@ public class SearchFragment extends Fragment {
         Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
         call.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(@NotNull Call<String> call, @NotNull Response<String> response) {
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
                         String result = response.body();
@@ -568,7 +571,7 @@ public class SearchFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(@NotNull Call call, @NotNull Throwable t) {}
+            public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
         });
     }
 

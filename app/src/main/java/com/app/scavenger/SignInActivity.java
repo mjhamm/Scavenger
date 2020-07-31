@@ -81,6 +81,15 @@ public class SignInActivity extends AppCompatActivity {
     public SignInActivity() {}
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (sharedPreferences.getBoolean("logged", false)) {
+            finish();
+        }
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
 
@@ -154,14 +163,12 @@ public class SignInActivity extends AppCompatActivity {
 
         // Facebook Info
         MaterialButton mFacebookSignIn = findViewById(R.id.facebook_signIn);
-        callbackManager = CallbackManager.Factory.create();
+//        callbackManager = CallbackManager.Factory.create();
 
         con = new ConnectionDetector(this);
 
         mAuth = FirebaseAuth.getInstance();
         myDb = DatabaseHelper.getInstance(this);
-
-
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
