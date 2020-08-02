@@ -96,6 +96,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:scrollbars="none"
+            android:contentDescription="@string/search_recyclerview_content_descr"
             android:overScrollMode="never"
             android:layout_weight="9"
             android:animationCache="false"/>

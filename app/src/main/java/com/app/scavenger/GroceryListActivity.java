@@ -3,6 +3,7 @@ package com.app.scavenger;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
@@ -22,7 +23,9 @@ import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.text.style.URLSpan;
 import android.util.Log;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -41,6 +44,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -49,8 +53,13 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class GroceryListActivity extends AppCompatActivity {
 
@@ -68,6 +77,9 @@ public class GroceryListActivity extends AppCompatActivity {
     private ConnectionDetector con;
     private CallbackManager callbackManager;
     private GoogleSignInClient mGoogleSignInClient;
+    private ImageButton mMoreButton, mAddItemButton;
+
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     protected void onStart() {
@@ -75,47 +87,8 @@ public class GroceryListActivity extends AppCompatActivity {
 
         String termsText = "By Signing In, you agree to Scavenger's Terms & Conditions and Privacy Policy.";
         SpannableString termsSS = new SpannableString(termsText);
-
-        ClickableSpan clickableSpanTerms = new ClickableSpan() {
-            @Override
-            public void onClick(@NonNull View widget) {
-                String termsUrl = "https://www.thescavengerapp.com/terms-and-conditions";
-                if (sharedPreferences.getBoolean("inAppBrowser", true)) {
-                    openURLInChromeCustomTab(GroceryListActivity.this, termsUrl);
-                } else {
-                    openInDefaultBrowser(GroceryListActivity.this, termsUrl);
-                }
-            }
-
-            @Override
-            public void updateDrawState(@NonNull TextPaint ds) {
-                super.updateDrawState(ds);
-                ds.setColor(Color.BLUE);
-                ds.setUnderlineText(false);
-            }
-        };
-
-        ClickableSpan clickableSpanPrivacy = new ClickableSpan() {
-            @Override
-            public void onClick(@NonNull View widget) {
-                String privacyUrl = "https://www.thescavengerapp.com/privacy-policy";
-                if (sharedPreferences.getBoolean("inAppBrowser", true)) {
-                    openURLInChromeCustomTab(GroceryListActivity.this, privacyUrl);
-                } else {
-                    openInDefaultBrowser(GroceryListActivity.this, privacyUrl);
-                }
-            }
-
-            @Override
-            public void updateDrawState(@NonNull TextPaint ds) {
-                super.updateDrawState(ds);
-                ds.setColor(Color.BLUE);
-                ds.setUnderlineText(false);
-            }
-        };
-
-        termsSS.setSpan(clickableSpanTerms, 39, 58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        termsSS.setSpan(clickableSpanPrivacy, 62, 77, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(new URLSpan("https://www.thescavengerapp.com/terms-and-conditions"), 40,58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(new URLSpan("https://www.thescavengerapp.com/privacy-policy"), 63,77, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         terms.setText(termsSS);
         terms.setMovementMethod(LinkMovementMethod.getInstance());
@@ -138,6 +111,8 @@ public class GroceryListActivity extends AppCompatActivity {
         con = new ConnectionDetector(this);
         mAuth = FirebaseAuth.getInstance();
 
+        mMoreButton = findViewById(R.id.list_clear);
+        mAddItemButton = findViewById(R.id.add_custom_item_button);
         terms = findViewById(R.id.accept_terms_signin);
         mSignUpText = findViewById(R.id.signUp_text);
         mGroceryRecyclerView = findViewById(R.id.grocery_recyclerView);
@@ -170,6 +145,24 @@ public class GroceryListActivity extends AppCompatActivity {
 
         hideLayouts();
 
+        mAddItemButton.setOnClickListener(v -> {
+            addCustomItem();
+        });
+
+        mMoreButton.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(this, mMoreButton);
+            popupMenu.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.action_clearlist) {
+                    // clear list
+                    clearList();
+                }
+                return false;
+            });
+            MenuInflater inflater = popupMenu.getMenuInflater();
+            inflater.inflate(R.menu.grocery_list_menu, popupMenu.getMenu());
+            popupMenu.show();
+        });
+
         // SIGN IN WITH EMAIL ----------------------------------------------------------------------------------------------
 
         // Sign in with Email
@@ -187,6 +180,7 @@ public class GroceryListActivity extends AppCompatActivity {
                 builder.setTitle("Sign In with Email");
                 final View customView = getLayoutInflater().inflate(R.layout.dialog_sign_in_grocery, null);
                 builder.setView(customView);
+
                 builder.setPositiveButton("Sign In", (dialog, which) -> {
                     // make sure the user is still connected to the internet when they hit sign in
                     if (!con.connectedToInternet()) {
@@ -201,39 +195,54 @@ public class GroceryListActivity extends AppCompatActivity {
                         String email = emailEditText.getText().toString();
                         EditText passEditText = customView.findViewById(R.id.password_editText);
                         String pass = passEditText.getText().toString();
-                        mAuth.signInWithEmailAndPassword(email, pass)
-                                .addOnCompleteListener(this, task -> {
-                                    if (task.isSuccessful()) {
-                                        FirebaseUser user = mAuth.getCurrentUser();
-                                        Toast.makeText(this, "Signed in successfully", Toast.LENGTH_SHORT).show();
-                                        if (user != null) {
-                                            Log.d("GroceryListActivity", "Signed In Successfully");
+                        if (!email.isEmpty() && !pass.isEmpty()) {
+                            progressHolder.setVisibility(View.VISIBLE);
+                            mAuth.signInWithEmailAndPassword(email, pass)
+                                    .addOnCompleteListener(this, task -> {
+                                        if (task.isSuccessful()) {
+                                            FirebaseUser user = mAuth.getCurrentUser();
+                                            Toast.makeText(this, "Signed in successfully", Toast.LENGTH_SHORT).show();
+                                            if (user != null) {
+                                                Log.d("GroceryListActivity", "Signed In Successfully");
 
-                                            // retrieve users grocery list
-                                            retrieveListFromFirebase(user);
+                                                // retrieve users grocery list
+                                                retrieveListFromFirebase(user);
 
-                                            // update shared preference data for the user
-                                            updatePrefInfo(user.getUid());
+                                                // update shared preference data for the user
+                                                updatePrefInfo(user.getUid());
 
-                                            // hide layouts
-                                            hideLayouts();
+                                                sendDataToFirebase(user);
+
+                                                // hide layouts
+                                                hideLayouts();
+                                            }
+                                            progressHolder.setVisibility(View.GONE);
+                                            dialog.dismiss();
+                                        } else {
+                                            Log.w("GroceryListActivity", "SignInWithEmail:failure", task.getException());
+                                            new MaterialAlertDialogBuilder(this)
+                                                    .setTitle("Invalid Email or Password.")
+                                                    .setMessage("The Email Address or Password that you have used is invalid. Please check typing and try again. If you continue to have issues, please reach out to Scavenger Support at support@thescavengerapp.com.")
+                                                    .setPositiveButton("OK", (dialog1, which1) -> {
+                                                        dialog.dismiss();
+                                                        emailEditText.requestFocus();
+                                                    })
+                                                    .create()
+                                                    .show();
                                         }
-                                        dialog.dismiss();
-                                    } else {
-                                        Log.w("GroceryListActivity", "SignInWithEmail:failure", task.getException());
-                                        new MaterialAlertDialogBuilder(this)
-                                                .setTitle("Invalid Email or Password.")
-                                                .setMessage("The Email Address or Password that you have used is invalid. Please check typing and try again. If you continue to have issues, please reach out to Scavenger Support at support@thescavengerapp.com.")
-                                                .setPositiveButton("OK", (dialog1, which1) -> {
-                                                    dialog.dismiss();
-                                                    emailEditText.requestFocus();
-                                                })
-                                                .create()
-                                                .show();
-                                    }
-                                });
+                                    });
+                        } else {
+                            new MaterialAlertDialogBuilder(this)
+                                    .setTitle("Problem Signing In")
+                                    .setMessage("There was an issue Signing In. This could be because the email or password was blank. Please check and try again. If you continue to have issues, please reach out to Scavenger Support at support@thescavengerapp.com")
+                                    .setPositiveButton("OK", (dialog1, which1) -> dialog.dismiss())
+                                    .create()
+                                    .show();
+                        }
                     }
+                    progressHolder.setVisibility(View.GONE);
                 });
+
                 builder.setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()));
                 builder.create();
                 builder.show();
@@ -302,6 +311,8 @@ public class GroceryListActivity extends AppCompatActivity {
 
                             updatePrefInfo(user.getUid());
 
+                            sendDataToFirebase(user);
+
                             hideLayouts();
                         }
                     } else {
@@ -356,6 +367,8 @@ public class GroceryListActivity extends AppCompatActivity {
 
                             updatePrefInfo(user.getUid());
 
+                            sendDataToFirebase(user);
+
                             hideLayouts();
                         }
                     } else {
@@ -404,14 +417,37 @@ public class GroceryListActivity extends AppCompatActivity {
         if (logged) {
             mGroceryRecyclerView.setVisibility(View.VISIBLE);
             mSignInLayout.setVisibility(View.GONE);
+            mMoreButton.setVisibility(View.VISIBLE);
+            mAddItemButton.setVisibility(View.VISIBLE);
+
         } else {
             mGroceryRecyclerView.setVisibility(View.GONE);
             mSignInLayout.setVisibility(View.VISIBLE);
+            mMoreButton.setVisibility(View.GONE);
+            mAddItemButton.setVisibility(View.GONE);
         }
     }
 
+    private void clearList() {
+        Log.d(TAG, "Clear List");
+    }
+
+    private void addCustomItem() {
+        Log.d(TAG, "Add Custom Item");
+    }
+
     private void retrieveListFromFirebase(FirebaseUser user) {
-        Log.d("GroceryListActivity: ", "retrieveGroceryList");
+        Log.d(TAG, "retrieveList");
+        /*CollectionReference groceryItems = db.collection(Constants.firebaseUser).document(user.getUid()).collection(Constants.firebaseGrocery);
+        groceryItems.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+
+                        }
+                    }
+                });*/
     }
 
     private void updatePrefInfo(String userId) {
@@ -420,6 +456,16 @@ public class GroceryListActivity extends AppCompatActivity {
         editor.putString("userId", userId);
         editor.putBoolean("refresh", true);
         editor.apply();
+    }
+
+    // Sends user information to Firebase
+    private void sendDataToFirebase(FirebaseUser user) {
+        if (user != null) {
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("name", user.getDisplayName());
+            data.put("email", user.getEmail());
+            db.collection(Constants.firebaseUser).document(user.getUid()).set(data);
+        }
     }
 
     // opens the recipe in the users default browser
@@ -452,10 +498,6 @@ public class GroceryListActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        // this clears TextLine Cache for memory leak
-        // possible bug in the future
-        Utils.clearTextLineCache();
 
         terms.setText("");
         terms.setMovementMethod(null);

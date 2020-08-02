@@ -444,19 +444,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 popupMenu.show();
             });
 
-            edamamBranding.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle(Constants.nutritionInformationTitle)
-                    .setMessage(Constants.nutritionInformation)
-                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
-                    .show());
-
             mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle(Constants.nutritionInformationTitle)
-                    .setMessage(Constants.nutritionInformation)
-                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
-                    .show());
-
-            recipeServings.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
                     .setTitle(Constants.nutritionInformationTitle)
                     .setMessage(Constants.nutritionInformation)
                     .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
@@ -485,7 +473,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 final CharSequence[] listItems = {"Inappropriate Image","Inappropriate Website","Profanity"};
                 new MaterialAlertDialogBuilder(mContext)
                         .setTitle("Why are you reporting this?")
-                        .setSingleChoiceItems(listItems, -1, (dialog, which) -> {
+                        .setSingleChoiceItems(listItems, 0, (dialog, which) -> {
                             switch (which) {
                                 case 0:
                                     reportReason = "Inappropriate Image";

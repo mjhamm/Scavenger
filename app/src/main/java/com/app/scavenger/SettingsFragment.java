@@ -43,7 +43,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         mContext = getContext();
         signIn = findPreference("signIn");
         signOut = findPreference("signOut");
-        groceryList = findPreference("groceryList");
+        //groceryList = findPreference("groceryList");
         help = findPreference("help");
         about = findPreference("about");
 
@@ -117,10 +117,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             return false;
         });
 
-        groceryList.setOnPreferenceClickListener(v -> {
+        /*groceryList.setOnPreferenceClickListener(v -> {
             openGroceryList();
             return false;
-        });
+        });*/
 
         help.setOnPreferenceClickListener(v -> {
             openHelp();
@@ -145,7 +145,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         startActivity(new Intent(mContext, SignInActivity.class));
     }
 
-    private void openGroceryList() { startActivity(new Intent(mContext, GroceryListActivity.class)); }
+    //private void openGroceryList() { startActivity(new Intent(mContext, GroceryListActivity.class)); }
 
     private void logoutDialog() {
         new MaterialAlertDialogBuilder(mContext)

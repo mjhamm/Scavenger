@@ -15,10 +15,10 @@
             android:title="Sign Out"
             app:iconSpaceReserved="false"/>
 
-        <Preference
+        <!--<Preference
             android:key="groceryList"
             android:title="Grocery List"
-            app:iconSpaceReserved="false"/>
+            app:iconSpaceReserved="false"/>-->
 
     </PreferenceCategory>
 

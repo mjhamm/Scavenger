@@ -45,8 +45,8 @@
 
     <!-- Recipe Card String Information -->
     <string name="recipe_image_content_descr">Recipe Image</string>
-    <string name="more_button_content_descr">More Button</string>
-    <string name="recipe_like_button_content_descr">Recipe Like Button</string>
+    <string name="more_button_content_descr">More</string>
+    <string name="recipe_like_button_content_descr">Recipe Like</string>
     <string name="servings_text">Serves %1$d</string>
     <string name="calories">Calories</string>
     <string name="carbs">Carbs</string>
@@ -75,7 +75,7 @@
     <string name="clientId_web_googleSignIn">565312817175-cipp792csradj5qukdb836j8e9tuq7gr.apps.googleusercontent.com</string>
 
     <!-- Miscellaneous String Information -->
-    <string name="back_button">Back button</string>
+    <string name="back_button">Back</string>
     <string name="search_menu_copy">Copy Recipe URL</string>
     <string name="search_menu_share">Share Recipe</string>
     <string name="search_menu_report">Report…</string>
@@ -132,5 +132,10 @@
     <string name="grocery_list_text4">The best part is that Signing Up is Free!</string>
     <string name="close_list">close list</string>
     <string name="grocery_list">Grocery List</string>
+    <string name="search_recyclerview_content_descr">Search List View</string>
+    <string name="likes_recyclerview_content_descr">Likes List View</string>
+    <string name="nutrition_card_information">Nutrition Information</string>
+    <string name="password_for_sign_in">Password for Sign in</string>
+    <string name="add_item_button">add item</string>
 
 </resources>

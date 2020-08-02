@@ -33,6 +33,17 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="8dp"/>
 
+        <ImageButton
+            android:id="@+id/list_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/more_button_content_descr"
+            android:background="@drawable/ic_baseline_more_vert_24"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="8dp"
+            android:padding="16dp"
+            android:visibility="visible"/>
+
     </androidx.cardview.widget.CardView>
 
     <ScrollView
@@ -209,6 +220,7 @@
                 app:layout_constraintEnd_toEndOf="@id/facebook_signIn"
                 android:text="@string/no_account_signup"
                 android:gravity="center"
+                android:padding="12dp"
                 android:layout_marginTop="12dp"/>
 
             <TextView
@@ -224,9 +236,10 @@
                 android:layout_marginEnd="16dp"
                 android:gravity="center"
                 android:textColor="@android:color/black"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:fontFamily="@font/roboto_condensed_regular"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
+                android:padding="8dp"
                 android:text="@string/terms_signin"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -238,11 +251,21 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:overScrollMode="never"
-        android:background="@android:color/black"
         app:layout_constraintTop_toBottomOf="@id/list_toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone"/>
+
+    <ImageButton
+        android:id="@+id/add_custom_item_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ic_baseline_add_circle_outline_24"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/add_item_button"
         android:visibility="gone"/>
 
     <FrameLayout

@@ -22,6 +22,7 @@ import android.text.TextPaint;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -95,47 +96,8 @@ public class SignInActivity extends AppCompatActivity {
 
         String termsText = "By Signing In, you agree to Scavenger's Terms & Conditions and Privacy Policy.";
         SpannableString termsSS = new SpannableString(termsText);
-
-        ClickableSpan clickableSpanTerms = new ClickableSpan() {
-            @Override
-            public void onClick(@NonNull View widget) {
-                String termsUrl = "https://www.thescavengerapp.com/terms-and-conditions";
-                if (sharedPreferences.getBoolean("inAppBrowser", true)) {
-                    openURLInChromeCustomTab(SignInActivity.this, termsUrl);
-                } else {
-                    openInDefaultBrowser(SignInActivity.this, termsUrl);
-                }
-            }
-
-            @Override
-            public void updateDrawState(@NonNull TextPaint ds) {
-                super.updateDrawState(ds);
-                ds.setColor(Color.BLUE);
-                ds.setUnderlineText(false);
-            }
-        };
-
-        ClickableSpan clickableSpanPrivacy = new ClickableSpan() {
-            @Override
-            public void onClick(@NonNull View widget) {
-                String privacyUrl = "https://www.thescavengerapp.com/privacy-policy";
-                if (sharedPreferences.getBoolean("inAppBrowser", true)) {
-                    openURLInChromeCustomTab(SignInActivity.this, privacyUrl);
-                } else {
-                    openInDefaultBrowser(SignInActivity.this, privacyUrl);
-                }
-            }
-
-            @Override
-            public void updateDrawState(@NonNull TextPaint ds) {
-                super.updateDrawState(ds);
-                ds.setColor(Color.BLUE);
-                ds.setUnderlineText(false);
-            }
-        };
-
-        termsSS.setSpan(clickableSpanTerms, 39, 58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        termsSS.setSpan(clickableSpanPrivacy, 62, 77, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(new URLSpan("https://www.thescavengerapp.com/terms-and-conditions"), 40,58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(new URLSpan("https://www.thescavengerapp.com/privacy-policy"), 63,77, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         signInTerms.setText(termsSS);
         signInTerms.setMovementMethod(LinkMovementMethod.getInstance());
@@ -163,7 +125,7 @@ public class SignInActivity extends AppCompatActivity {
 
         // Facebook Info
         MaterialButton mFacebookSignIn = findViewById(R.id.facebook_signIn);
-//        callbackManager = CallbackManager.Factory.create();
+        callbackManager = CallbackManager.Factory.create();
 
         con = new ConnectionDetector(this);
 
@@ -307,14 +269,10 @@ public class SignInActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancel() {
-
-            }
+            public void onCancel() {}
 
             @Override
-            public void onError(FacebookException error) {
-
-            }
+            public void onError(FacebookException error) {}
         });
     }
 
@@ -472,40 +430,9 @@ public class SignInActivity extends AppCompatActivity {
         view.clearFocus();
     }
 
-    // opens the recipe in the users default browser
-    private void openURLInChromeCustomTab(Context context, String url) {
-        try {
-            CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
-            CustomTabsIntent customTabsIntent = builder1.build();
-            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            builder1.setInstantAppsEnabled(true);
-            customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
-            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
-            customTabsIntent.launchUrl(context, Uri.parse(url));
-        } catch (ActivityNotFoundException e) {
-            e.printStackTrace();
-            Log.e("ChromeCustomTabError: ", "Activity Error");
-        }
-    }
-
-    // open the recipe in the App Browser
-    private void openInDefaultBrowser(Context context, String url) {
-        try {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            context.startActivity(browserIntent);
-        } catch (ActivityNotFoundException e) {
-            e.printStackTrace();
-            Log.e("DefaultBrowserError: ", "Activity Error");
-        }
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        // this clears TextLine Cache for memory leak
-        // possible bug in the future
-        Utils.clearTextLineCache();
 
         signInTerms.setText("");
         signInTerms.setMovementMethod(null);
