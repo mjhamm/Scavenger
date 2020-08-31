@@ -233,7 +233,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     @Override
     public void onDetach() {
-        mCallback = null;
+
+        if (mCallback != null) {
+            mCallback = null;
+        }
         super.onDetach();
     }
 

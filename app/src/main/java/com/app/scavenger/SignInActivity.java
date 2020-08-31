@@ -96,8 +96,8 @@ public class SignInActivity extends AppCompatActivity {
 
         String termsText = "By Signing In, you agree to Scavenger's Terms & Conditions and Privacy Policy.";
         SpannableString termsSS = new SpannableString(termsText);
-        termsSS.setSpan(new URLSpan("https://www.thescavengerapp.com/terms-and-conditions"), 40,58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        termsSS.setSpan(new URLSpan("https://www.thescavengerapp.com/privacy-policy"), 63,77, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(new URLSpan(Constants.scavengerTermsURL), 40,58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(new URLSpan(Constants.scavengerPrivacyURL), 63,77, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         signInTerms.setText(termsSS);
         signInTerms.setMovementMethod(LinkMovementMethod.getInstance());

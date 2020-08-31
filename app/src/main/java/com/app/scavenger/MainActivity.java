@@ -48,8 +48,6 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     @Override
     protected void onStart() {
         super.onStart();
-        // Get information from shared preferences
-        getInfoFromSharedPrefs();
     }
 
     @Override

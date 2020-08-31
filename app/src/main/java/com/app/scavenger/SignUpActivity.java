@@ -156,8 +156,8 @@ public class SignUpActivity extends AppCompatActivity {
         // this will allow users to click the privacy policy and terms
         String termsText = "By Signing Up, you agree to Scavenger's Terms & Conditions and Privacy Policy.";
         SpannableString termsSS = new SpannableString(termsText);
-        termsSS.setSpan(new URLSpan("https://www.thescavengerapp.com/terms-and-conditions"), 40,58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        termsSS.setSpan(new URLSpan("https://www.thescavengerapp.com/privacy-policy"), 63,77, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(new URLSpan(Constants.scavengerTermsURL), 40,58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(new URLSpan(Constants.scavengerPrivacyURL), 63,77, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         termsTextView.setText(termsSS);
         termsTextView.setMovementMethod(LinkMovementMethod.getInstance());

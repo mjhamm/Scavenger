@@ -8,6 +8,8 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.ActivityNotFoundException;
@@ -39,6 +41,7 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -54,12 +57,19 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
 public class GroceryListActivity extends AppCompatActivity {
 
@@ -69,15 +79,27 @@ public class GroceryListActivity extends AppCompatActivity {
     private ConstraintLayout mSignInLayout;
     private MaterialButton mEmailSignIn, mGoogleSignIn, mFacebookSignIn;
     private TextView mSignUpText;
-    private FrameLayout progressHolder;
+    private FrameLayout progressHolder, mBottomBar;
+    private GroceryListAdapter adapter;
     private RecyclerView mGroceryRecyclerView;
     private SharedPreferences sharedPreferences;
-    private TextView terms;
+    private TextView terms, mAddItemButton;
     private FirebaseAuth mAuth;
     private ConnectionDetector con;
+    private ArrayList<GroceryListItem> groceryItemsList;
+    private ArrayList<String> groceryItemsFromFB;
+    private LinearLayoutManager mLayoutManager;
     private CallbackManager callbackManager;
     private GoogleSignInClient mGoogleSignInClient;
-    private ImageButton mMoreButton, mAddItemButton;
+    private ImageButton mMoreButton, mDeleteSelectedItems, mBackButton;
+    private ShimmerFrameLayout mShimmerLayout;
+    private View mHorizontalBar;
+
+    // Shared Preferences Data
+    //-----------------------------------------
+    private String userId = null;
+    private boolean logged = false;
+    //------------------------------------------
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -87,8 +109,8 @@ public class GroceryListActivity extends AppCompatActivity {
 
         String termsText = "By Signing In, you agree to Scavenger's Terms & Conditions and Privacy Policy.";
         SpannableString termsSS = new SpannableString(termsText);
-        termsSS.setSpan(new URLSpan("https://www.thescavengerapp.com/terms-and-conditions"), 40,58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        termsSS.setSpan(new URLSpan("https://www.thescavengerapp.com/privacy-policy"), 63,77, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(new URLSpan(Constants.scavengerTermsURL), 40,58, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        termsSS.setSpan(new URLSpan(Constants.scavengerPrivacyURL), 63,77, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         terms.setText(termsSS);
         terms.setMovementMethod(LinkMovementMethod.getInstance());
@@ -112,13 +134,28 @@ public class GroceryListActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         mMoreButton = findViewById(R.id.list_clear);
-        mAddItemButton = findViewById(R.id.add_custom_item_button);
+        mAddItemButton = findViewById(R.id.addCustomItemRow);
         terms = findViewById(R.id.accept_terms_signin);
         mSignUpText = findViewById(R.id.signUp_text);
         mGroceryRecyclerView = findViewById(R.id.grocery_recyclerView);
         mEmailSignIn = findViewById(R.id.signIn_Button);
         mSignInLayout = findViewById(R.id.signIn_layout);
         progressHolder = findViewById(R.id.signIn_progressHolder);
+        mShimmerLayout = findViewById(R.id.grocery_shimmerLayout);
+        mDeleteSelectedItems = findViewById(R.id.delete_selectedItems_button);
+        mBackButton = findViewById(R.id.list_back);
+        mHorizontalBar = findViewById(R.id.horiz_bar);
+
+        mShimmerLayout.setVisibility(View.GONE);
+
+        mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+
+        // List of Grocery List items
+        groceryItemsList = new ArrayList<>();
+
+        groceryItemsFromFB = new ArrayList<>();
+
+        getInfoFromSharedPrefs();
 
         // Google Info -----------------------------------------------------------------------------------
         mGoogleSignIn = findViewById(R.id.google_signIn);
@@ -137,13 +174,47 @@ public class GroceryListActivity extends AppCompatActivity {
 
         // close the activity
         ImageButton closeButton = findViewById(R.id.list_close);
-        closeButton.setOnClickListener(v -> finish());
+        closeButton.setOnClickListener(v -> {
+            finish();
+        });
+
+        mBackButton.setOnClickListener(v -> {
+            mDeleteSelectedItems.setVisibility(View.GONE);
+            for (GroceryListItem item : groceryItemsList) {
+                item.setmGroceryItemTapped(false);
+                item.setShowSelectItems(false);
+            }
+            mBackButton.setVisibility(View.INVISIBLE);
+            mBackButton.setClickable(false);
+            closeButton.setClickable(true);
+            closeButton.setVisibility(View.VISIBLE);
+            adapter.notifyDataSetChanged();
+        });
 
         // Open up sign up activity
         mSignUpText.setTextColor(Color.BLUE);
         mSignUpText.setOnClickListener(v -> startActivity(new Intent(this, SignUpActivity.class)));
 
         hideLayouts();
+
+        mDeleteSelectedItems.setOnClickListener(v -> {
+            Iterator<GroceryListItem> iterator = groceryItemsList.iterator();
+            while (iterator.hasNext()) {
+                if (iterator.next().getmGroceryItemSelected()) {
+                    iterator.remove();
+                }
+            }
+            mDeleteSelectedItems.setVisibility(View.GONE);
+
+            for (GroceryListItem item : groceryItemsList) {
+                item.setShowSelectItems(false);
+            }
+            mBackButton.setVisibility(View.INVISIBLE);
+            mBackButton.setClickable(false);
+            closeButton.setClickable(true);
+            closeButton.setVisibility(View.VISIBLE);
+            adapter.notifyDataSetChanged();
+        });
 
         mAddItemButton.setOnClickListener(v -> {
             addCustomItem();
@@ -152,9 +223,39 @@ public class GroceryListActivity extends AppCompatActivity {
         mMoreButton.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(this, mMoreButton);
             popupMenu.setOnMenuItemClickListener(item -> {
-                if (item.getItemId() == R.id.action_clearlist) {
-                    // clear list
-                    clearList();
+                switch (item.getItemId()) {
+                    case R.id.action_sendlist:
+                        Log.d(TAG, "SEND LIST");
+                        break;
+                    case R.id.action_selectitems:
+                        Log.d(TAG, "SELECT ITEMS");
+
+                        if (!groceryItemsList.isEmpty()) {
+                            closeButton.setClickable(false);
+                            closeButton.setVisibility(View.INVISIBLE);
+
+                            mBackButton.setClickable(true);
+                            mBackButton.setVisibility(View.VISIBLE);
+                            mDeleteSelectedItems.setVisibility(View.VISIBLE);
+
+                            for (GroceryListItem groceryListItem : groceryItemsList) {
+                                groceryListItem.setmGroceryItemTapped(false);
+                                groceryListItem.setShowSelectItems(true);
+                            }
+                            adapter.notifyDataSetChanged();
+                        }
+                        break;
+                    case R.id.action_clearlist:
+                        // clear list
+                        new MaterialAlertDialogBuilder(this)
+                                .setTitle("Clear your Grocery List?")
+                                .setMessage("This will remove all items in your list. Are you sure you want to continue?")
+                                .setCancelable(false)
+                                .setPositiveButton("Clear", (dialog, which) -> clearList())
+                                .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
+                                .create()
+                                .show();
+                        break;
                 }
                 return false;
             });
@@ -204,9 +305,6 @@ public class GroceryListActivity extends AppCompatActivity {
                                             Toast.makeText(this, "Signed in successfully", Toast.LENGTH_SHORT).show();
                                             if (user != null) {
                                                 Log.d("GroceryListActivity", "Signed In Successfully");
-
-                                                // retrieve users grocery list
-                                                retrieveListFromFirebase(user);
 
                                                 // update shared preference data for the user
                                                 updatePrefInfo(user.getUid());
@@ -307,7 +405,6 @@ public class GroceryListActivity extends AppCompatActivity {
                         FirebaseUser user = mAuth.getCurrentUser();
                         Toast.makeText(this, "Signed in successfully", Toast.LENGTH_SHORT).show();
                         if (user != null) {
-                            retrieveListFromFirebase(user);
 
                             updatePrefInfo(user.getUid());
 
@@ -363,7 +460,6 @@ public class GroceryListActivity extends AppCompatActivity {
                         FirebaseUser user = mAuth.getCurrentUser();
                         Toast.makeText(this, "Signed in successfully", Toast.LENGTH_SHORT).show();
                         if (user != null) {
-                            retrieveListFromFirebase(user);
 
                             updatePrefInfo(user.getUid());
 
@@ -405,52 +501,134 @@ public class GroceryListActivity extends AppCompatActivity {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        hideLayouts();
+        //hideLayouts();
     }
 
     // hide or show layouts based on whether the user is logged in or not
     private void hideLayouts() {
         // check shared preferences to see if the user is logged in or not and set variable "logged"
-        boolean logged = sharedPreferences.getBoolean("logged", false);
+        //boolean logged = sharedPreferences.getBoolean("logged", false);
 
         // Set the visibility of layouts based on whether or not the user is logged in or not
         if (logged) {
-            mGroceryRecyclerView.setVisibility(View.VISIBLE);
+            mAddItemButton.setVisibility(View.VISIBLE);
             mSignInLayout.setVisibility(View.GONE);
             mMoreButton.setVisibility(View.VISIBLE);
-            mAddItemButton.setVisibility(View.VISIBLE);
-
+            mHorizontalBar.setVisibility(View.VISIBLE);
+            if (mAuth.getCurrentUser() != null) {
+                retrieveListFromFirebase(mAuth.getCurrentUser());
+            }
         } else {
+            if (adapter != null) {
+                adapter = null;
+            }
+            groceryItemsList.clear();
             mGroceryRecyclerView.setVisibility(View.GONE);
-            mSignInLayout.setVisibility(View.VISIBLE);
-            mMoreButton.setVisibility(View.GONE);
             mAddItemButton.setVisibility(View.GONE);
+            mSignInLayout.setVisibility(View.VISIBLE);
+            mHorizontalBar.setVisibility(View.GONE);
+            mMoreButton.setVisibility(View.GONE);
         }
     }
 
     private void clearList() {
-        Log.d(TAG, "Clear List");
+        // clear all items in grocery list
+        groceryItemsList.clear();
+        if (adapter != null) {
+            adapter = new GroceryListAdapter(this, groceryItemsList, groceryItemsFromFB, userId);
+        }
+        mGroceryRecyclerView.setAdapter(adapter);
     }
 
     private void addCustomItem() {
-        Log.d(TAG, "Add Custom Item");
+        // Add custom item to grocery list
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle("Add a Custom Item?");
+        builder.setMessage("Add your own custom item to your Grocery List");
+        final View customView = getLayoutInflater().inflate(R.layout.custom_grocery_item, null);
+        builder.setView(customView);
+
+        builder.setPositiveButton("Add Custom Item", (dialog, which) -> {
+            EditText editText = customView.findViewById(R.id.grocery_item_custom);
+
+            if (!editText.getText().toString().trim().isEmpty()) {
+                GroceryListItem groceryListItem = new GroceryListItem();
+                groceryListItem.setGroceryItemName(editText.getText().toString());
+                groceryItemsList.add(0, groceryListItem);
+                sendGroceryItemToFirebase(editText.getText().toString());
+                Toast.makeText(this, "Added " + editText.getText().toString() + " to list", Toast.LENGTH_SHORT).show();
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()));
+        builder.create();
+        builder.show();
+    }
+
+    private void sendGroceryItemToFirebase(String customItem) {
+
+        groceryItemsFromFB.add(0, customItem);
+
+        HashMap<String, Object> itemMap = new HashMap<>();
+
+        CollectionReference groceryRef = db.collection(Constants.firebaseUser).document(userId).collection("GroceryList");
+
+        itemMap.put("items", groceryItemsFromFB);
+
+        groceryRef.document(userId).set(itemMap)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "Grocery item saved to Firebase");
+                })
+                .addOnFailureListener(e -> {
+                    Log.d(TAG, "Error saving grocery item to Firebase : " + e.toString());
+                });
     }
 
     private void retrieveListFromFirebase(FirebaseUser user) {
-        Log.d(TAG, "retrieveList");
-        /*CollectionReference groceryItems = db.collection(Constants.firebaseUser).document(user.getUid()).collection(Constants.firebaseGrocery);
-        groceryItems.get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+        mShimmerLayout.setVisibility(View.VISIBLE);
+
+        CollectionReference groceryRef = db.collection(Constants.firebaseUser).document(user.getUid()).collection("GroceryList");
+        groceryRef.get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        Log.d(TAG, "Grocery List is empty on Firebase");
+                    } else {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
 
+                            if (documentSnapshot.exists()) {
+                                groceryItemsFromFB = (ArrayList<String>) documentSnapshot.get("items");
+                            }
+
                         }
+
+                        for (String item : groceryItemsFromFB) {
+                            GroceryListItem groceryListItem = new GroceryListItem();
+                            groceryListItem.setGroceryItemName(item);
+                            groceryItemsList.add(groceryListItem);
+                        }
+                        mShimmerLayout.setVisibility(View.GONE);
                     }
-                });*/
+                })
+                .addOnFailureListener(e -> {
+
+                });
+
+        adapter = new GroceryListAdapter(this, groceryItemsList, groceryItemsFromFB, userId);
+        mGroceryRecyclerView.setLayoutManager(mLayoutManager);
+        mGroceryRecyclerView.setAdapter(adapter);
+
+        mGroceryRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+
+        mGroceryRecyclerView.setVisibility(View.VISIBLE);
     }
 
     private void updatePrefInfo(String userId) {
+
+        logged = true;
+        this.userId = userId;
+
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("logged", true);
         editor.putString("userId", userId);
@@ -468,31 +646,10 @@ public class GroceryListActivity extends AppCompatActivity {
         }
     }
 
-    // opens the recipe in the users default browser
-    private void openURLInChromeCustomTab(Context context, String url) {
-        try {
-            CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
-            CustomTabsIntent customTabsIntent = builder1.build();
-            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            builder1.setInstantAppsEnabled(true);
-            customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
-            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
-            customTabsIntent.launchUrl(context, Uri.parse(url));
-        } catch (ActivityNotFoundException e) {
-            e.printStackTrace();
-            Log.e("ChromeCustomTabError: ", "Activity Error");
-        }
-    }
-
-    // open the recipe in the App Browser
-    private void openInDefaultBrowser(Context context, String url) {
-        try {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            context.startActivity(browserIntent);
-        } catch (ActivityNotFoundException e) {
-            e.printStackTrace();
-            Log.e("DefaultBrowserError: ", "Activity Error");
-        }
+    // Sets all variables related to logged status and user info
+    private void getInfoFromSharedPrefs() {
+        logged = sharedPreferences.getBoolean("logged", false);
+        userId = sharedPreferences.getString("userId", "");
     }
 
     @Override
@@ -505,5 +662,8 @@ public class GroceryListActivity extends AppCompatActivity {
         if (callbackManager != null) {
             callbackManager = null;
         }
+
+        groceryItemsFromFB.clear();
+        groceryItemsList.clear();
     }
 }

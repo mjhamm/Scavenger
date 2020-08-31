@@ -234,7 +234,6 @@
                 android:drawablePadding="8dp"
                 android:textAllCaps="false"
                 android:elevation="12dp"
-                android:background="@color/com_facebook_blue"
                 app:icon="@drawable/com_facebook_button_icon"
                 app:iconTintMode="multiply"
                 app:iconGravity="textStart"

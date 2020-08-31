@@ -70,20 +70,18 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
         switch (position) {
             // Terms and Conditions
             case 0:
-                String termsUrl = "https://www.thescavengerapp.com/terms-and-conditions";
                 if (inAppBrowsingOn) {
-                    openURLInChromeCustomTab(this, termsUrl);
+                    openURLInChromeCustomTab(this, Constants.scavengerTermsURL);
                 } else {
-                    openInDefaultBrowser(this, termsUrl);
+                    openInDefaultBrowser(this, Constants.scavengerTermsURL);
                 }
                 break;
                 // Privacy Policy
             case 1:
-                String privacyUrl = "https://www.thescavengerapp.com/privacy-policy";
                 if (inAppBrowsingOn) {
-                    openURLInChromeCustomTab(this, privacyUrl);
+                    openURLInChromeCustomTab(this, Constants.scavengerPrivacyURL);
                 } else {
-                    openInDefaultBrowser(this, privacyUrl);
+                    openInDefaultBrowser(this, Constants.scavengerPrivacyURL);
                 }
                 break;
                 // Open Source Libraries

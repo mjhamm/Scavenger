@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -34,6 +35,7 @@ public class ReportProblem extends AppCompatActivity {
     private EditText reportEditText;
     private TextView submit_buttonText;
     private ConnectionDetector con;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +56,8 @@ public class ReportProblem extends AppCompatActivity {
         submit_buttonText.setEnabled(false);
         submit_buttonText.setTextColor(Color.GRAY);
         submit_buttonText.setBackgroundColor(Color.WHITE);
+
+        mAuth = FirebaseAuth.getInstance();
 
         con = new ConnectionDetector(this);
 
@@ -118,6 +122,12 @@ public class ReportProblem extends AppCompatActivity {
         int sdk = Build.VERSION.SDK_INT;
         String osVersion = Build.VERSION.RELEASE;
 
+        String userId = null;
+
+        if (mAuth.getCurrentUser() != null) {
+            userId = mAuth.getCurrentUser().getUid();
+        }
+
         Calendar calendar = Calendar.getInstance();
 
         int month = calendar.get(Calendar.MONTH);
@@ -150,6 +160,7 @@ public class ReportProblem extends AppCompatActivity {
         reportInfo.put("Product", product);
         reportInfo.put("SDK", sdk);
         reportInfo.put("OS", osVersion);
+        reportInfo.put("User Id", userId);
 
 
         reportingReference.document().set(reportInfo)
