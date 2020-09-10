@@ -61,7 +61,7 @@ import java.util.Map;
 
 public class SignInActivity extends AppCompatActivity {
 
-    private final int RC_SIGN_IN = 101;
+    private final int RC_SIGN_IN = 102;
     private static final String TAG = "SIGN_IN_ACTIVITY: ";
 
     private MaterialButton signInButton;
@@ -126,6 +126,8 @@ public class SignInActivity extends AppCompatActivity {
         // Facebook Info
         MaterialButton mFacebookSignIn = findViewById(R.id.facebook_signIn);
         callbackManager = CallbackManager.Factory.create();
+
+        MaterialButton mAppleSignIn = findViewById(R.id.apple_signIn);
 
         con = new ConnectionDetector(this);
 
@@ -239,6 +241,23 @@ public class SignInActivity extends AppCompatActivity {
         });
 
         // -----------------------------------------------------------------------------------------
+
+        // Sign in with apple button ---------------------------------------------------------------
+
+        mAppleSignIn.setOnClickListener(v -> {
+            if (!con.connectedToInternet()) {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                        .create()
+                        .show();
+            } else {
+                appleSignIn();
+            }
+        });
+
+        // -----------------------------------------------------------------------------------------
     }
 
     // Sends user information to Firebase
@@ -339,11 +358,20 @@ public class SignInActivity extends AppCompatActivity {
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    // Apple Sign In information and Methods ------------------------------------------------------------------------------------------------------------------
+
+    private void appleSignIn() {
+        Log.d(TAG, "Apple Sign In");
+    }
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
+
     // On Activity Result
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         callbackManager.onActivityResult(requestCode, resultCode,data);
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == RC_SIGN_IN) {
             progressHolder.setVisibility(View.VISIBLE);
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);

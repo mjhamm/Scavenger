@@ -133,6 +133,7 @@ public class SignUpActivity extends AppCompatActivity {
         MaterialButton facebookSignUpButton = findViewById(R.id.facebook_signUp);
         callbackManager = CallbackManager.Factory.create();
 
+        MaterialButton appleSignUpButton = findViewById(R.id.apple_signUp);
 
         fullName = findViewById(R.id.fullName_editText);
         emailEdit = findViewById(R.id.email_editText);
@@ -260,6 +261,21 @@ public class SignUpActivity extends AppCompatActivity {
                         });
             }
         });
+
+        // -----------------------------------------------------------------------------------------
+
+        appleSignUpButton.setOnClickListener(v -> {
+            if (!con.connectedToInternet()) {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                        .create()
+                        .show();
+            } else {
+                appleSignUp();
+            }
+        });
     }
 
     // Sends user information to Firebase
@@ -362,7 +378,13 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
 
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // Apple Sign Up Information and Methods ------------------------------------------------------------------------------------------------------------------
+
+    private void appleSignUp() {
+        Log.d(TAG, "Apple Sign Up");
+    }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
 

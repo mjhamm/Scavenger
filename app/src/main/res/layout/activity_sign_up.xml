@@ -245,6 +245,28 @@
                 android:fontFamily="@font/roboto_medium"
                 android:textSize="14sp"/>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/apple_signUp"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:text="Sign Up with Apple"
+                app:layout_constraintTop_toBottomOf="@id/facebook_signUp"
+                app:layout_constraintStart_toStartOf="@id/google_signUp"
+                app:layout_constraintEnd_toEndOf="@id/google_signUp"
+                android:drawablePadding="16dp"
+                android:textAllCaps="false"
+                android:elevation="12dp"
+                app:icon="@drawable/apple_logo"
+                app:iconTintMode="multiply"
+                app:iconGravity="textStart"
+                app:iconPadding="24dp"
+                app:iconSize="18dp"
+                android:backgroundTint="@android:color/black"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/roboto_medium"
+                android:textSize="14sp"/>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>
