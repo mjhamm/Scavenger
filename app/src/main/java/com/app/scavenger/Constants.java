@@ -5,14 +5,14 @@ import java.util.ArrayList;
 public class Constants {
 
     // Edamam Key Information
-    public static final String appId = "bd790cc2";
-    public static final String appKey = "56fdf6a5593ad5199e8040a29b9fbfd6";
+    public static final String appId = "XXXXXXXX";
+    public static final String appKey = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 
     // Common String Information
     public static final String firebaseUser = "Users";
     public static final String firebaseLikes = "Likes";
     public static final String firebaseGrocery = "GroceryList";
-    public static final String firebaseIngrListId = "VCHP0Xze7IyETG4NT6at";
+    public static final String firebaseIngrListId = "XXXXXXXXXXXXXXXXXXXX";
     public static final String firebaseRecipeReports = "RecipeReports";
     public static final String firebaseReports = "reports";
     public static final String firebaseTime = "Timestamp";
