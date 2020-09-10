@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
@@ -48,20 +47,11 @@ public class LikesFragment extends Fragment {
     private ImageView mLikes_BG;
     //--------------------------------------------
 
-    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private LikesAdapter adapter;
     private Context mContext;
     private SharedPreferences sharedPreferences;
     private ConnectionDetector con;
-    private String itemId, name, source, image, url;
-    private int serves = 0;
-    private int cals = 0;
-    private int carb = 1;
-    private int fat = 1;
-    private int protein = 1;
     private boolean firstLoad = false;
-    private ArrayList<String> att = new ArrayList<>();
-    private ArrayList<String> ingr = new ArrayList<>();
 
     // Liked Items
     private final ArrayList<RecipeItem> recipeItemList = new ArrayList<>();
@@ -127,6 +117,7 @@ public class LikesFragment extends Fragment {
         mLikesRecyclerView.setHasFixedSize(true);
         mLikesRecyclerView.setItemViewCacheSize(10);
         mLikesRecyclerView.setLayoutManager(mLayoutManager);
+        mLikesRecyclerView.addItemDecoration(new RecyclerViewVerticalSpacing(24,16));
 
         RecyclerView.ItemAnimator animator = mLikesRecyclerView.getItemAnimator();
         if (animator instanceof SimpleItemAnimator) {
@@ -303,6 +294,8 @@ public class LikesFragment extends Fragment {
     // Retrieves the user's likes from Firebase using their userId
     private void retrieveLikesFromFirebase() {
 
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         firstLoad = true;
 
         // reference to the users likes
@@ -310,6 +303,16 @@ public class LikesFragment extends Fragment {
         // orders those likes by timestamp in descending order to show the most recent like on top
         likesRef.orderBy(Constants.firebaseTime, Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+
+                    String itemId, name, source, image, url;
+                    int serves = 0;
+                    int cals = 0;
+                    int carb = 1;
+                    int fat = 1;
+                    int protein = 1;
+                    ArrayList<String> att = new ArrayList<>();
+                    ArrayList<String> ingr = new ArrayList<>();
+
                     // if the number of likes the user has is 0
                     // display likes message and let user know they have 0 likes
                     // clear list and adapter

@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -34,6 +35,7 @@ public class SendFeedback extends AppCompatActivity {
     private EditText feedbackEditText;
     private TextView submit_textButton;
     private ConnectionDetector con;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +56,8 @@ public class SendFeedback extends AppCompatActivity {
         submit_textButton.setEnabled(false);
         submit_textButton.setTextColor(Color.GRAY);
         submit_textButton.setBackgroundColor(Color.WHITE);
+
+        mAuth = FirebaseAuth.getInstance();
 
         con = new ConnectionDetector(this);
 
@@ -115,6 +119,12 @@ public class SendFeedback extends AppCompatActivity {
         int sdk = Build.VERSION.SDK_INT;
         String osVersion = Build.VERSION.RELEASE;
 
+        String userId = null;
+
+        if (mAuth.getCurrentUser() != null) {
+            userId = mAuth.getCurrentUser().getUid();
+        }
+
         Calendar calendar = Calendar.getInstance();
 
         int month = calendar.get(Calendar.MONTH);
@@ -147,6 +157,7 @@ public class SendFeedback extends AppCompatActivity {
         feedbackInfo.put("Product", product);
         feedbackInfo.put("SDK", sdk);
         feedbackInfo.put("OS", osVersion);
+        feedbackInfo.put("User Id", userId);
 
 
         feedbackReference.document().set(feedbackInfo)

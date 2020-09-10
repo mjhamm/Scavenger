@@ -4,12 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Rect;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,13 +23,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.shimmer.ShimmerFrameLayout;
-//import com.google.android.gms.ads.AdListener;
-//import com.google.android.gms.ads.AdLoader;
-//import com.google.android.gms.ads.AdRequest;
-//import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,12 +56,10 @@ public class SearchFragment extends Fragment {
     private String queryString = null;
     private ConnectionDetector con;
     private int numItemsBefore = 0;
-    private int numItemsAfter = 0;
     private boolean numItemsChanged = true;
     private SharedPreferences sharedPreferences;
     private EndlessRecyclerViewScrollListener scrollListener;
     private boolean logged = false;
-
     private DatabaseHelper myDb;
 
     interface ApiService {
@@ -102,7 +95,7 @@ public class SearchFragment extends Fragment {
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
-    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view;
         try {
             view = inflater.inflate(R.layout.fragment_search, container, false);
@@ -121,6 +114,7 @@ public class SearchFragment extends Fragment {
 
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         mSearchRecyclerView.setLayoutManager(mLayoutManager);
+        mSearchRecyclerView.addItemDecoration(new RecyclerViewVerticalSpacing(24,16));
 
         con = new ConnectionDetector(mContext);
 
@@ -351,7 +345,7 @@ public class SearchFragment extends Fragment {
         queryString = getIngredientsSearch();
         call.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(@NotNull Call<String> call, @NotNull Response<String> response) {
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
                         String result = response.body();
@@ -369,7 +363,7 @@ public class SearchFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(@NotNull Call call, @NotNull Throwable t) {}
+            public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
         });
     }
 
@@ -432,14 +426,41 @@ public class SearchFragment extends Fragment {
             JSONArray dietLabelsArray, healthLabelsArray, ingredientsArray;
             ArrayList<String> list_healthLabels, list_ingredients;
             String labels, total_ing;
+            //String[] testArray;
 
             JSONObject obj = new JSONObject(response);
             JSONArray dataArray = obj.getJSONArray("hits");
 
             for (int i = 0; i < dataArray.length(); i++) {
+
                 RecipeItem item = new RecipeItem();
                 hits = dataArray.getJSONObject(i);
                 recipes = hits.getJSONObject("recipe");
+
+                //Ingredients
+                ingredientsArray = recipes.getJSONArray("ingredients");
+                list_ingredients = new ArrayList<>();
+                //testArray = new String[ingredientsArray.length()];
+
+                for (int m = 0; m < ingredientsArray.length(); m++) {
+                    ing = ingredientsArray.getJSONObject(m);
+                    total_ing = ing.getString("text");
+
+                    //Log.d(TAG, total_ing);
+
+                    // UPDATE - 1.0.1
+                    // Replaces huge spaces in between ingredients
+                    total_ing = total_ing.replace("\n", "");
+
+                    //testArray[m] = total_ing;
+
+                    // Gets rid of duplicate ingredients in recipe
+                    if (!list_ingredients.contains("\n\u2022 " + total_ing + "\n")) {
+                        list_ingredients.add("\n\u2022 " + total_ing + "\n");
+                    }
+                }
+                item.setmIngredients(list_ingredients);
+
                 item.setmImageUrl(recipes.getString("image"));
                 item.setmRecipeName(recipes.getString("label"));
                 item.setmSourceName(recipes.getString("source"));
@@ -462,16 +483,6 @@ public class SearchFragment extends Fragment {
                     }
                 }
                 item.setmRecipeAttributes(list_healthLabels);
-
-                //Ingredients
-                ingredientsArray = recipes.getJSONArray("ingredients");
-                list_ingredients = new ArrayList<>();
-                for (int m = 0; m < ingredientsArray.length(); m++) {
-                    ing = ingredientsArray.getJSONObject(m);
-                    total_ing = ing.getString("text");
-                    list_ingredients.add("\n\u2022 " + total_ing + "\n");
-                    item.setmIngredients(list_ingredients);
-                }
 
                 totalNutrients = recipes.getJSONObject("totalNutrients");
                 //Carbs
@@ -510,6 +521,20 @@ public class SearchFragment extends Fragment {
         }
     }
 
+    /*boolean allIngredientsInRecipe(String[] recipeIngredients, String[] queryIngredients) {
+        for (String string : recipeIngredients) {
+            for (String string1 : queryIngredients) {
+                if (string1.toLowerCase().contains(string.toLowerCase())) {
+                    containsItem = true;
+                    break;
+                } else {
+                    containsItem = false;
+                }
+            }
+        }
+        return containsItem;
+    }*/
+
     boolean isLastVisible() {
         int numItems = 0;
         int pos = mLayoutManager.findLastCompletelyVisibleItemPosition();
@@ -532,6 +557,9 @@ public class SearchFragment extends Fragment {
 
     //Gets the input from Searchview and returns it as string
     private String getIngredientsSearch() {
+
+        //ingredientsSplitArray = mSearchView.getQuery().toString().split(" ");
+
         return mSearchView.getQuery().toString();
     }
 
@@ -540,10 +568,8 @@ public class SearchFragment extends Fragment {
     }
 
     private void getMoreRecipes() {
-        if (toIngr >= 50 || (toIngr + 10) > 50) {
-            return;
-        }
-        fromIngr = toIngr;
+
+        fromIngr = toIngr + 1;
         toIngr = fromIngr + 10;
         Log.d(TAG, "from: " + fromIngr + " to: " + toIngr);
         Retrofit retrofit = NetworkClient.getRetrofitClient();
@@ -553,8 +579,11 @@ public class SearchFragment extends Fragment {
         Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
         call.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(@NotNull Call<String> call, @NotNull Response<String> response) {
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {
+
+                    int numItemsAfter = 0;
+
                     if (response.body() != null) {
                         String result = response.body();
                         writeRecycler(result);
@@ -568,7 +597,7 @@ public class SearchFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(@NotNull Call call, @NotNull Throwable t) {}
+            public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
         });
     }
 

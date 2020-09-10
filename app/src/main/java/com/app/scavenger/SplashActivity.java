@@ -5,6 +5,8 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+// class for splash activity
+
 public class SplashActivity extends AppCompatActivity {
 
     @Override

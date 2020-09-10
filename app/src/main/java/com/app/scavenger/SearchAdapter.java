@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -334,6 +335,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             like_button = itemView.findViewById(R.id.recipe_like);
             more_button = itemView.findViewById(R.id.more_button);
             CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
+            //CardView mAddToList = itemView.findViewById(R.id.addToList_button);
             ImageView edamamBranding = itemView.findViewById(R.id.edamam_branding);
             mBottomCard = itemView.findViewById(R.id.bottomCardView);
             recipeServings = itemView.findViewById(R.id.servings_total);
@@ -443,19 +445,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 popupMenu.show();
             });
 
-            edamamBranding.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle(Constants.nutritionInformationTitle)
-                    .setMessage(Constants.nutritionInformation)
-                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
-                    .show());
-
             mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle(Constants.nutritionInformationTitle)
-                    .setMessage(Constants.nutritionInformation)
-                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
-                    .show());
-
-            recipeServings.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
                     .setTitle(Constants.nutritionInformationTitle)
                     .setMessage(Constants.nutritionInformation)
                     .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
@@ -484,7 +474,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 final CharSequence[] listItems = {"Inappropriate Image","Inappropriate Website","Profanity"};
                 new MaterialAlertDialogBuilder(mContext)
                         .setTitle("Why are you reporting this?")
-                        .setSingleChoiceItems(listItems, -1, (dialog, which) -> {
+                        .setSingleChoiceItems(listItems, 0, (dialog, which) -> {
                             switch (which) {
                                 case 0:
                                     reportReason = "Inappropriate Image";

@@ -1,5 +1,7 @@
 package com.app.scavenger;
 
+import java.util.ArrayList;
+
 public class Constants {
 
     // Edamam Key Information
@@ -9,9 +11,15 @@ public class Constants {
     // Common String Information
     public static final String firebaseUser = "Users";
     public static final String firebaseLikes = "Likes";
+    public static final String firebaseGrocery = "GroceryList";
+    public static final String firebaseIngrListId = "VCHP0Xze7IyETG4NT6at";
     public static final String firebaseRecipeReports = "RecipeReports";
     public static final String firebaseReports = "reports";
     public static final String firebaseTime = "Timestamp";
+
+    public static final String scavengerTermsURL = "https://www.thescavengerapp.com/terms-and-conditions";
+    public static final String scavengerPrivacyURL = "https://www.thescavengerapp.com/privacy-policy";
+    public static final String scavengerHelpURL = "https://www.thescavengerapp.com/help";
 
     // Internet Error Messages
     public static final String noInternetTitle = "No Internet connection found";
@@ -48,4 +56,5 @@ public class Constants {
     public static final String ITEM_PROTEIN = "protein";
     public static final String ITEM_ATT = "attributes";
     public static final String ITEM_INGR = "ingredients";
+    public static final String GROCERY_ITEM = "item";
 }

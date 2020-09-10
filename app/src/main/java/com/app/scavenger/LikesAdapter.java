@@ -30,10 +30,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.squareup.picasso.Picasso;
 
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -313,6 +320,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             CardView mNutritionCard = itemView.findViewById(R.id.nutritionCard);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
             CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
+            //CardView mAddToList = itemView.findViewById(R.id.addToList_button);
 
             itemView.setOnClickListener(this);
 
@@ -442,25 +450,9 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 popupMenu.show();
             });
 
-            // Branding for Edamam Click Listener
-            // shows information about how we get our data
-            edamamBranding.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle(Constants.nutritionInformationTitle)
-                    .setMessage(Constants.nutritionInformation)
-                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
-                    .show());
-
             // Nutrition Card Click Listener
             // shows information about how we get our data
             mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle(Constants.nutritionInformationTitle)
-                    .setMessage(Constants.nutritionInformation)
-                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
-                    .show());
-
-            // Servings Click Listener
-            // shows information about how we get our data
-            recipeServings.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
                     .setTitle(Constants.nutritionInformationTitle)
                     .setMessage(Constants.nutritionInformation)
                     .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
@@ -480,7 +472,39 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                     openInDefaultBrowser(mContext, retrieveRecipeUrl());
                 }
             });
+
+            /*mAddToList.setOnClickListener(v -> {
+                // get adapter position of the item in the list
+                int position = getAdapterPosition();
+                // get the recipe item at the position
+                recipeItem = mRecipeItems.get(position);
+
+                compareIngredientsToFirebase(recipeItem.getmIngredients());
+            });*/
         }
+
+        /*private void compareIngredientsToFirebase(ArrayList<String> mRecipeIngredients) {
+
+            //DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("IngredientList").child(Constants.firebaseIngrListId);
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("IngredientList").child(Constants.firebaseIngrListId);
+            ArrayList<String> testArray = new ArrayList<>();
+
+            for (String ingredient : mRecipeIngredients) {
+                ref.equalTo(ingredient).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            testArray.add(ref.toString());
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
+            }
+            Log.d("LIKESADAPTER: ", "Array size :" + testArray.size());
+            testArray.clear();
+        }*/
 
         // Method for reporting a recipe
         private void reportRecipe() {
@@ -500,7 +524,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 final CharSequence[] listItems = {"Inappropriate Image","Inappropriate Website","Profanity"};
                 new MaterialAlertDialogBuilder(mContext)
                         .setTitle("Why are you reporting this?")
-                        .setSingleChoiceItems(listItems, -1, (dialog, which) -> {
+                        .setSingleChoiceItems(listItems, 0, (dialog, which) -> {
                             switch (which) {
                                 case 0:
                                     reportReason = "Inappropriate Image";

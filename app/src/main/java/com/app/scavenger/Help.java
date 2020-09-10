@@ -92,11 +92,10 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
                 break;
                 // Open help center
             case 1:
-                String helpUrl = "https://www.thescavengerapp.com/help";
                 if (sharedPreferences.getBoolean("inAppBrowser", true)) {
-                    openURLInChromeCustomTab(this, helpUrl);
+                    openURLInChromeCustomTab(this, Constants.scavengerHelpURL);
                 } else {
-                    openInDefaultBrowser(this, helpUrl);
+                    openInDefaultBrowser(this, Constants.scavengerHelpURL);
                 }
                 break;
         }

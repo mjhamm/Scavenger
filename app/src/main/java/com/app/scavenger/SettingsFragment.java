@@ -23,7 +23,7 @@ import com.google.firebase.auth.FirebaseAuth;
 public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private Context mContext;
-    private Preference signIn, signOut, help, about;
+    private Preference signIn, signOut, groceryList ,help, about;
     private SharedPreferences sharedPreferences;
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
@@ -43,6 +43,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         mContext = getContext();
         signIn = findPreference("signIn");
         signOut = findPreference("signOut");
+        //groceryList = findPreference("groceryList");
         help = findPreference("help");
         about = findPreference("about");
 
@@ -116,6 +117,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             return false;
         });
 
+        /*groceryList.setOnPreferenceClickListener(v -> {
+            openGroceryList();
+            return false;
+        });*/
+
         help.setOnPreferenceClickListener(v -> {
             openHelp();
             return false;
@@ -138,6 +144,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     private void openSignIn() {
         startActivity(new Intent(mContext, SignInActivity.class));
     }
+
+    //private void openGroceryList() { startActivity(new Intent(mContext, GroceryListActivity.class)); }
 
     private void logoutDialog() {
         new MaterialAlertDialogBuilder(mContext)
@@ -225,7 +233,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     @Override
     public void onDetach() {
-        mCallback = null;
+
+        if (mCallback != null) {
+            mCallback = null;
+        }
         super.onDetach();
     }
 
