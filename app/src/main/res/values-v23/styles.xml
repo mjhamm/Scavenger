@@ -10,4 +10,9 @@
         <item name="materialAlertDialogTheme">@style/ReminderAlertTheme</item>
         <item name="android:windowAnimationStyle">@style/CustomActivityAnimation</item>
     </style>
+
+    <style name="ItemCardScreenTheme" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar">
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 </resources>

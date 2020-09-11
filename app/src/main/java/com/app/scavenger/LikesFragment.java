@@ -117,7 +117,7 @@ public class LikesFragment extends Fragment {
         mLikesRecyclerView.setHasFixedSize(true);
         mLikesRecyclerView.setItemViewCacheSize(10);
         mLikesRecyclerView.setLayoutManager(mLayoutManager);
-        mLikesRecyclerView.addItemDecoration(new RecyclerViewVerticalSpacing(24,16));
+        //mLikesRecyclerView.addItemDecoration(new RecyclerViewVerticalSpacing(24,16));
 
         RecyclerView.ItemAnimator animator = mLikesRecyclerView.getItemAnimator();
         if (animator instanceof SimpleItemAnimator) {

@@ -326,14 +326,16 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
 
             // Recipe Image Click Listener
             recipeImage.setOnClickListener(v -> {
-                int position = getAdapterPosition();
+                Intent intent = new Intent(mContext, RecipeItemScreen.class);
+                mContext.startActivity(intent);
+                /*int position = getAdapterPosition();
                 // Adapter Position
                 // Gets the item at the position
                 recipeItem = mRecipeItems.get(position);
                 // Checks if the item is clicked
                 // Sets the layout visible/gone
                 recipeItem.setClicked(!recipeItem.isClicked());
-                notifyItemChanged(position);
+                notifyItemChanged(position);*/
             });
 
             // Like Button Click Listener

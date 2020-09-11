@@ -21,15 +21,15 @@
 
         <include layout="@layout/row_shimmer_item"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="350dp"/>
         <include layout="@layout/row_shimmer_item"
-            android:layout_height="wrap_content"
+            android:layout_height="350dp"
             android:layout_width="match_parent"/>
         <include layout="@layout/row_shimmer_item"
-            android:layout_height="wrap_content"
+            android:layout_height="350dp"
             android:layout_width="match_parent"/>
         <include layout="@layout/row_shimmer_item"
-            android:layout_height="wrap_content"
+            android:layout_height="350dp"
             android:layout_width="match_parent"/>
 
     </LinearLayout>

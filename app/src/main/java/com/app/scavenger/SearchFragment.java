@@ -114,7 +114,7 @@ public class SearchFragment extends Fragment {
 
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         mSearchRecyclerView.setLayoutManager(mLayoutManager);
-        mSearchRecyclerView.addItemDecoration(new RecyclerViewVerticalSpacing(24,16));
+        //mSearchRecyclerView.addItemDecoration(new RecyclerViewVerticalSpacing(24,16));
 
         con = new ConnectionDetector(mContext);
 

@@ -7,4 +7,6 @@
     <color name="dark_gray">#7D7D7D</color>
     <color name="bg_gray">#E3E3E3</color>
     <color name="splashScreenRed">#ED2024</color>
+    <color name="transparent">#00FFFFFF</color>
+    <color name="item_bg">#FF5D5D5D</color>
 </resources>
