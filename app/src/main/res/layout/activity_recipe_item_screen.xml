@@ -4,14 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     tools:context=".RecipeItemScreen">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
+        android:background="@color/bg_gray"
         android:theme="@style/ItemCardScreenTheme">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
@@ -20,72 +19,94 @@
             android:layout_height="320dp"
             android:fitsSystemWindows="true"
             app:contentScrim="@color/transparent"
+            app:layout_collapseMode="parallax"
             app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
             app:toolbarId="@+id/toolbar">
 
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="320dp"
-                android:fitsSystemWindows="true"
-                app:layout_collapseMode="parallax"
-                android:scaleType="centerCrop"
-                android:tint="#50000000"
-                android:background="#50000000"
-                android:src="@drawable/apple_logo"/>
-
-            <LinearLayout
+            <androidx.cardview.widget.CardView
+                android:id="@+id/recipe_image_holder_detail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_gravity="bottom"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="8dp">
+                android:transitionName="recipeHolder"
+                app:layout_collapseMode="pin"
+                app:cardElevation="6dp"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                app:cardCornerRadius="0dp"
+                android:fitsSystemWindows="true">
 
-                <RatingBar
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ratingBar"
-                    style="?android:attr/ratingBarStyleIndicator"
-                    android:theme="@style/RatingBar"
-                    android:scaleX=".7"
-                    android:rating="3.5"
-                    android:scaleY=".7"
-                    android:layout_marginTop="8dp"
-                    android:transformPivotY="20dp"
-                    android:max="5"/>
+                <ImageView
+                    android:id="@+id/recipe_image_detail"
+                    android:layout_width="match_parent"
+                    android:layout_height="320dp"
+                    android:transitionName="recipeImage"
+                    android:scaleType="centerCrop"
+                    android:background="#85000000"
+                    android:tint="#50000000"/>
 
-                <TextView
-                    android:id="@+id/recipe_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/item_screen_back"
-                    android:elevation="6dp"
-                    android:translationZ="6dp"
-                    android:ellipsize="end"
-                    android:text="Recipe Name"
-                    android:fontFamily="@font/roboto_condensed_regular"
-                    android:maxLines="1"
-                    android:textColor="@android:color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"/>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-                <TextView
-                    android:id="@+id/recipe_source"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/recipe_name"
-                    android:layout_marginBottom="4dp"
-                    android:elevation="6dp"
-                    android:ellipsize="end"
-                    android:text="Recipe Source"
-                    android:fontFamily="@font/roboto_light"
-                    android:maxLines="1"
-                    android:textColor="@android:color/white"
-                    android:textSize="18sp"
-                    android:translationZ="6dp"/>
+                    <RatingBar
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/ratingBar_detail"
+                        style="?android:attr/ratingBarStyleIndicator"
+                        android:layout_marginStart="16dp"
+                        android:theme="@style/RatingBar"
+                        android:transitionName="recipeRating"
+                        android:layout_alignParentStart="true"
+                        android:layout_above="@id/recipe_name_detail"
+                        android:scaleX=".6"
+                        android:rating="3.5"
+                        android:scaleY=".6"
+                        android:layout_marginTop="8dp"
+                        android:transformPivotY="20dp"
+                        android:max="5"/>
 
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/recipe_name_detail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:elevation="6dp"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/roboto_medium"
+                        android:transitionName="recipeName"
+                        android:maxLines="2"
+                        android:text="Recipe Name"
+                        android:textColor="@android:color/white"
+                        android:textSize="18sp"
+                        android:translationZ="6dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_above="@id/recipe_source_detail"
+                        android:layout_alignParentStart="true"/>
+
+                    <TextView
+                        android:id="@+id/recipe_source_detail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="12dp"
+                        android:elevation="6dp"
+                        android:ellipsize="end"
+                        android:transitionName="recipeSource"
+                        android:fontFamily="@font/roboto_condensed_regular"
+                        android:maxLines="2"
+                        android:text="Recipe Source"
+                        android:textColor="@android:color/white"
+                        android:textSize="18sp"
+                        android:translationZ="6dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentStart="true"/>
+
+                </RelativeLayout>
+
+            </androidx.cardview.widget.CardView>
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -93,59 +114,68 @@
                 android:layout_height="150dp"
                 android:gravity="top"
                 android:minHeight="60dp"
-                app:contentInsetStart="8dp"
-                app:contentInsetEnd="8dp"
+                app:contentInsetStart="0dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="24dp"
                 app:layout_collapseMode="pin"
                 app:title=""
+                android:translationZ="6dp"
                 app:popupTheme="@style/AppTheme.PopupOverlay" >
 
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
                     <ImageButton
                         android:id="@+id/item_screen_back"
                         android:layout_width="wrap_content"
                         android:layout_height="50dp"
+                        android:layout_gravity="start|center_vertical"
                         android:elevation="6dp"
                         android:translationZ="6dp"
-                        android:layout_alignParentTop="true"
-                        android:layout_alignParentStart="true"
                         android:padding="8dp"
                         android:src="@drawable/ic_arrow_back_white_36dp"
                         android:background="@android:color/transparent"
                         android:contentDescription="@string/recipe_like_button_content_descr" />
 
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="8"/>
+
                     <ImageButton
-                        android:id="@+id/recipe_like"
+                        android:id="@+id/recipe_like_detail"
                         android:layout_width="wrap_content"
-                        android:layout_height="50dp"
+                        android:layout_height="wrap_content"
+                        android:transitionName="recipeLike"
                         android:elevation="6dp"
                         android:translationZ="6dp"
-                        android:layout_alignParentTop="true"
-                        android:layout_toStartOf="@id/recipe_more"
+                        android:layout_gravity="end|center_vertical"
                         android:scaleX=".5"
                         android:scaleY=".5"
-                        android:padding="4dp"
-                        android:layout_marginEnd="8dp"
                         android:src="@drawable/like_icon_light"
                         android:background="@android:color/transparent"
-                        android:contentDescription="@string/recipe_like_button_content_descr" />
+                        android:contentDescription="@string/recipe_like_button_content_descr"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="4dp"
+                        android:paddingTop="8dp"/>
 
                     <ImageButton
-                        android:id="@+id/recipe_more"
+                        android:id="@+id/recipe_more_detail"
                         android:layout_width="wrap_content"
                         android:layout_height="50dp"
+                        android:transitionName="recipeMore"
                         android:elevation="6dp"
-                        android:layout_alignParentTop="true"
-                        android:layout_alignParentEnd="true"
+                        android:layout_gravity="end|center_vertical"
                         android:translationZ="6dp"
-                        android:padding="12dp"
-                        android:src="@drawable/ic_more_horiz_white_36dp"
+                        android:padding="16dp"
+                        android:src="@drawable/ic_baseline_more_vert_24"
                         android:background="@android:color/transparent"
                         android:contentDescription="@string/recipe_like_button_content_descr" />
 
-                </RelativeLayout>
+                </LinearLayout>
 
             </androidx.appcompat.widget.Toolbar>
 

@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -52,7 +53,7 @@ public class SearchFragment extends Fragment {
     private int fromIngr = 0;
     private int toIngr = 10;
     private LinearLayoutManager mLayoutManager;
-    private ArrayList<Object> recipeItemArrayList;
+    private ArrayList<RecipeItem> recipeItemArrayList;
     private String queryString = null;
     private ConnectionDetector con;
     private int numItemsBefore = 0;
@@ -114,7 +115,6 @@ public class SearchFragment extends Fragment {
 
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         mSearchRecyclerView.setLayoutManager(mLayoutManager);
-        //mSearchRecyclerView.addItemDecoration(new RecyclerViewVerticalSpacing(24,16));
 
         con = new ConnectionDetector(mContext);
 
@@ -438,7 +438,7 @@ public class SearchFragment extends Fragment {
                 recipes = hits.getJSONObject("recipe");
 
                 //Ingredients
-                ingredientsArray = recipes.getJSONArray("ingredients");
+                /*ingredientsArray = recipes.getJSONArray("ingredients");
                 list_ingredients = new ArrayList<>();
                 //testArray = new String[ingredientsArray.length()];
 
@@ -459,13 +459,14 @@ public class SearchFragment extends Fragment {
                         list_ingredients.add("\n\u2022 " + total_ing + "\n");
                     }
                 }
-                item.setmIngredients(list_ingredients);
+                item.setmIngredients(list_ingredients);*/
+
 
                 item.setmImageUrl(recipes.getString("image"));
                 item.setmRecipeName(recipes.getString("label"));
                 item.setmSourceName(recipes.getString("source"));
                 item.setmRecipeURL(recipes.getString("url"));
-                item.setmServings(recipes.getInt("yield"));
+                /*item.setmServings(recipes.getInt("yield"));
                 item.setmCalories(recipes.getInt("calories"));
 
                 dietLabelsArray = recipes.getJSONArray("dietLabels");
@@ -505,7 +506,11 @@ public class SearchFragment extends Fragment {
                     item.setmProtein(1);
                 } else {
                     item.setmProtein(protein.getInt("quantity"));
-                }
+                }*/
+
+                item.setItemUri(recipes.getString("uri"));
+
+                item.setItemRating(randomItemRating());
 
                 item.setItemId(randomItemId(item));
 
@@ -534,6 +539,12 @@ public class SearchFragment extends Fragment {
         }
         return containsItem;
     }*/
+
+    int randomItemRating() {
+        int min = 1;
+        int max = 5;
+        return new Random().nextInt((max - min) + 1) + min;
+    }
 
     boolean isLastVisible() {
         int numItems = 0;

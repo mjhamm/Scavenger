@@ -6,110 +6,143 @@
     android:layout_height="wrap_content"
     android:animateLayoutChanges="true"
     android:clipChildren="false"
-    android:clipToPadding="false">
+    android:clipToPadding="false"
+    android:paddingTop="8dp"
+    android:paddingBottom="20dp">
 
-    <ImageView
-        android:id="@+id/recipe_image"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/image_holder"
         android:layout_width="match_parent"
-        android:layout_height="350dp"
-        android:background="@color/item_bg"
+        android:layout_height="320dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:contentDescription="@string/recipe_image_content_descr" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="350dp"
-        android:alpha="0.5"
-        android:background="@drawable/image_gradient"
-        app:layout_constraintTop_toTopOf="@id/recipe_image"
-        app:layout_constraintStart_toStartOf="@id/recipe_image"
-        app:layout_constraintEnd_toEndOf="@id/recipe_image"
-        app:layout_constraintBottom_toBottomOf="@id/recipe_image"/>
-
-    <ImageButton
-        android:id="@+id/more_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_more_horiz_white_36dp"
-        app:layout_constraintEnd_toEndOf="@id/recipe_image"
-        app:layout_constraintTop_toTopOf="@id/recipe_image"
-        android:elevation="6dp"
-        android:translationZ="6dp"
-        android:background="@android:color/transparent"
-        android:contentDescription="@string/more_button_content_descr"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="12dp"
-        android:layout_marginTop="8dp"
-        android:visibility="gone"/>
-
-    <TextView
-        android:id="@+id/recipe_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:transitionName="recipeHolder"
+        app:cardCornerRadius="12dp"
+        android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        app:layout_constraintStart_toStartOf="@id/recipe_image"
-        app:layout_constraintBottom_toTopOf="@id/recipe_source"
-        app:layout_constraintEnd_toStartOf="@id/recipe_like"
-        android:ellipsize="end"
-        android:elevation="6dp"
-        android:translationZ="6dp"
-        android:fontFamily="@font/roboto_medium"
-        android:maxLines="2"
-        android:textColor="@android:color/white"
-        android:textSize="20sp"
-        android:textStyle="bold"/>
+        app:cardElevation="6dp">
 
-    <TextView
-        android:id="@+id/recipe_source"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="12dp"
-        android:elevation="6dp"
-        android:ellipsize="end"
-        android:fontFamily="@font/roboto_condensed_regular"
-        android:maxLines="2"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        android:translationZ="6dp"
-        app:layout_constraintBottom_toBottomOf="@id/recipe_image"
-        app:layout_constraintEnd_toStartOf="@id/recipe_like"
-        app:layout_constraintStart_toStartOf="@id/recipe_image" />
+        <ImageView
+            android:id="@+id/recipe_image"
+            android:layout_width="match_parent"
+            android:layout_height="320dp"
+            android:transitionName="recipeImage"
+            android:scaleType="centerCrop"
+            android:background="#85000000"
+            android:tint="#55000000"
+            android:contentDescription="@string/recipe_image_content_descr" />
 
-    <ImageButton
-        android:id="@+id/recipe_like"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        app:layout_constraintEnd_toEndOf="@id/recipe_image"
-        app:layout_constraintBottom_toBottomOf="@id/recipe_image"
-        android:elevation="6dp"
-        android:translationZ="6dp"
-        android:scaleX=".5"
-        android:scaleY=".5"
-        android:src="@drawable/like_icon_light"
-        android:background="@android:color/transparent"
-        android:contentDescription="@string/recipe_like_button_content_descr"
-        android:paddingStart="8dp"
-        android:paddingEnd="4dp"
-        android:paddingTop="8dp"
-        android:layout_marginBottom="12dp"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RatingBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/ratingBar"
+                android:layout_alignParentStart="true"
+                android:layout_above="@id/recipe_name"
+                style="?android:attr/ratingBarStyleIndicator"
+                android:transitionName="recipeRating"
+                android:layout_marginStart="16dp"
+                android:theme="@style/RatingBar"
+                android:scaleX=".6"
+                android:rating="3.5"
+                android:scaleY=".6"
+                android:layout_marginTop="8dp"
+                android:transformPivotY="20dp"
+                android:max="5"/>
+
+            <TextView
+                android:id="@+id/recipe_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="8dp"
+                android:elevation="6dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/roboto_medium"
+                android:transitionName="recipeName"
+                android:maxLines="2"
+                android:text="Recipe Name"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:translationZ="6dp"
+                android:layout_toStartOf="@id/recipe_like"
+                android:layout_above="@id/recipe_source"
+                android:layout_alignParentStart="true"/>
+
+            <TextView
+                android:id="@+id/recipe_source"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="12dp"
+                android:elevation="6dp"
+                android:ellipsize="end"
+                android:transitionName="recipeSource"
+                android:fontFamily="@font/roboto_condensed_regular"
+                android:maxLines="2"
+                android:text="Recipe Source"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:translationZ="6dp"
+                android:layout_toStartOf="@id/recipe_like"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentBottom="true"/>
+
+            <ImageButton
+                android:id="@+id/more_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:transitionName="recipeMore"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/ic_baseline_more_vert_24"
+                android:elevation="6dp"
+                android:translationZ="6dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/more_button_content_descr"
+                android:padding="12dp"
+                android:visibility="visible"/>
+
+            <ImageButton
+                android:id="@+id/recipe_like"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:transitionName="recipeLike"
+                android:elevation="6dp"
+                android:translationZ="6dp"
+                android:scaleX=".5"
+                android:scaleY=".5"
+                android:src="@drawable/like_icon_light"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/recipe_like_button_content_descr"
+                android:paddingStart="8dp"
+                android:paddingEnd="4dp"
+                android:paddingTop="8dp"
+                android:layout_marginBottom="12dp"/>
+
+        </RelativeLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/bottomCardView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintTop_toBottomOf="@id/recipe_image"
+        app:layout_constraintTop_toBottomOf="@id/image_holder"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:cardElevation="4dp"
         app:cardCornerRadius="0dp"
         android:clipChildren="false"
-        android:clipToPadding="false">
+        android:clipToPadding="false"
+        android:visibility="gone">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

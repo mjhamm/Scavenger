@@ -21,16 +21,32 @@
 
         <include layout="@layout/row_shimmer_item"
             android:layout_width="match_parent"
-            android:layout_height="350dp"/>
+            android:layout_height="320dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="20dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"/>
         <include layout="@layout/row_shimmer_item"
-            android:layout_height="350dp"
-            android:layout_width="match_parent"/>
+            android:layout_height="320dp"
+            android:layout_width="match_parent"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="20dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"/>
         <include layout="@layout/row_shimmer_item"
-            android:layout_height="350dp"
-            android:layout_width="match_parent"/>
+            android:layout_height="320dp"
+            android:layout_width="match_parent"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="20dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"/>
         <include layout="@layout/row_shimmer_item"
-            android:layout_height="350dp"
-            android:layout_width="match_parent"/>
+            android:layout_height="320dp"
+            android:layout_width="match_parent"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="20dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"/>
 
     </LinearLayout>
 

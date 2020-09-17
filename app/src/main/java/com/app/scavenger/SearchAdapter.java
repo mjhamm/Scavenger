@@ -1,5 +1,6 @@
 package com.app.scavenger;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -7,10 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -21,36 +20,36 @@ import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.util.Pair;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public static final String TAG = "SEARCH_ADAPTER";
 
     // variables for constructor
-    private final ArrayList<Object> mRecipeItems;
+    private final ArrayList<RecipeItem> mRecipeItems;
     private final Context mContext;
     private String userId;
     private boolean logged;
@@ -70,7 +69,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     // Constructor
-    SearchAdapter(Context context, ArrayList<Object> recipeItems, boolean logged) {
+    SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems, boolean logged) {
         //this.userId = userId;
         this.mContext = context;
         this.mRecipeItems = recipeItems;
@@ -133,15 +132,15 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     // Code for adding Recipe Items inside of the Search Recyclerview
     private void populateItemData(ItemViewHolder holder, int position) {
         // gets the item at the list's position
-        RecipeItem item = (RecipeItem) mRecipeItems.get(position);
+        RecipeItem item = mRecipeItems.get(position);
 
         // boolean for whether or not the item at the list position is expanded or not
-        boolean isExpanded = ((RecipeItem) mRecipeItems.get(position)).isClicked();
+        //boolean isExpanded = ((RecipeItem) mRecipeItems.get(position)).isClicked();
         // if the isExpanded boolean is true -
         // Show the bottom card
         // else
         // hide the bottom card
-        holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+        //holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
 
         // checks if the item at the list position is liked or not
         // if it is liked
@@ -176,7 +175,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         // source
         holder.recipeSource.setText(item.getmSourceName());
         // servings
-        holder.recipeServings.setText(String.format(mContext.getString(R.string.servings_text),item.getmServings()));
+        /*holder.recipeServings.setText(String.format(mContext.getString(R.string.servings_text),item.getmServings()));
         // calories
         holder.recipeCalories.setText(String.valueOf(item.getmCalories()));
         // carbs
@@ -188,7 +187,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         // ingredients
         holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
         // attributes
-        holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
+        holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));*/
+        // rating
+        holder.mRatingBar.setNumStars(item.getItemRating());
     }
 
     // Sets all variables related to logged status and user info
@@ -317,7 +318,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         private final TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
         private final ImageView recipeImage;
         private final ImageButton more_button, like_button;
-        private final CardView mBottomCard;
+        private final CardView mBottomCard, recipeHolder;
+        private final RatingBar mRatingBar;
 
         // recipe item
         private RecipeItem item;
@@ -334,9 +336,11 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             recipeImage = itemView.findViewById(R.id.recipe_image);
             like_button = itemView.findViewById(R.id.recipe_like);
             more_button = itemView.findViewById(R.id.more_button);
+            mRatingBar = itemView.findViewById(R.id.ratingBar);
+            recipeHolder = itemView.findViewById(R.id.image_holder);
             CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
             //CardView mAddToList = itemView.findViewById(R.id.addToList_button);
-            ImageView edamamBranding = itemView.findViewById(R.id.edamam_branding);
+            //ImageView edamamBranding = itemView.findViewById(R.id.edamam_branding);
             mBottomCard = itemView.findViewById(R.id.bottomCardView);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
@@ -352,14 +356,30 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             // Recipe Image Click Listener
             recipeImage.setOnClickListener(v -> {
-                int position = getAdapterPosition();
+                Intent intent = new Intent(mContext, RecipeItemScreen.class);
+                intent.putExtra("activity_id", "search");
+                intent.putExtra("recipe_name", mRecipeItems.get(getAdapterPosition()).getmRecipeName());
+                intent.putExtra("recipe_source", mRecipeItems.get(getAdapterPosition()).getmSourceName());
+                intent.putExtra("recipe_liked", mRecipeItems.get(getAdapterPosition()).isLiked());
+                intent.putExtra("recipe_id", mRecipeItems.get(getAdapterPosition()).getItemId());
+                intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
+                intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
+                intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
+                //intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
+                Pair<View, String> p1 = Pair.create(recipeHolder, "recipeHolder");
+                Pair<View, String> p2 = Pair.create(more_button, "recipeMore");
+                Pair<View, String> p3 = Pair.create(like_button, "recipeLike");
+                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.
+                        makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
+                mContext.startActivity(intent, optionsCompat.toBundle());
+                /*int position = getAdapterPosition();
                 // Adapter Position
                 // Gets the item at the position
                 item = (RecipeItem) mRecipeItems.get(position);
                 // Checks if the item is clicked
                 // Sets the layout visible/gone
                 item.setClicked(!item.isClicked());
-                notifyItemChanged(position);
+                notifyItemChanged(position);*/
             });
 
             // Creates animation for Like button - Animation to grow and shrink heart when clicked
@@ -423,7 +443,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             more_button.setOnClickListener(v -> {
 
-                item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
+                item = mRecipeItems.get(getAdapterPosition());
 
                 PopupMenu popupMenu = new PopupMenu(mContext, more_button);
                 popupMenu.setOnMenuItemClickListener(item -> {

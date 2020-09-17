@@ -12,6 +12,12 @@ class RecipeItem {
 
     private String itemId;
 
+    private int itemRating;
+
+    @Expose
+    @SerializedName("uri")
+    private String mRecipeUri;
+
     @Expose
     @SerializedName("dietLabels")
     private ArrayList<String> mRecipeAttributes;
@@ -66,6 +72,22 @@ class RecipeItem {
 
     void setItemId(String itemId) {
         this.itemId = itemId;
+    }
+
+    int getItemRating() {
+        return itemRating;
+    }
+
+    void setItemRating(int itemRating) {
+        this.itemRating = itemRating;
+    }
+
+    String getItemUri() {
+        return mRecipeUri;
+    }
+
+    void setItemUri(String mRecipeUri) {
+        this.mRecipeUri = mRecipeUri;
     }
 
     void setmImageUrl(String mImageUrl) {

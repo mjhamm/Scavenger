@@ -1,5 +1,6 @@
 package com.app.scavenger;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -8,7 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -20,27 +20,20 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.core.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.squareup.picasso.Picasso;
-
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -175,10 +168,10 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         RecipeItem item = mRecipeItems.get(position);
 
         // variable for checking whether the item is expanded or not
-        boolean isExpanded = mRecipeItems.get(position).isClicked();
+        //boolean isExpanded = mRecipeItems.get(position).isClicked();
         // if the variable for isExpanded is true - mBottomCard is Visible
         // else - mBottomCard is Gone
-        holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+        //holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
 
         // For the Likes fragment, all items are in the state of being liked
         // Set each item to liked
@@ -206,7 +199,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         // Recipe Source Name
         holder.recipeSource.setText(item.getmSourceName());
         // # of Servings
-        holder.recipeServings.setText(String.format(mContext.getString(R.string.servings_text),item.getmServings()));
+        /*holder.recipeServings.setText(String.format(mContext.getString(R.string.servings_text),item.getmServings()));
         // # of Calories
         holder.recipeCalories.setText(String.valueOf(item.getmCalories()));
         // # of Carbs
@@ -218,7 +211,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         // Recipe Ingredients
         holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
         // Recipe Attributes
-        holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
+        holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));*/
     }
 
     // Gets the Recipe Item's ID
@@ -296,7 +289,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         private final TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
         private final ImageView recipeImage;
         private final ImageButton more_button, like_button;
-        private final CardView mBottomCard;
+        private final CardView mBottomCard, recipeHolder;
 
         // View Holder variables
         private RecipeItem recipeItem;
@@ -307,11 +300,12 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             recipeName = itemView.findViewById(R.id.recipe_name);
             recipeSource = itemView.findViewById(R.id.recipe_source);
             recipeImage = itemView.findViewById(R.id.recipe_image);
+            recipeHolder = itemView.findViewById(R.id.image_holder);
             like_button = itemView.findViewById(R.id.recipe_like);
             more_button = itemView.findViewById(R.id.more_button);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
-            ImageView edamamBranding = itemView.findViewById(R.id.edamam_branding);
+            //ImageView edamamBranding = itemView.findViewById(R.id.edamam_branding);
             recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
             recipeCarbs = itemView.findViewById(R.id.carbs_amount);
             recipeFat = itemView.findViewById(R.id.fat_amount);
@@ -327,7 +321,20 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             // Recipe Image Click Listener
             recipeImage.setOnClickListener(v -> {
                 Intent intent = new Intent(mContext, RecipeItemScreen.class);
-                mContext.startActivity(intent);
+                intent.putExtra("activity_id", "like");
+                intent.putExtra("recipe_name", mRecipeItems.get(getAdapterPosition()).getmRecipeName());
+                intent.putExtra("recipe_source", mRecipeItems.get(getAdapterPosition()).getmSourceName());
+                intent.putExtra("recipe_liked", mRecipeItems.get(getAdapterPosition()).isLiked());
+                intent.putExtra("recipe_id", mRecipeItems.get(getAdapterPosition()).getItemId());
+                intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
+                intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
+                intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
+                Pair<View, String> p1 = Pair.create(recipeHolder, "recipeHolder");
+                Pair<View, String> p2 = Pair.create(more_button, "recipeMore");
+                Pair<View, String> p3 = Pair.create(like_button, "recipeLike");
+                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.
+                        makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
+                mContext.startActivity(intent, optionsCompat.toBundle());
                 /*int position = getAdapterPosition();
                 // Adapter Position
                 // Gets the item at the position
