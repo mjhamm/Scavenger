@@ -1,6 +1,8 @@
 package com.app.scavenger;
 
 import android.app.Activity;
+import android.app.Instrumentation;
+import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -8,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -28,9 +31,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
+import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -61,17 +69,20 @@ import retrofit2.http.Query;
 
 public class RecipeItemScreen extends AppCompatActivity {
 
-    private TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeCarbs, recipeFat, recipeProtein, recipeAttributes, recipeIngredients, recipeInstructions;
+    private TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeCarbs, recipeFat, recipeProtein, recipeAttributes, recipeIngredients, viewComments, mCommentsMainTitle;
     private ImageView recipeImage;
     private ImageButton recipeLike, recipeMore;
-    private CardView recipeHolder;
+    private CardView recipeHolder, mNutritionCard;
     private RatingBar ratingBar;
     private MaterialButton viewRecipeButton;
+    private RecyclerView mInstructionsRecyclerView, mCommentsRecyclerView;
+    private ConstraintLayout mMainConstraintLayout;
 
-    private String userId, internalUrl, internalUrlFormatted, name, source, itemId, image, url, reportReason, servingsText, caloriesText, carbsText, fatText, proteinText, instructions;
-    private ArrayList<String> ingredients, attributes;
+    private String userId, internalUrl, internalUrlFormatted, name, source, itemId, image, url, reportReason, servingsText, caloriesText, carbsText, fatText, proteinText;
+    private ArrayList<String> ingredients, attributes, instructions;
     private boolean isLiked, logged;
     private int rating, servingsInt, caloriesInt, carbsInt, fatInt, proteinInt;
+    private int commentCount = 0;
 
     private ConnectionDetector con;
     private FirebaseFirestore db;
@@ -108,6 +119,11 @@ public class RecipeItemScreen extends AppCompatActivity {
         myDb = DatabaseHelper.getInstance(this);
         con = new ConnectionDetector(this);
 
+        instructions = new ArrayList<>();
+        //instructions.add("1");
+        ingredients = new ArrayList<>();
+        attributes = new ArrayList<>();
+
         getInfoFromSharedPrefs();
 
         recipeName = findViewById(R.id.recipe_name_detail);
@@ -125,9 +141,56 @@ public class RecipeItemScreen extends AppCompatActivity {
         recipeFat = findViewById(R.id.fat_amount_detail);
         recipeProtein = findViewById(R.id.protein_amount_detail);
         viewRecipeButton = findViewById(R.id.view_recipe_button);
+        mNutritionCard = findViewById(R.id.nutritionCard);
+        mCommentsRecyclerView = findViewById(R.id.comments_recyclerView);
+        mInstructionsRecyclerView = findViewById(R.id.instructions_recyclerView);
+        mMainConstraintLayout = findViewById(R.id.constraint_layout);
+        mCommentsMainTitle = findViewById(R.id.comments_main_title);
 
         ImageButton mBackButton = findViewById(R.id.item_screen_back);
         mBackButton.setOnClickListener(v -> supportFinishAfterTransition());
+
+        ImageButton commentButton = findViewById(R.id.comment_button);
+        viewComments = findViewById(R.id.view_comments);
+
+        if (logged) {
+            commentButton.setVisibility(View.VISIBLE);
+        } else {
+            commentButton.setVisibility(View.GONE);
+        }
+
+        commentButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CommentsActivity.class);
+            intent.putExtra("focus", true);
+            intent.putExtra("recipe_name", name);
+            intent.putExtra("recipe_source", source);
+            startActivity(intent);
+        });
+
+        viewComments.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CommentsActivity.class);
+            intent.putExtra("focus", false);
+            intent.putExtra("recipe_name", name);
+            intent.putExtra("recipe_source", source);
+            startActivity(intent);
+        });
+
+        viewRecipeButton.setOnClickListener(v -> {
+            boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
+            if (inAppBrowsingOn) {
+                openURLInChromeCustomTab(this, url);
+            } else {
+                openInDefaultBrowser(this, url);
+            }
+        });
+
+        // Nutrition Card Click Listener
+        // shows information about how we get our data
+        mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(this)
+                .setTitle(Constants.nutritionInformationTitle)
+                .setMessage(Constants.nutritionInformation)
+                .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
+                .show());
 
         if (getIntent() != null) {
 
@@ -176,11 +239,40 @@ public class RecipeItemScreen extends AppCompatActivity {
                 recipeImage.setImageDrawable(null);
             }
 
-            if (activityId.equals("search")) {
-                callToApi();
+            if (activityId != null) {
+                internalUrl = getIntent().getExtras().getString("recipe_uri");
+                if (activityId.equals("search")) {
+                    callToApi();
+                } else {
+                    getRecipeInfoFB();
+                }
             } else {
-                getRecipeInfoFB();
+                callToApi();
             }
+
+            // After check for comments
+            if (commentCount == 0) {
+                viewComments.setText("No Comments");
+            } else if (commentCount == 1) {
+                viewComments.setText("View " + commentCount + " comment");
+            } else {
+                viewComments.setText("View all " + commentCount + " comments");
+            }
+
+            ConstraintSet constraintSet = new ConstraintSet();
+            constraintSet.clone(mMainConstraintLayout);
+
+            // After check for instructions
+            if (instructions.size() == 0) {
+                constraintSet.setVisibility(viewRecipeButton.getId(), ConstraintSet.VISIBLE);
+                viewRecipeButton.setEnabled(true);
+            } else {
+                constraintSet.setVisibility(viewRecipeButton.getId(), ConstraintSet.GONE);
+                viewRecipeButton.setEnabled(false);
+                constraintSet.connect(mCommentsMainTitle.getId(), ConstraintSet.TOP, mInstructionsRecyclerView.getId(), ConstraintSet.BOTTOM);
+            }
+
+            constraintSet.applyTo(mMainConstraintLayout);
         }
 
         recipeMore.setOnClickListener(v -> {
@@ -264,6 +356,33 @@ public class RecipeItemScreen extends AppCompatActivity {
 
     private void getRecipeInfoFB() {
         retrieveLikesFromFirebase(itemId);
+    }
+
+    // open the recipe in the App Browser
+    private void openInDefaultBrowser(Context context, String url) {
+        try {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            context.startActivity(browserIntent);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Log.e("DefaultBrowserError: ", "Activity Error");
+        }
+    }
+
+    // opens the recipe in the users default browser
+    private void openURLInChromeCustomTab(Context context, String url) {
+        try {
+            CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
+            CustomTabsIntent customTabsIntent = builder1.build();
+            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            builder1.setInstantAppsEnabled(true);
+            customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
+            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
+            customTabsIntent.launchUrl(context, Uri.parse(url));
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            Log.e("ChromeCustomTabError: ", "Activity Error");
+        }
     }
 
     // Retrieves the user's likes from Firebase using their userId
@@ -351,7 +470,7 @@ public class RecipeItemScreen extends AppCompatActivity {
 
     private void getRecipeData(String response) {
         try {
-            JSONObject serve, ing, totalNutrients, calories, carbs, fat, protein;
+            JSONObject ing, totalNutrients, carbs, fat, protein;
             JSONArray dietLabelsArray, healthLabelsArray, ingredientsArray;
             ArrayList<String> list_healthLabels, list_ingredients;
             String labels, total_ing;
@@ -363,7 +482,6 @@ public class RecipeItemScreen extends AppCompatActivity {
             for (int i = 0; i < hit.length(); i++) {
                 JSONObject obj = hit.getJSONObject(i);
 
-                //serve = obj.getInt("yield");
                 servingsInt = obj.getInt("yield");
 
                 Log.d("RECIPEITEMSCREEN", "Servings: " + servingsInt);
@@ -412,7 +530,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                 totalNutrients = obj.getJSONObject("totalNutrients");
                 //Carbs
                 carbs = totalNutrients.getJSONObject("CHOCDF");
-                if (carbs.getInt("quantity") > 0 && carbs.getInt("quantity") < 1) {
+                if (carbs.getInt("quantity") >= 0 && carbs.getInt("quantity") < 1) {
                     carbsInt = 1;
                 } else {
                     carbsInt = carbs.getInt("quantity");
@@ -420,7 +538,7 @@ public class RecipeItemScreen extends AppCompatActivity {
 
                 //Fat
                 fat = totalNutrients.getJSONObject("FAT");
-                if (fat.getInt("quantity") > 0 && fat.getInt("quantity") < 1) {
+                if (fat.getInt("quantity") >= 0 && fat.getInt("quantity") < 1) {
                     fatInt = 1;
                 } else {
                     fatInt = fat.getInt("quantity");
@@ -428,7 +546,7 @@ public class RecipeItemScreen extends AppCompatActivity {
 
                 //Protein
                 protein = totalNutrients.getJSONObject("PROCNT");
-                if (protein.getInt("quantity") > 0 && protein.getInt("quantity") < 1) {
+                if (protein.getInt("quantity") >= 0 && protein.getInt("quantity") < 1) {
                     proteinInt = 1;
                 } else {
                     proteinInt = protein.getInt("quantity");
@@ -478,6 +596,7 @@ public class RecipeItemScreen extends AppCompatActivity {
             new MaterialAlertDialogBuilder(this)
                     .setTitle("Why are you reporting this?")
                     .setSingleChoiceItems(listItems, 0, (dialog, which) -> {
+
                         switch (which) {
                             case 0:
                                 reportReason = "Inappropriate Image";
@@ -499,6 +618,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                                     .create()
                                     .show();
                         } else {
+                            Log.d("Recipe Item Screen", reportReason);
                             //sendReportToDb(reportReason, item);
                         }
                     })
@@ -506,6 +626,14 @@ public class RecipeItemScreen extends AppCompatActivity {
                     .create()
                     .show();
         }
+    }
+
+    @Override
+    protected void onStop() {
+        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && !isFinishing()){
+            new Instrumentation().callActivityOnSaveInstanceState(this, new Bundle());
+        }
+        super.onStop();
     }
 
     // Gets the Recipe Item's ID

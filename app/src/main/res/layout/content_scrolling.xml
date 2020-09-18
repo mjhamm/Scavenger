@@ -11,6 +11,7 @@
     tools:showIn="@layout/activity_recipe_item_screen">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraint_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginStart="16dp"
@@ -138,6 +139,7 @@
             app:layout_constraintEnd_toEndOf="@id/nutritionCard"/>
 
         <TextView
+            android:id="@+id/calories_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto_condensed_regular"
@@ -150,6 +152,7 @@
             app:layout_constraintEnd_toEndOf="@id/calories_amount_detail"/>
 
         <TextView
+            android:id="@+id/carbs_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto_condensed_regular"
@@ -162,6 +165,7 @@
             app:layout_constraintEnd_toEndOf="@id/carbs_amount_detail"/>
 
         <TextView
+            android:id="@+id/fat_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto_condensed_regular"
@@ -174,6 +178,7 @@
             app:layout_constraintEnd_toEndOf="@id/fat_amount_detail"/>
 
         <TextView
+            android:id="@+id/protein_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto_condensed_regular"
@@ -256,33 +261,43 @@
             android:layout_marginTop="4dp"
             android:background="@color/bg_gray"/>
 
-        <TextView
-            android:id="@+id/instructions_detail"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/instructions_recyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/instructions_underline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="8dp"
-            android:fontFamily="@font/roboto_condensed_regular"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="14sp"/>
+            android:layout_marginTop="6dp"/>
 
-            <TextView
-                android:id="@+id/comments_main_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/instructions_detail"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginTop="4dp"
-                android:fontFamily="@font/roboto_medium"
-                android:text="Comments"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textSize="18sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/view_recipe_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View Recipe"
+            app:cornerRadius="12dp"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/instructions_underline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:id="@+id/comments_main_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/view_recipe_button"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/roboto_medium"
+            android:text="Comments"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="18sp" />
 
         <ImageButton
+            android:id="@+id/comment_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
@@ -303,13 +318,14 @@
             android:layout_marginTop="4dp"
             android:background="@color/bg_gray"/>
 
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/comments_nested"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/comments_recyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/comments_underline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="6dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"/>
 
@@ -319,26 +335,14 @@
             android:layout_height="wrap_content"
             android:text="View all 28 comments"
             android:textColor="@color/dark_gray"
+            android:visibility="visible"
             android:fontFamily="@font/roboto_condensed_regular"
-            app:layout_constraintTop_toBottomOf="@id/comments_nested"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="8dp"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/view_recipe_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="View Recipe"
-            app:cornerRadius="12dp"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@id/view_comments"
+            app:layout_constraintTop_toBottomOf="@id/comments_recyclerView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginBottom="16dp"
-            android:layout_marginTop="16dp"/>
+            android:layout_marginTop="8dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

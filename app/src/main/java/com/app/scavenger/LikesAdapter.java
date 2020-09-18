@@ -167,12 +167,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         // Gets the item at the position
         RecipeItem item = mRecipeItems.get(position);
 
-        // variable for checking whether the item is expanded or not
-        //boolean isExpanded = mRecipeItems.get(position).isClicked();
-        // if the variable for isExpanded is true - mBottomCard is Visible
-        // else - mBottomCard is Gone
-        //holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
-
         // For the Likes fragment, all items are in the state of being liked
         // Set each item to liked
         item.setLiked(true);
@@ -198,20 +192,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         holder.recipeName.setText(item.getmRecipeName());
         // Recipe Source Name
         holder.recipeSource.setText(item.getmSourceName());
-        // # of Servings
-        /*holder.recipeServings.setText(String.format(mContext.getString(R.string.servings_text),item.getmServings()));
-        // # of Calories
-        holder.recipeCalories.setText(String.valueOf(item.getmCalories()));
-        // # of Carbs
-        holder.recipeCarbs.setText(String.valueOf(item.getmCarbs()));
-        // # of Fat
-        holder.recipeFat.setText(String.valueOf(item.getmFat()));
-        // # of Protein
-        holder.recipeProtein.setText(String.valueOf(item.getmProtein()));
-        // Recipe Ingredients
-        holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
-        // Recipe Attributes
-        holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));*/
     }
 
     // Gets the Recipe Item's ID
@@ -305,7 +285,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             more_button = itemView.findViewById(R.id.more_button);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
-            //ImageView edamamBranding = itemView.findViewById(R.id.edamam_branding);
             recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
             recipeCarbs = itemView.findViewById(R.id.carbs_amount);
             recipeFat = itemView.findViewById(R.id.fat_amount);
@@ -314,7 +293,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             CardView mNutritionCard = itemView.findViewById(R.id.nutritionCard);
             recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
             CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
-            //CardView mAddToList = itemView.findViewById(R.id.addToList_button);
 
             itemView.setOnClickListener(this);
 
@@ -329,20 +307,13 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
                 intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
                 intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
+                intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
                 Pair<View, String> p1 = Pair.create(recipeHolder, "recipeHolder");
                 Pair<View, String> p2 = Pair.create(more_button, "recipeMore");
                 Pair<View, String> p3 = Pair.create(like_button, "recipeLike");
                 ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.
                         makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
                 mContext.startActivity(intent, optionsCompat.toBundle());
-                /*int position = getAdapterPosition();
-                // Adapter Position
-                // Gets the item at the position
-                recipeItem = mRecipeItems.get(position);
-                // Checks if the item is clicked
-                // Sets the layout visible/gone
-                recipeItem.setClicked(!recipeItem.isClicked());
-                notifyItemChanged(position);*/
             });
 
             // Like Button Click Listener
@@ -481,39 +452,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                     openInDefaultBrowser(mContext, retrieveRecipeUrl());
                 }
             });
-
-            /*mAddToList.setOnClickListener(v -> {
-                // get adapter position of the item in the list
-                int position = getAdapterPosition();
-                // get the recipe item at the position
-                recipeItem = mRecipeItems.get(position);
-
-                compareIngredientsToFirebase(recipeItem.getmIngredients());
-            });*/
         }
-
-        /*private void compareIngredientsToFirebase(ArrayList<String> mRecipeIngredients) {
-
-            //DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("IngredientList").child(Constants.firebaseIngrListId);
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("IngredientList").child(Constants.firebaseIngrListId);
-            ArrayList<String> testArray = new ArrayList<>();
-
-            for (String ingredient : mRecipeIngredients) {
-                ref.equalTo(ingredient).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists()) {
-                            testArray.add(ref.toString());
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {}
-                });
-            }
-            Log.d("LIKESADAPTER: ", "Array size :" + testArray.size());
-            testArray.clear();
-        }*/
 
         // Method for reporting a recipe
         private void reportRecipe() {

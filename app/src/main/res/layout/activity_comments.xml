@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/parent_layout"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    tools:context=".CommentsActivity">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/comments_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:cardElevation="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/comments"
+            android:layout_gravity="center"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"
+            android:fontFamily="@font/roboto_medium"/>
+
+        <ImageButton
+            android:id="@+id/comments_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/back_button"
+            android:background="@drawable/ic_arrow_back_black_36dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"/>
+
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/comment_recipeName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Recipe Name"
+        android:textColor="@android:color/black"
+        android:fontFamily="@font/roboto_medium"
+        android:textSize="16sp"
+        android:layout_marginTop="4dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintTop_toBottomOf="@id/comments_toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="start"/>
+
+    <TextView
+        android:id="@+id/comment_recipeSource"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Recipe Source"
+        android:layout_marginTop="4dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:fontFamily="@font/roboto_condensed_regular"
+        android:textColor="@android:color/black"
+        app:layout_constraintTop_toBottomOf="@id/comment_recipeName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="start"/>
+
+    <View
+        android:id="@+id/comment_underline"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/comment_recipeSource"
+        android:layout_marginTop="4dp"
+        android:background="@color/bg_gray"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/comments_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/comment_underline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/add_comment_card"/>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/add_comment_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardElevation="6dp"
+        app:cardCornerRadius="0dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/comment_editText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:layout_weight="1"
+                android:minLines="1"
+                android:background="@color/transparent"
+                android:textSize="14sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="12dp"
+                android:layout_gravity="start|center_vertical"
+                android:hint="Add a comment..."
+                android:textColor="@color/item_bg"
+                android:importantForAutofill="no" />
+
+            <TextView
+                android:id="@+id/post_textButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Post"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:fontFamily="@font/roboto_medium"
+                android:textColor="@color/dark_gray"
+                android:gravity="center"
+                android:layout_gravity="end|center_vertical"/>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

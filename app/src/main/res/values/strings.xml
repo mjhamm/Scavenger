@@ -230,6 +230,7 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_scrolling">ScrollingActivity</string>
     <string name="recipe_instructions">Instructions</string>
+    <string name="comments">Comments</string>
 
 
 </resources>

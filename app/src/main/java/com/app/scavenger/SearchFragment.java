@@ -422,11 +422,7 @@ public class SearchFragment extends Fragment {
 
     private void writeRecycler(String response) {
         try {
-            JSONObject hits, recipes, ing, totalNutrients, carbs, fat, protein;
-            JSONArray dietLabelsArray, healthLabelsArray, ingredientsArray;
-            ArrayList<String> list_healthLabels, list_ingredients;
-            String labels, total_ing;
-            //String[] testArray;
+            JSONObject hits, recipes;
 
             JSONObject obj = new JSONObject(response);
             JSONArray dataArray = obj.getJSONArray("hits");
@@ -437,83 +433,22 @@ public class SearchFragment extends Fragment {
                 hits = dataArray.getJSONObject(i);
                 recipes = hits.getJSONObject("recipe");
 
-                //Ingredients
-                /*ingredientsArray = recipes.getJSONArray("ingredients");
-                list_ingredients = new ArrayList<>();
-                //testArray = new String[ingredientsArray.length()];
-
-                for (int m = 0; m < ingredientsArray.length(); m++) {
-                    ing = ingredientsArray.getJSONObject(m);
-                    total_ing = ing.getString("text");
-
-                    //Log.d(TAG, total_ing);
-
-                    // UPDATE - 1.0.1
-                    // Replaces huge spaces in between ingredients
-                    total_ing = total_ing.replace("\n", "");
-
-                    //testArray[m] = total_ing;
-
-                    // Gets rid of duplicate ingredients in recipe
-                    if (!list_ingredients.contains("\n\u2022 " + total_ing + "\n")) {
-                        list_ingredients.add("\n\u2022 " + total_ing + "\n");
-                    }
-                }
-                item.setmIngredients(list_ingredients);*/
-
-
+                // Image
                 item.setmImageUrl(recipes.getString("image"));
+                // Name
                 item.setmRecipeName(recipes.getString("label"));
+                // Source
                 item.setmSourceName(recipes.getString("source"));
+                // URL
                 item.setmRecipeURL(recipes.getString("url"));
-                /*item.setmServings(recipes.getInt("yield"));
-                item.setmCalories(recipes.getInt("calories"));
-
-                dietLabelsArray = recipes.getJSONArray("dietLabels");
-                list_healthLabels = new ArrayList<>();
-                for (int j = 0; j < dietLabelsArray.length(); j++) {
-                    String diets = dietLabelsArray.getString(j);
-                    list_healthLabels.add("\n\u2022 " + diets + "\n");
-                }
-
-                healthLabelsArray = recipes.getJSONArray("healthLabels");
-                for (int k = 0; k < healthLabelsArray.length(); k++) {
-                    if (healthLabelsArray.length() <= 3) {
-                        labels = healthLabelsArray.getString(k);
-                        list_healthLabels.add("\n\u2022 " + labels + "\n");
-                    }
-                }
-                item.setmRecipeAttributes(list_healthLabels);
-
-                totalNutrients = recipes.getJSONObject("totalNutrients");
-                //Carbs
-                carbs = totalNutrients.getJSONObject("CHOCDF");
-                if (carbs.getInt("quantity") > 0 && carbs.getInt("quantity") < 1) {
-                    item.setmCarbs(1);
-                } else {
-                    item.setmCarbs(carbs.getInt("quantity"));
-                }
-                //Fat
-                fat = totalNutrients.getJSONObject("FAT");
-                if (fat.getInt("quantity") > 0 && fat.getInt("quantity") < 1) {
-                    item.setmFat(1);
-                } else {
-                    item.setmFat(fat.getInt("quantity"));
-                }
-                //Protein
-                protein = totalNutrients.getJSONObject("PROCNT");
-                if (protein.getInt("quantity") > 0 && protein.getInt("quantity") < 1) {
-                    item.setmProtein(1);
-                } else {
-                    item.setmProtein(protein.getInt("quantity"));
-                }*/
-
-                item.setItemUri(recipes.getString("uri"));
-
+                // Rating
                 item.setItemRating(randomItemRating());
-
+                // Internal URL
+                item.setItemUri(recipes.getString("uri"));
+                // Unique ID
                 item.setItemId(randomItemId(item));
 
+                // checks if item in contained in db liked items to set as liked
                 if (itemIds.contains(item.getItemId())) {
                     item.setLiked(true);
                 }
@@ -525,20 +460,6 @@ public class SearchFragment extends Fragment {
             e.printStackTrace();
         }
     }
-
-    /*boolean allIngredientsInRecipe(String[] recipeIngredients, String[] queryIngredients) {
-        for (String string : recipeIngredients) {
-            for (String string1 : queryIngredients) {
-                if (string1.toLowerCase().contains(string.toLowerCase())) {
-                    containsItem = true;
-                    break;
-                } else {
-                    containsItem = false;
-                }
-            }
-        }
-        return containsItem;
-    }*/
 
     int randomItemRating() {
         int min = 1;
@@ -568,9 +489,6 @@ public class SearchFragment extends Fragment {
 
     //Gets the input from Searchview and returns it as string
     private String getIngredientsSearch() {
-
-        //ingredientsSplitArray = mSearchView.getQuery().toString().split(" ");
-
         return mSearchView.getQuery().toString();
     }
 

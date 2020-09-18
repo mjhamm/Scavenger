@@ -17,10 +17,12 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".DietPreferences"></activity>
+        <activity android:name=".CommentsActivity" />
         <activity
             android:name=".RecipeItemScreen"
             android:label="@string/title_activity_recipe_item_screen"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".GroceryListActivity"
             android:screenOrientation="portrait" />

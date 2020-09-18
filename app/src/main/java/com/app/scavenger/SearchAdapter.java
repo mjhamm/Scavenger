@@ -70,7 +70,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     // Constructor
     SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems, boolean logged) {
-        //this.userId = userId;
         this.mContext = context;
         this.mRecipeItems = recipeItems;
         this.logged = logged;
@@ -134,14 +133,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         // gets the item at the list's position
         RecipeItem item = mRecipeItems.get(position);
 
-        // boolean for whether or not the item at the list position is expanded or not
-        //boolean isExpanded = ((RecipeItem) mRecipeItems.get(position)).isClicked();
-        // if the isExpanded boolean is true -
-        // Show the bottom card
-        // else
-        // hide the bottom card
-        //holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
-
         // checks if the item at the list position is liked or not
         // if it is liked
         if (item.isLiked()) {
@@ -174,20 +165,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         holder.recipeName.setText(item.getmRecipeName());
         // source
         holder.recipeSource.setText(item.getmSourceName());
-        // servings
-        /*holder.recipeServings.setText(String.format(mContext.getString(R.string.servings_text),item.getmServings()));
-        // calories
-        holder.recipeCalories.setText(String.valueOf(item.getmCalories()));
-        // carbs
-        holder.recipeCarbs.setText(String.valueOf(item.getmCarbs()));
-        // fat
-        holder.recipeFat.setText(String.valueOf(item.getmFat()));
-        // protein
-        holder.recipeProtein.setText(String.valueOf(item.getmProtein()));
-        // ingredients
-        holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
-        // attributes
-        holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));*/
         // rating
         holder.mRatingBar.setNumStars(item.getItemRating());
     }
@@ -339,8 +316,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             mRatingBar = itemView.findViewById(R.id.ratingBar);
             recipeHolder = itemView.findViewById(R.id.image_holder);
             CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
-            //CardView mAddToList = itemView.findViewById(R.id.addToList_button);
-            //ImageView edamamBranding = itemView.findViewById(R.id.edamam_branding);
             mBottomCard = itemView.findViewById(R.id.bottomCardView);
             recipeServings = itemView.findViewById(R.id.servings_total);
             recipeCalories = itemView.findViewById(R.id.calories_amount);
@@ -365,21 +340,13 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
                 intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
                 intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
-                //intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
+                intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
                 Pair<View, String> p1 = Pair.create(recipeHolder, "recipeHolder");
                 Pair<View, String> p2 = Pair.create(more_button, "recipeMore");
                 Pair<View, String> p3 = Pair.create(like_button, "recipeLike");
                 ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.
                         makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
                 mContext.startActivity(intent, optionsCompat.toBundle());
-                /*int position = getAdapterPosition();
-                // Adapter Position
-                // Gets the item at the position
-                item = (RecipeItem) mRecipeItems.get(position);
-                // Checks if the item is clicked
-                // Sets the layout visible/gone
-                item.setClicked(!item.isClicked());
-                notifyItemChanged(position);*/
             });
 
             // Creates animation for Like button - Animation to grow and shrink heart when clicked
@@ -591,17 +558,17 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
 
         private String retrieveRecipeUrl() {
-            item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
+            item = mRecipeItems.get(getAdapterPosition());
             return item.getmRecipeURL();
         }
 
         private String retrieveRecipeSource() {
-            item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
+            item = mRecipeItems.get(getAdapterPosition());
             return item.getmSourceName();
         }
 
         private String retrieveRecipeName() {
-            item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
+            item = mRecipeItems.get(getAdapterPosition());
             return item.getmRecipeName();
         }
     }
