@@ -40,18 +40,13 @@ public class ReportProblem extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
-
         setContentView(R.layout.activity_report_problem);
 
         reportEditText = findViewById(R.id.report_editText);
         submit_buttonText = findViewById(R.id.report_textButton);
-        ImageButton backButton = findViewById(R.id.reportProblem_back);
+
+        TopToolbar topToolbar = findViewById(R.id.reportProblem_toolbar);
+        topToolbar.setTitle("Report a Problem");
 
         submit_buttonText.setEnabled(false);
         submit_buttonText.setTextColor(Color.GRAY);
@@ -60,9 +55,6 @@ public class ReportProblem extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         con = new ConnectionDetector(this);
-
-        // button that closes the activity on click
-        backButton.setOnClickListener(v -> finish());
 
         // Checks for whether or not the edit text is empty or not and changes the appearance of the submit button
         reportEditText.addTextChangedListener(new TextWatcher() {

@@ -310,6 +310,7 @@ public class LikesFragment extends Fragment {
                     int carb = 1;
                     int fat = 1;
                     int protein = 1;
+                    int rating = 0;
                     ArrayList<String> att = new ArrayList<>();
                     ArrayList<String> ingr = new ArrayList<>();
 
@@ -344,6 +345,10 @@ public class LikesFragment extends Fragment {
                             source = documentSnapshot.getString(Constants.ITEM_SOURCE);
                             image = documentSnapshot.getString(Constants.ITEM_IMAGE);
                             url = documentSnapshot.getString(Constants.ITEM_URL);
+                            if (documentSnapshot.getLong(Constants.ITEM_RATING) != null) {
+                                //noinspection ConstantConditions
+                                rating = documentSnapshot.getLong(Constants.ITEM_RATING).intValue();
+                            }
                             if (documentSnapshot.getLong(Constants.ITEM_YIELD) != null) {
                                 //noinspection ConstantConditions
                                 serves = documentSnapshot.getLong(Constants.ITEM_YIELD).intValue();
@@ -375,6 +380,7 @@ public class LikesFragment extends Fragment {
                             item.setmSourceName(source);
                             item.setmImageUrl(image);
                             item.setmRecipeURL(url);
+                            item.setItemRating(rating);
                             item.setmServings(serves);
                             item.setmCalories(cals);
                             item.setmCarbs(carb);

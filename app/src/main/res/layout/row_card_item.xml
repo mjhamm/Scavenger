@@ -45,10 +45,11 @@
                 android:layout_above="@id/recipe_name"
                 style="?android:attr/ratingBarStyleIndicator"
                 android:transitionName="recipeRating"
-                android:layout_marginStart="16dp"
                 android:theme="@style/RatingBar"
+                android:isIndicator="true"
+                android:layout_marginStart="16dp"
                 android:scaleX=".6"
-                android:rating="3.5"
+                android:rating="5"
                 android:scaleY=".6"
                 android:layout_marginTop="8dp"
                 android:transformPivotY="20dp"
@@ -65,7 +66,6 @@
                 android:fontFamily="@font/roboto_medium"
                 android:transitionName="recipeName"
                 android:maxLines="2"
-                android:text="Recipe Name"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
                 android:translationZ="6dp"
@@ -85,7 +85,6 @@
                 android:transitionName="recipeSource"
                 android:fontFamily="@font/roboto_condensed_regular"
                 android:maxLines="2"
-                android:text="Recipe Source"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
                 android:translationZ="6dp"
@@ -131,7 +130,7 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <androidx.cardview.widget.CardView
+    <!--<androidx.cardview.widget.CardView
         android:id="@+id/bottomCardView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -381,11 +380,11 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent">
-                <!--
+                &lt;!&ndash;
                                 app:layout_constraintTop_toTopOf="@id/addToList_button"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintEnd_toStartOf="@id/addToList_button"
-                                app:layout_constraintBottom_toBottomOf="@id/addToList_button"-->
+                                app:layout_constraintBottom_toBottomOf="@id/addToList_button"&ndash;&gt;
 
                 <TextView
                     android:layout_width="match_parent"
@@ -401,7 +400,7 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!--<androidx.cardview.widget.CardView
+            &lt;!&ndash;<androidx.cardview.widget.CardView
                 android:id="@+id/addToList_button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -431,10 +430,10 @@
                     android:textColor="@android:color/white"
                     android:textSize="18sp" />
 
-            </androidx.cardview.widget.CardView>-->
+            </androidx.cardview.widget.CardView>&ndash;&gt;
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </androidx.cardview.widget.CardView>
+    </androidx.cardview.widget.CardView>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

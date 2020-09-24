@@ -18,6 +18,7 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.core.util.Pair;
@@ -192,6 +193,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         holder.recipeName.setText(item.getmRecipeName());
         // Recipe Source Name
         holder.recipeSource.setText(item.getmSourceName());
+        // Recipe Rating
+        holder.mRatingBar.setRating(item.getItemRating());
     }
 
     // Gets the Recipe Item's ID
@@ -266,10 +269,11 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         // View Holder Recipe Card
-        private final TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
+        private final TextView recipeName, recipeSource;
         private final ImageView recipeImage;
         private final ImageButton more_button, like_button;
-        private final CardView mBottomCard, recipeHolder;
+        private final CardView recipeHolder;
+        private final RatingBar mRatingBar;
 
         // View Holder variables
         private RecipeItem recipeItem;
@@ -283,16 +287,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             recipeHolder = itemView.findViewById(R.id.image_holder);
             like_button = itemView.findViewById(R.id.recipe_like);
             more_button = itemView.findViewById(R.id.more_button);
-            recipeServings = itemView.findViewById(R.id.servings_total);
-            recipeCalories = itemView.findViewById(R.id.calories_amount);
-            recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
-            recipeCarbs = itemView.findViewById(R.id.carbs_amount);
-            recipeFat = itemView.findViewById(R.id.fat_amount);
-            mBottomCard = itemView.findViewById(R.id.bottomCardView);
-            recipeProtein = itemView.findViewById(R.id.protein_amount);
-            CardView mNutritionCard = itemView.findViewById(R.id.nutritionCard);
-            recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
-            CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
+            mRatingBar = itemView.findViewById(R.id.ratingBar);
 
             itemView.setOnClickListener(this);
 
@@ -414,6 +409,9 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                         case R.id.menu_copy:
                             copyRecipe();
                             return true;
+                        case R.id.menu_view:
+                            viewRecipe();
+                            return true;
                             // share the recipe through text, email, facebook
                         case R.id.menu_share:
                             shareRecipe();
@@ -428,29 +426,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 MenuInflater inflater = popupMenu.getMenuInflater();
                 inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
                 popupMenu.show();
-            });
-
-            // Nutrition Card Click Listener
-            // shows information about how we get our data
-            mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle(Constants.nutritionInformationTitle)
-                    .setMessage(Constants.nutritionInformation)
-                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
-                    .show());
-
-            // View Recipe Click Listener
-            mViewRecipe.setOnClickListener(v -> {
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-                boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
-                // checks if the default browser is on or off
-                // if in app browsing is on
-                // open in custom chrome tabs
-                if (inAppBrowsingOn) {
-                    openURLInChromeCustomTab(mContext, retrieveRecipeUrl());
-                    // else - open in the users default browser
-                } else {
-                    openInDefaultBrowser(mContext, retrieveRecipeUrl());
-                }
             });
         }
 
@@ -501,6 +476,21 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                         .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
                         .create()
                         .show();
+            }
+        }
+
+        // View the recipe on the recipe's website
+        private void viewRecipe() {
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+            boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
+            // checks if the default browser is on or off
+            // if in app browsing is on
+            // open in custom chrome tabs
+            if (inAppBrowsingOn) {
+                openURLInChromeCustomTab(mContext, retrieveRecipeUrl());
+                // else - open in the users default browser
+            } else {
+                openInDefaultBrowser(mContext, retrieveRecipeUrl());
             }
         }
 

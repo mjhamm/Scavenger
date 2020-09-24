@@ -24,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.shimmer.ShimmerFrameLayout;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import org.json.JSONArray;
@@ -182,8 +183,17 @@ public class SearchFragment extends Fragment {
                     adapter = null;
                 }
 
-                getIngredients();
-                callToApi();
+                if (!con.connectedToInternet()) {
+                    new MaterialAlertDialogBuilder(mContext)
+                            .setTitle(Constants.noInternetTitle)
+                            .setMessage(Constants.noInternetMessage)
+                            .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                            .create()
+                            .show();
+                } else {
+                    getIngredients();
+                    callToApi();
+                }
 
                 return false;
             }

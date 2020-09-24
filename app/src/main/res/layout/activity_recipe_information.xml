@@ -8,14 +8,50 @@
     tools:context=".RecipeItemScreen"
     android:overScrollMode="never"
     android:scrollbars="vertical"
-    tools:showIn="@layout/activity_recipe_item_screen">
+    tools:showIn="@layout/activity_recipe_item_top">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraint_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp">
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/not_connected_text_recipeItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top|center_horizontal"
+            android:padding="16dp"
+            android:elevation="12dp"
+            android:visibility="visible"
+            android:fontFamily="@font/roboto_medium"
+            android:textColor="@android:color/black"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="In order to retrieve the information for this recipe, you must be connected to the internet."/>
+
+        <FrameLayout
+            android:id="@+id/detail_loading"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:animateLayoutChanges="true"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true"
+            android:elevation="12dp"
+            android:background="#90000000">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="?android:attr/progressBarStyleLarge"
+                android:indeterminate="true"
+                android:layout_gravity="center"/>
+        </FrameLayout>
 
         <androidx.cardview.widget.CardView
             android:id="@+id/nutritionCard"
@@ -23,11 +59,12 @@
             android:layout_height="70dp"
             app:cardCornerRadius="12dp"
             android:elevation="4dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:contentDescription="@string/nutrition_card_information"
             app:layout_constraintTop_toBottomOf="@id/servings_detail"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_margin="8dp"/>
+            app:layout_constraintStart_toStartOf="parent"/>
 
         <TextView
             android:id="@+id/nutritionFacts_main_title"
@@ -38,6 +75,8 @@
             app:layout_constraintEnd_toStartOf="@id/edamam_branding"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="6dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:fontFamily="@font/roboto_medium"
             android:gravity="start"
             android:text="@string/nutrition_facts"
@@ -48,6 +87,8 @@
             android:id="@+id/nutrition_underline"
             android:layout_width="0dp"
             android:layout_height="1dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/nutritionFacts_main_title"
@@ -58,6 +99,8 @@
             android:id="@+id/edamam_branding"
             android:layout_width="80dp"
             android:layout_height="0dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:src="@drawable/edamam_badge"
             android:elevation="6dp"
             android:translationZ="6dp"
@@ -72,11 +115,11 @@
             android:layout_height="wrap_content"
             android:layout_alignEnd="@id/edamam_branding"
             android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
             android:fontFamily="@font/roboto_condensed_regular"
             android:gravity="end"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="14sp"
-            android:text="4 Servings"
             app:layout_constraintTop_toBottomOf="@id/nutrition_underline"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="4dp"/>
@@ -90,7 +133,6 @@
             android:textSize="16sp"
             android:translationZ="2dp"
             android:layout_marginTop="12dp"
-            android:text="1000"
             app:layout_constraintHorizontal_chainStyle="spread"
             app:layout_constraintStart_toStartOf="@id/nutritionCard"
             app:layout_constraintTop_toTopOf="@id/nutritionCard"
@@ -104,7 +146,6 @@
             android:textColor="@android:color/black"
             android:textSize="16sp"
             android:translationZ="2dp"
-            android:text="10g"
             app:layout_constraintBottom_toBottomOf="@+id/calories_amount_detail"
             app:layout_constraintEnd_toStartOf="@id/fat_amount_detail"
             app:layout_constraintStart_toEndOf="@id/calories_amount_detail"
@@ -118,7 +159,6 @@
             android:textColor="@android:color/black"
             android:textSize="16sp"
             android:translationZ="2dp"
-            android:text="10g"
             app:layout_constraintEnd_toStartOf="@id/protein_amount_detail"
             app:layout_constraintStart_toEndOf="@id/carbs_amount_detail"
             app:layout_constraintTop_toTopOf="@+id/calories_amount_detail"
@@ -132,7 +172,6 @@
             android:textColor="@android:color/black"
             android:textSize="16sp"
             android:translationZ="2dp"
-            android:text="10g"
             app:layout_constraintTop_toTopOf="@id/calories_amount_detail"
             app:layout_constraintBottom_toBottomOf="@id/fat_amount_detail"
             app:layout_constraintStart_toEndOf="@id/fat_amount_detail"
@@ -199,6 +238,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/ingredients_main_title"
             android:layout_marginTop="12dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:fontFamily="@font/roboto_condensed_regular"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="14sp"/>
@@ -211,6 +252,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="4dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:fontFamily="@font/roboto_medium"
             android:text="@string/ingredients"
             android:textColor="?android:attr/textColorPrimary"
@@ -224,6 +267,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/ingredients_main_title"
             android:layout_marginTop="4dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:background="@color/bg_gray"/>
 
         <TextView
@@ -234,6 +279,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:fontFamily="@font/roboto_condensed_regular"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="14sp"/>
@@ -246,6 +293,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="4dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:fontFamily="@font/roboto_medium"
             android:text="@string/recipe_instructions"
             android:textColor="?android:attr/textColorPrimary"
@@ -259,12 +308,15 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/instructions_main_title"
             android:layout_marginTop="4dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:background="@color/bg_gray"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/instructions_recyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:overScrollMode="never"
             app:layout_constraintTop_toBottomOf="@id/instructions_underline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -282,6 +334,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginBottom="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:layout_marginTop="16dp"/>
 
         <TextView
@@ -291,6 +345,7 @@
             app:layout_constraintTop_toBottomOf="@id/view_recipe_button"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
             android:fontFamily="@font/roboto_medium"
             android:text="Comments"
             android:textColor="?android:attr/textColorPrimary"
@@ -300,7 +355,11 @@
             android:id="@+id/comment_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingEnd="12dp"
+            android:paddingStart="12dp"
+            android:layout_marginEnd="16dp"
             android:contentDescription="add_comment"
             app:layout_constraintTop_toTopOf="@id/comments_main_title"
             app:layout_constraintBottom_toBottomOf="@id/comments_main_title"
@@ -316,12 +375,15 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/comments_main_title"
             android:layout_marginTop="4dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:background="@color/bg_gray"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/comments_recyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:overScrollMode="never"
             app:layout_constraintTop_toBottomOf="@id/comments_underline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -333,16 +395,19 @@
             android:id="@+id/view_comments"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="View all 28 comments"
             android:textColor="@color/dark_gray"
             android:visibility="visible"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
             android:fontFamily="@font/roboto_condensed_regular"
             app:layout_constraintTop_toBottomOf="@id/comments_recyclerView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginBottom="16dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

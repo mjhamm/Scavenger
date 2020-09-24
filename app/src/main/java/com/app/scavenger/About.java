@@ -27,17 +27,13 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
-
         setContentView(R.layout.activity_about);
 
         RecyclerView aboutRecycler = findViewById(R.id.about_list);
-        ImageButton backButton = findViewById(R.id.about_back);
+
+        TopToolbar topToolbar = findViewById(R.id.about_toolbar);
+        topToolbar.setTitle("About");
+
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Add options inside of the recyclerview
@@ -46,7 +42,7 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
         options.add(getResources().getString(R.string.privacy_policy));
         options.add(getResources().getString(R.string.open_source_libraries));
 
-        aboutRecycler.setLayoutManager(new LinearLayoutManager(this));
+        //aboutRecycler.setLayoutManager(new LinearLayoutManager(this));
         AboutAdapter adapter = new AboutAdapter(this, options);
         adapter.setClickListener(this);
         aboutRecycler.setAdapter(adapter);
@@ -60,7 +56,7 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
 
 
         // Close activity through back button
-        backButton.setOnClickListener(v -> finish());
+        //backButton.setOnClickListener(v -> finish());
 
     }
 

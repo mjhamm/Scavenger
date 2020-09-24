@@ -9,34 +9,13 @@
     android:focusableInTouchMode="true"
     tools:context=".CommentsActivity">
 
-    <androidx.cardview.widget.CardView
+    <com.app.scavenger.TopToolbar
         android:id="@+id/comments_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:cardElevation="12dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/comments"
-            android:layout_gravity="center"
-            android:textSize="18sp"
-            android:textColor="@android:color/black"
-            android:fontFamily="@font/roboto_medium"/>
-
-        <ImageButton
-            android:id="@+id/comments_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/back_button"
-            android:background="@drawable/ic_arrow_back_black_36dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="8dp"/>
-
-    </androidx.cardview.widget.CardView>
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
         android:id="@+id/comment_recipeName"
@@ -45,7 +24,7 @@
         android:text="Recipe Name"
         android:textColor="@android:color/black"
         android:fontFamily="@font/roboto_medium"
-        android:textSize="16sp"
+        android:textSize="18sp"
         android:layout_marginTop="4dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
@@ -62,6 +41,7 @@
         android:layout_marginTop="4dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
+        android:textSize="16sp"
         android:fontFamily="@font/roboto_condensed_regular"
         android:textColor="@android:color/black"
         app:layout_constraintTop_toBottomOf="@id/comment_recipeName"
@@ -72,18 +52,20 @@
     <View
         android:id="@+id/comment_underline"
         android:layout_width="0dp"
-        android:layout_height="1dp"
+        android:layout_height="2dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/comment_recipeSource"
         android:layout_marginTop="4dp"
-        android:background="@color/bg_gray"/>
+        android:background="@android:color/black"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/comments_recyclerview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="4dp"
+        android:overScrollMode="never"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         app:layout_constraintTop_toBottomOf="@id/comment_underline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -121,6 +103,7 @@
                 android:layout_gravity="start|center_vertical"
                 android:hint="Add a comment..."
                 android:textColor="@color/item_bg"
+                android:visibility="visible"
                 android:importantForAutofill="no" />
 
             <TextView
@@ -133,10 +116,47 @@
                 android:fontFamily="@font/roboto_medium"
                 android:textColor="@color/dark_gray"
                 android:gravity="center"
+                android:visibility="visible"
                 android:layout_gravity="end|center_vertical"/>
+
+            <TextView
+                android:id="@+id/not_signed_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="16dp"
+                android:fontFamily="@font/roboto_medium"
+                android:textColor="@color/dark_gray"
+                android:visibility="gone"
+                android:text="You need to be Signed In to Post a Comment."/>
 
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>
+
+    <FrameLayout
+        android:id="@+id/comments_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:animateLayoutChanges="true"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="12dp"
+        android:background="#90000000">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/progressBarStyleLarge"
+            android:indeterminate="true"
+            android:layout_gravity="center"/>
+
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

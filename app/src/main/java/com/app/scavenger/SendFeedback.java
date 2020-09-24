@@ -40,18 +40,13 @@ public class SendFeedback extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
-
         setContentView(R.layout.activity_send_feedback);
 
         feedbackEditText = findViewById(R.id.feedback_editText);
         submit_textButton = findViewById(R.id.submitFeedback_textButton);
-        ImageButton backButton = findViewById(R.id.feedback_back);
+
+        TopToolbar topToolbar = findViewById(R.id.sendFeedback_toolbar);
+        topToolbar.setTitle("Send Feedback");
 
         submit_textButton.setEnabled(false);
         submit_textButton.setTextColor(Color.GRAY);
@@ -60,8 +55,6 @@ public class SendFeedback extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         con = new ConnectionDetector(this);
-
-        backButton.setOnClickListener(v -> finish());
 
         // Checks for whether or not the edit text is empty or not and changes the appearance of the submit button
         feedbackEditText.addTextChangedListener(new TextWatcher() {

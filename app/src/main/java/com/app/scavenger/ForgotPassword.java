@@ -24,19 +24,19 @@ public class ForgotPassword extends AppCompatActivity {
 
         // Update to the status bar on lower SDK's
         // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+        /*if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
+        }*/
 
         setContentView(R.layout.activity_forgot_password);
 
         EditText forgot_editText = findViewById(R.id.forgot_editText);
         MaterialButton forgot_pass_button = findViewById(R.id.forgot_pass_button);
-        ImageButton backButton = findViewById(R.id.forgotPass_back);
+        //ImageButton backButton = findViewById(R.id.forgotPass_back);
         ConnectionDetector con = new ConnectionDetector(this);
 
-        // Close the activity on button click
-        backButton.setOnClickListener(v -> finish());
+        TopToolbar topToolbar = findViewById(R.id.forgot_toolbar);
+        topToolbar.setTitle("Forgot Password");
 
         // Disable the button on start
         forgot_pass_button.setEnabled(false);

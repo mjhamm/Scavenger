@@ -11,18 +11,9 @@ public class OpenSourceLibraries extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
-
         setContentView(R.layout.activity_osl);
 
-        ImageButton backButton = findViewById(R.id.osl_back);
-
-        // button that closes the activity on press
-        backButton.setOnClickListener(v -> finish());
+        TopToolbar topToolbar = findViewById(R.id.osl_toolbar);
+        topToolbar.setTitle("Open Source Libraries");
     }
 }

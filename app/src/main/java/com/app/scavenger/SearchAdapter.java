@@ -176,7 +176,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     // saves an item to Firebase
-    private void saveDataToFirebase(String itemId, String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
+    private void saveDataToFirebase(RecipeItem item) {/*String itemId, String internalUrl, String name, String source, String image, String url*//*, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients*//*) {*/
         // create new hashmap that holds the item information that will be saved to Firebase
         HashMap<String, Object> itemMap = new HashMap<>();
         // reference to the likes on Firebase
@@ -187,22 +187,17 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         Timestamp timestamp = new Timestamp(now);
 
         // each part of the recipe item to be put into the hashmap for Firebase
-        itemMap.put(Constants.ITEM_ID, itemId);
-        itemMap.put(Constants.ITEM_NAME, name);
-        itemMap.put(Constants.ITEM_SOURCE, source);
-        itemMap.put(Constants.ITEM_IMAGE, image);
-        itemMap.put(Constants.ITEM_URL, url);
-        itemMap.put(Constants.ITEM_YIELD, servings);
-        itemMap.put(Constants.ITEM_CAL, calories);
-        itemMap.put(Constants.ITEM_CARB, carbs);
-        itemMap.put(Constants.ITEM_FAT, fat);
-        itemMap.put(Constants.ITEM_PROTEIN, protein);
-        itemMap.put(Constants.ITEM_ATT, attributes);
-        itemMap.put(Constants.ITEM_INGR, ingredients);
+        itemMap.put(Constants.ITEM_ID, item.getItemId());
+        itemMap.put(Constants.ITEM_INTERNAL_URL, item.getItemUri());
+        itemMap.put(Constants.ITEM_NAME, item.getmRecipeName());
+        itemMap.put(Constants.ITEM_SOURCE, item.getmSourceName());
+        itemMap.put(Constants.ITEM_IMAGE, item.getmImageUrl());
+        itemMap.put(Constants.ITEM_URL, item.getmRecipeURL());
+        itemMap.put(Constants.ITEM_RATING, item.getItemRating());
         itemMap.put("Timestamp", timestamp);
 
         // sets the data in Firebase
-        likesRef.document(itemId).set(itemMap)
+        likesRef.document(item.getItemId()).set(itemMap)
                 .addOnSuccessListener(aVoid -> {
                     // clears the query inside of the likes fragment and clears focus
                     // this avoids problems with potential filtering of the likes fragment when adding a new item to likes
@@ -292,10 +287,10 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         // views inside recipeCardItem
-        private final TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
+        private final TextView recipeName, recipeSource;
         private final ImageView recipeImage;
         private final ImageButton more_button, like_button;
-        private final CardView mBottomCard, recipeHolder;
+        private final CardView recipeHolder;
         private final RatingBar mRatingBar;
 
         // recipe item
@@ -315,38 +310,37 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             more_button = itemView.findViewById(R.id.more_button);
             mRatingBar = itemView.findViewById(R.id.ratingBar);
             recipeHolder = itemView.findViewById(R.id.image_holder);
-            CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
-            mBottomCard = itemView.findViewById(R.id.bottomCardView);
-            recipeServings = itemView.findViewById(R.id.servings_total);
-            recipeCalories = itemView.findViewById(R.id.calories_amount);
-            recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
-            recipeCarbs = itemView.findViewById(R.id.carbs_amount);
-            recipeFat = itemView.findViewById(R.id.fat_amount);
-            recipeProtein = itemView.findViewById(R.id.protein_amount);
-            CardView mNutritionCard = itemView.findViewById(R.id.nutritionCard);
-            recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
 
             // sets the click listener for the recipe item
             itemView.setOnClickListener(this);
 
             // Recipe Image Click Listener
             recipeImage.setOnClickListener(v -> {
-                Intent intent = new Intent(mContext, RecipeItemScreen.class);
-                intent.putExtra("activity_id", "search");
-                intent.putExtra("recipe_name", mRecipeItems.get(getAdapterPosition()).getmRecipeName());
-                intent.putExtra("recipe_source", mRecipeItems.get(getAdapterPosition()).getmSourceName());
-                intent.putExtra("recipe_liked", mRecipeItems.get(getAdapterPosition()).isLiked());
-                intent.putExtra("recipe_id", mRecipeItems.get(getAdapterPosition()).getItemId());
-                intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
-                intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
-                intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
-                intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
-                Pair<View, String> p1 = Pair.create(recipeHolder, "recipeHolder");
-                Pair<View, String> p2 = Pair.create(more_button, "recipeMore");
-                Pair<View, String> p3 = Pair.create(like_button, "recipeLike");
-                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.
-                        makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
-                mContext.startActivity(intent, optionsCompat.toBundle());
+                if (!con.connectedToInternet()) {
+                    new MaterialAlertDialogBuilder(mContext)
+                            .setTitle(Constants.noInternetTitle)
+                            .setMessage("Please reconnect to the Internet in order to view recipe information.")
+                            .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                            .create()
+                            .show();
+                } else {
+                    Intent intent = new Intent(mContext, RecipeItemScreen.class);
+                    intent.putExtra("activity_id", "search");
+                    intent.putExtra("recipe_name", mRecipeItems.get(getAdapterPosition()).getmRecipeName());
+                    intent.putExtra("recipe_source", mRecipeItems.get(getAdapterPosition()).getmSourceName());
+                    intent.putExtra("recipe_liked", mRecipeItems.get(getAdapterPosition()).isLiked());
+                    intent.putExtra("recipe_id", mRecipeItems.get(getAdapterPosition()).getItemId());
+                    intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
+                    intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
+                    intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
+                    intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
+                    Pair<View, String> p1 = Pair.create(recipeHolder, "recipeHolder");
+                    Pair<View, String> p2 = Pair.create(more_button, "recipeMore");
+                    Pair<View, String> p3 = Pair.create(like_button, "recipeLike");
+                    ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.
+                            makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
+                    mContext.startActivity(intent, optionsCompat.toBundle());
+                }
             });
 
             // Creates animation for Like button - Animation to grow and shrink heart when clicked
@@ -369,7 +363,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                             .show();
                 } else {
                     getInfoFromSharedPrefs();
-                    item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
+                    item = mRecipeItems.get(getAdapterPosition());
                     v.getTag();
                     if (SystemClock.elapsedRealtime() - mLastClickTime < 1500) {
                         return;
@@ -390,8 +384,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                             like_button.setImageResource(R.drawable.like_filled);
                             item.setLiked(true);
                             try {
-                                saveDataToFirebase(item.getItemId(), item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),
-                                        item.getmCalories(), item.getmCarbs(), item.getmFat(), item.getmProtein(), item.getmRecipeAttributes(), item.getmIngredients());
+                                saveDataToFirebase(item);
                                 myDb.addDataToView(item.getItemId());
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -418,6 +411,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                         case R.id.menu_copy:
                             copyRecipe();
                             return true;
+                        case R.id.menu_view:
+                            viewRecipe();
+                            return true;
                         case R.id.menu_share:
                             shareRecipe();
                             return true;
@@ -431,22 +427,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
                 popupMenu.show();
             });
-
-            mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle(Constants.nutritionInformationTitle)
-                    .setMessage(Constants.nutritionInformation)
-                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
-                    .show());
-
-            mViewRecipe.setOnClickListener(v -> {
-                boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
-                if (inAppBrowsingOn) {
-                    openURLInChromeCustomTab(mContext, retrieveRecipeUrl());
-                } else {
-                    openInDefaultBrowser(mContext, retrieveRecipeUrl());
-                }
-            });
-
         }
 
         private void reportRecipe() {
@@ -489,6 +469,15 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                         .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
                         .create()
                         .show();
+            }
+        }
+
+        private void viewRecipe() {
+            boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
+            if (inAppBrowsingOn) {
+                openURLInChromeCustomTab(mContext, retrieveRecipeUrl());
+            } else {
+                openInDefaultBrowser(mContext, retrieveRecipeUrl());
             }
         }
 

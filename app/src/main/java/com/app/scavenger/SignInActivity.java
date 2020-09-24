@@ -106,12 +106,6 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
         setContentView(R.layout.activity_sign_in);
 
         // Google Info
@@ -129,6 +123,9 @@ public class SignInActivity extends AppCompatActivity {
 
         MaterialButton mAppleSignIn = findViewById(R.id.apple_signIn);
 
+        TopToolbar topToolbar = findViewById(R.id.signIn_toolbar);
+        topToolbar.setTitle("Sign In");
+
         con = new ConnectionDetector(this);
 
         mAuth = FirebaseAuth.getInstance();
@@ -144,9 +141,6 @@ public class SignInActivity extends AppCompatActivity {
         passEdit = findViewById(R.id.password_editText);
         signInTerms = findViewById(R.id.accept_terms_signin);
         progressHolder = findViewById(R.id.signIn_progressHolder);
-        ImageButton backButton = findViewById(R.id.signIn_back);
-
-        backButton.setOnClickListener(v -> finish());
 
         // Sign in with email button ---------------------------------------------------------------
         signInButton.setOnClickListener(v -> {

@@ -100,13 +100,6 @@ public class SignUpActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
-
         setContentView(R.layout.activity_sign_up);
 
         // get the instance of Firebase
@@ -145,10 +138,9 @@ public class SignUpActivity extends AppCompatActivity {
         signUpButton = findViewById(R.id.signUp_Button);
 
         progressHolder = findViewById(R.id.signUp_progressHolder);
-        ImageButton backButton = findViewById(R.id.signUp_back);
 
-        // button to finish the activity
-        backButton.setOnClickListener(v -> finish());
+        TopToolbar topToolbar = findViewById(R.id.signUp_toolbar);
+        topToolbar.setTitle("Sign Up");
 
         // check box for terms
         termsCheck.setOnCheckedChangeListener((buttonView, isChecked) -> checkFieldsForEmpty());

@@ -11,9 +11,11 @@ public class Constants {
     // Common String Information
     public static final String firebaseUser = "Users";
     public static final String firebaseLikes = "Likes";
+    public static final String firebaseComments = "Comments";
     public static final String firebaseGrocery = "GroceryList";
     public static final String firebaseIngrListId = "VCHP0Xze7IyETG4NT6at";
     public static final String firebaseRecipeReports = "RecipeReports";
+    public static final String firebaseCommentReports = "CommentReports";
     public static final String firebaseReports = "reports";
     public static final String firebaseTime = "Timestamp";
 
@@ -45,6 +47,7 @@ public class Constants {
     // Firebase Constants --------------------------------------------------------------
 
     public static final String ITEM_ID = "itemId";
+    public static final String ITEM_INTERNAL_URL = "internalUrl";
     public static final String ITEM_NAME = "name";
     public static final String ITEM_SOURCE = "source";
     public static final String ITEM_IMAGE = "image";
@@ -56,5 +59,7 @@ public class Constants {
     public static final String ITEM_PROTEIN = "protein";
     public static final String ITEM_ATT = "attributes";
     public static final String ITEM_INGR = "ingredients";
-    public static final String GROCERY_ITEM = "item";
+    public static final String ITEM_RATING = "rating";
+    public static final String COMMENT_ITEM = "name";
+    public static final String COMMENT_DETAIL = "detail";
 }

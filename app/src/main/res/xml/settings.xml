@@ -43,10 +43,10 @@
             android:summary="Find recipes with only the number of ingredients you search with or less"
             app:iconSpaceReserved="false"/>
 
-        <Preference
+        <!--<Preference
             android:key="diets"
             android:title="Dietary Preferences"
-            app:iconSpaceReserved="false"/>
+            app:iconSpaceReserved="false"/>-->
 
     </PreferenceCategory>
 

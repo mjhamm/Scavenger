@@ -1,6 +1,5 @@
 package com.app.scavenger;
 
-import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
@@ -9,17 +8,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -38,6 +34,8 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.SystemClock;
@@ -45,21 +43,23 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
-import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Date;
+import java.util.HashMap;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -69,20 +69,26 @@ import retrofit2.http.Query;
 
 public class RecipeItemScreen extends AppCompatActivity {
 
-    private TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeCarbs, recipeFat, recipeProtein, recipeAttributes, recipeIngredients, viewComments, mCommentsMainTitle;
-    private ImageView recipeImage;
-    private ImageButton recipeLike, recipeMore;
-    private CardView recipeHolder, mNutritionCard;
+    private TextView instructionsMainText, ingredientsMainText, nutritionMainTitle, calMainText, carbMainText, fatMainText, proteinMainText, recipeName, recipeSource, recipeServings, recipeCalories, recipeCarbs, recipeFat, recipeProtein, recipeAttributes, recipeIngredients, viewComments, mCommentsMainTitle, notConnectedText;
+    private ImageView recipeImage, edamamBranding;
+    private ImageButton recipeLike, recipeMore, commentButton;
+    private CardView mNutritionCard;
     private RatingBar ratingBar;
     private MaterialButton viewRecipeButton;
     private RecyclerView mInstructionsRecyclerView, mCommentsRecyclerView;
     private ConstraintLayout mMainConstraintLayout;
+    private LinearLayoutManager mLayoutManager;
+    private CommentsAdapter commentsAdapter;
+    private View nutritionLine, ingredientsLine, instructionsLine, commentsLine;
 
-    private String userId, internalUrl, internalUrlFormatted, name, source, itemId, image, url, reportReason, servingsText, caloriesText, carbsText, fatText, proteinText;
+    private String userId, internalUrl, name, source, itemId, image, url, reportReason, servingsText, caloriesText, carbsText, fatText, proteinText;
     private ArrayList<String> ingredients, attributes, instructions;
+    private ArrayList<CommentItem> commentItems;
     private boolean isLiked, logged;
     private int rating, servingsInt, caloriesInt, carbsInt, fatInt, proteinInt;
     private int commentCount = 0;
+    private InstructionsAdapter instructionsAdapter;
+    private FrameLayout mDetailLayout;
 
     private ConnectionDetector con;
     private FirebaseFirestore db;
@@ -96,6 +102,20 @@ public class RecipeItemScreen extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (mDetailLayout != null && mDetailLayout.getVisibility() == View.VISIBLE) {
+            mDetailLayout.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -106,7 +126,7 @@ public class RecipeItemScreen extends AppCompatActivity {
             this.getWindow().getDecorView().setSystemUiVisibility( View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         }
 
-        setContentView(R.layout.activity_recipe_item_screen);
+        setContentView(R.layout.activity_recipe_item_top);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         CollapsingToolbarLayout toolBarLayout = findViewById(R.id.toolbar_layout);
@@ -120,9 +140,10 @@ public class RecipeItemScreen extends AppCompatActivity {
         con = new ConnectionDetector(this);
 
         instructions = new ArrayList<>();
-        //instructions.add("1");
         ingredients = new ArrayList<>();
         attributes = new ArrayList<>();
+
+        commentItems = new ArrayList<>();
 
         getInfoFromSharedPrefs();
 
@@ -131,66 +152,39 @@ public class RecipeItemScreen extends AppCompatActivity {
         recipeImage = findViewById(R.id.recipe_image_detail);
         recipeLike = findViewById(R.id.recipe_like_detail);
         recipeMore = findViewById(R.id.recipe_more_detail);
-        recipeHolder = findViewById(R.id.recipe_image_holder_detail);
         ratingBar = findViewById(R.id.ratingBar_detail);
         recipeCalories = findViewById(R.id.calories_amount_detail);
         recipeServings = findViewById(R.id.servings_detail);
         recipeIngredients = findViewById(R.id.ingredients_detail);
+        ingredientsMainText = findViewById(R.id.ingredients_main_title);
+        instructionsMainText = findViewById(R.id.instructions_main_title);
         recipeAttributes = findViewById(R.id.recipe_attributes_detail);
         recipeCarbs = findViewById(R.id.carbs_amount_detail);
         recipeFat = findViewById(R.id.fat_amount_detail);
         recipeProtein = findViewById(R.id.protein_amount_detail);
+        calMainText = findViewById(R.id.calories_text);
+        carbMainText = findViewById(R.id.carbs_text);
+        fatMainText = findViewById(R.id.fat_text);
+        proteinMainText = findViewById(R.id.protein_text);
         viewRecipeButton = findViewById(R.id.view_recipe_button);
+        nutritionMainTitle = findViewById(R.id.nutritionFacts_main_title);
         mNutritionCard = findViewById(R.id.nutritionCard);
         mCommentsRecyclerView = findViewById(R.id.comments_recyclerView);
         mInstructionsRecyclerView = findViewById(R.id.instructions_recyclerView);
         mMainConstraintLayout = findViewById(R.id.constraint_layout);
         mCommentsMainTitle = findViewById(R.id.comments_main_title);
+        mDetailLayout = findViewById(R.id.detail_loading);
+        notConnectedText = findViewById(R.id.not_connected_text_recipeItem);
+        commentButton = findViewById(R.id.comment_button);
+        viewComments = findViewById(R.id.view_comments);
+        edamamBranding = findViewById(R.id.edamam_branding);
+        nutritionLine = findViewById(R.id.nutrition_underline);
+        ingredientsLine = findViewById(R.id.ingredients_underline);
+        instructionsLine = findViewById(R.id.instructions_underline);
+        commentsLine = findViewById(R.id.comment_underline);
 
         ImageButton mBackButton = findViewById(R.id.item_screen_back);
         mBackButton.setOnClickListener(v -> supportFinishAfterTransition());
-
-        ImageButton commentButton = findViewById(R.id.comment_button);
-        viewComments = findViewById(R.id.view_comments);
-
-        if (logged) {
-            commentButton.setVisibility(View.VISIBLE);
-        } else {
-            commentButton.setVisibility(View.GONE);
-        }
-
-        commentButton.setOnClickListener(v -> {
-            Intent intent = new Intent(this, CommentsActivity.class);
-            intent.putExtra("focus", true);
-            intent.putExtra("recipe_name", name);
-            intent.putExtra("recipe_source", source);
-            startActivity(intent);
-        });
-
-        viewComments.setOnClickListener(v -> {
-            Intent intent = new Intent(this, CommentsActivity.class);
-            intent.putExtra("focus", false);
-            intent.putExtra("recipe_name", name);
-            intent.putExtra("recipe_source", source);
-            startActivity(intent);
-        });
-
-        viewRecipeButton.setOnClickListener(v -> {
-            boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
-            if (inAppBrowsingOn) {
-                openURLInChromeCustomTab(this, url);
-            } else {
-                openInDefaultBrowser(this, url);
-            }
-        });
-
-        // Nutrition Card Click Listener
-        // shows information about how we get our data
-        mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(this)
-                .setTitle(Constants.nutritionInformationTitle)
-                .setMessage(Constants.nutritionInformation)
-                .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
-                .show());
 
         if (getIntent() != null) {
 
@@ -203,6 +197,18 @@ public class RecipeItemScreen extends AppCompatActivity {
             image = getIntent().getExtras().getString("recipe_image");
             rating = getIntent().getExtras().getInt("recipe_rating");
             url = getIntent().getExtras().getString("recipe_url");
+
+            if (activityId != null) {
+                mDetailLayout.setVisibility(View.VISIBLE);
+                internalUrl = getIntent().getExtras().getString("recipe_uri");
+                if (activityId.equals("search")) {
+                    callToApi();
+                } else {
+                    getRecipeInfoFB();
+                }
+            } else {
+                callToApi();
+            }
 
             recipeName.setText(name);
             recipeSource.setText(source);
@@ -239,25 +245,24 @@ public class RecipeItemScreen extends AppCompatActivity {
                 recipeImage.setImageDrawable(null);
             }
 
-            if (activityId != null) {
-                internalUrl = getIntent().getExtras().getString("recipe_uri");
-                if (activityId.equals("search")) {
-                    callToApi();
-                } else {
-                    getRecipeInfoFB();
-                }
-            } else {
-                callToApi();
+            notConnectedText.setVisibility(View.GONE);
+
+            mLayoutManager = new LinearLayoutManager(this);
+            DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, mLayoutManager.getOrientation());
+            mCommentsRecyclerView.addItemDecoration(dividerItemDecoration);
+
+            // retrieve comments from FB for the item
+            retrieveCommentsFromFB(itemId, name, source);
+
+            for (int i = 0; i < 4; i++) {
+                instructions.add("This is step number " + (i + 1) + ". The following instructions want you to preheat your oven." +
+                        " Once you have preheated your oven, continue to the next step which will walk you through the next thing to do.");
             }
 
-            // After check for comments
-            if (commentCount == 0) {
-                viewComments.setText("No Comments");
-            } else if (commentCount == 1) {
-                viewComments.setText("View " + commentCount + " comment");
-            } else {
-                viewComments.setText("View all " + commentCount + " comments");
-            }
+            instructionsAdapter = new InstructionsAdapter(this, instructions);
+
+            mInstructionsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            mInstructionsRecyclerView.setAdapter(instructionsAdapter);
 
             ConstraintSet constraintSet = new ConstraintSet();
             constraintSet.clone(mMainConstraintLayout);
@@ -273,15 +278,59 @@ public class RecipeItemScreen extends AppCompatActivity {
             }
 
             constraintSet.applyTo(mMainConstraintLayout);
+
         }
 
-        recipeMore.setOnClickListener(v -> {
+        if (logged) {
+            commentButton.setVisibility(View.VISIBLE);
+        } else {
+            commentButton.setVisibility(View.GONE);
+        }
 
+        commentButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CommentsActivity.class);
+            intent.putExtra("focus", true);
+            intent.putExtra("recipe_name", name);
+            intent.putExtra("recipe_source", source);
+            intent.putExtra("recipe_id", itemId);
+            startActivity(intent);
+        });
+
+        viewComments.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CommentsActivity.class);
+            intent.putExtra("focus", false);
+            intent.putExtra("recipe_name", name);
+            intent.putExtra("recipe_source", source);
+            intent.putExtra("recipe_id", itemId);
+            startActivity(intent);
+        });
+
+        viewRecipeButton.setOnClickListener(v -> {
+            boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
+            if (inAppBrowsingOn) {
+                openURLInChromeCustomTab(this, url);
+            } else {
+                openInDefaultBrowser(this, url);
+            }
+        });
+
+        // Nutrition Card Click Listener
+        // shows information about how we get our data
+        mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(this)
+                .setTitle(Constants.nutritionInformationTitle)
+                .setMessage(Constants.nutritionInformation)
+                .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
+                .show());
+
+        recipeMore.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(this, recipeMore);
             popupMenu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.menu_copy:
                         copyRecipe();
+                        return true;
+                    case R.id.menu_view:
+                        viewRecipe();
                         return true;
                     case R.id.menu_share:
                         shareRecipe();
@@ -325,22 +374,21 @@ public class RecipeItemScreen extends AppCompatActivity {
                     if (isLiked) {
                         recipeLike.setImageResource(R.drawable.like_outline);
                         isLiked = false;
-                        /*try {
+                        try {
                             removeDataFromFirebase(itemId);
                             myDb.removeDataFromView(itemId);
                         } catch (Exception e) {
                             e.printStackTrace();
-                        }*/
+                        }
                     } else {
                         recipeLike.setImageResource(R.drawable.like_filled);
                         isLiked = true;
-//                        try {
-//                            saveDataToFirebase(item.getItemId(), item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),
-//                                    item.getmCalories(), item.getmCarbs(), item.getmFat(), item.getmProtein(), item.getmRecipeAttributes(), item.getmIngredients());
-//                            myDb.addDataToView(itemId);
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
+                        try {
+                            saveDataToFirebase(itemId, internalUrl, name, source, image, url, rating);
+                            myDb.addDataToView(itemId);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 } else {
                     new MaterialAlertDialogBuilder(this)
@@ -352,6 +400,109 @@ public class RecipeItemScreen extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void viewRecipe() {
+        boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
+        if (inAppBrowsingOn) {
+            openURLInChromeCustomTab(this, url);
+        } else {
+            openInDefaultBrowser(this, url);
+        }
+    }
+
+    private void checkConnection() {
+        if (!con.connectedToInternet()) {
+            notConnectedText.setVisibility(View.VISIBLE);
+            hideAllLayouts();
+        }
+    }
+
+    private void hideAllLayouts() {
+        nutritionMainTitle.setVisibility(View.GONE);
+        edamamBranding.setVisibility(View.GONE);
+        nutritionLine.setVisibility(View.GONE);
+        recipeServings.setVisibility(View.GONE);
+        mNutritionCard.setVisibility(View.GONE);
+        calMainText.setVisibility(View.GONE);
+        recipeCalories.setVisibility(View.GONE);
+        carbMainText.setVisibility(View.GONE);
+        recipeCarbs.setVisibility(View.GONE);
+        fatMainText.setVisibility(View.GONE);
+        recipeFat.setVisibility(View.GONE);
+        proteinMainText.setVisibility(View.GONE);
+        recipeProtein.setVisibility(View.GONE);
+        recipeAttributes.setVisibility(View.GONE);
+        ingredientsMainText.setVisibility(View.GONE);
+        ingredientsLine.setVisibility(View.GONE);
+        recipeIngredients.setVisibility(View.GONE);
+        instructionsMainText.setVisibility(View.GONE);
+        instructionsLine.setVisibility(View.GONE);
+        mInstructionsRecyclerView.setVisibility(View.GONE);
+        viewRecipeButton.setVisibility(View.GONE);
+        mCommentsMainTitle.setVisibility(View.GONE);
+        commentsLine.setVisibility(View.GONE);
+        commentButton.setVisibility(View.GONE);
+        mCommentsRecyclerView.setVisibility(View.GONE);
+        viewComments.setVisibility(View.GONE);
+    }
+
+    // Method that gets run when a new comment is created in the comments activity
+    private void updateCommentsRecyclerView() {
+        retrieveCommentsFromFB(itemId, name, source);
+    }
+
+    private void retrieveCommentsFromFB(String recipeId, String recipeName, String recipeSource) {
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // reference to the users likes
+        CollectionReference commentsRef = db.collection(Constants.firebaseComments).document(recipeId).collection("comments");
+        // orders those likes by timestamp in descending order to show the most recent like on top
+        commentsRef.orderBy(Constants.firebaseTime, com.google.firebase.firestore.Query.Direction.DESCENDING).get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+
+                    String name, detail;
+
+                    // if the number of likes the user has is 0
+                    // set adapter for recycler to null
+                    // this is so no possible overlap of another user can come through
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        mCommentsRecyclerView.setAdapter(null);
+                        // if the number of likes the user has is not 0
+                        // clear the list and adapter
+                    } else {
+                        // go through each item in the snapshot from Firebase and set a new comment item with the information
+                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+
+                            CommentItem commentItem = new CommentItem();
+                            name = documentSnapshot.getString(Constants.COMMENT_ITEM);
+                            detail = documentSnapshot.getString(Constants.COMMENT_DETAIL);
+
+                            commentItem.setName(name);
+                            commentItem.setDetail(detail);
+
+                            if (commentItems.size() < 2) {
+                                commentItems.add(commentItem);
+                            }
+                        }
+                        // create the adapter with the new list
+                        commentsAdapter = new CommentsAdapter(this, commentItems, recipeId, recipeName, recipeSource);
+                        // set adapter
+                        mCommentsRecyclerView.setLayoutManager(mLayoutManager);
+                        mCommentsRecyclerView.setAdapter(commentsAdapter);
+
+                        commentCount = queryDocumentSnapshots.size();
+                    }
+                    // After check for comments
+                    if (commentCount == 0) {
+                        viewComments.setText("No Comments");
+                    } else if (commentCount == 1) {
+                        viewComments.setText("View " + commentCount + " comment");
+                    } else {
+                        viewComments.setText("View all " + commentCount + " comments");
+                    }
+                    //mLoadingLayout.setVisibility(View.GONE);
+                });
     }
 
     private void getRecipeInfoFB() {
@@ -396,42 +547,58 @@ public class RecipeItemScreen extends AppCompatActivity {
         likeRef.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
 
-                    if (queryDocumentSnapshots.getLong(Constants.ITEM_YIELD) != null) {
-                        servingsInt = queryDocumentSnapshots.getLong(Constants.ITEM_YIELD).intValue();
-                    }
+                    internalUrl = queryDocumentSnapshots.getString(Constants.ITEM_INTERNAL_URL);
 
-                    if (queryDocumentSnapshots.getLong(Constants.ITEM_CAL) != null) {
-                        caloriesInt = queryDocumentSnapshots.getLong(Constants.ITEM_CAL).intValue();
-                    }
-
-                    if (queryDocumentSnapshots.getLong(Constants.ITEM_CARB) != null) {
-                        carbsInt = queryDocumentSnapshots.getLong(Constants.ITEM_CARB).intValue();
-                    }
-                    if (queryDocumentSnapshots.getLong(Constants.ITEM_FAT) != null) {
-                        fatInt = queryDocumentSnapshots.getLong(Constants.ITEM_FAT).intValue();
-                    }
-                    if (queryDocumentSnapshots.getLong(Constants.ITEM_PROTEIN) != null) {
-                        proteinInt = queryDocumentSnapshots.getLong(Constants.ITEM_PROTEIN).intValue();
-                    }
-                    if (queryDocumentSnapshots.exists()) {
-                        attributes = (ArrayList<String>) queryDocumentSnapshots.get(Constants.ITEM_ATT);
-                        ingredients = (ArrayList<String>) queryDocumentSnapshots.get(Constants.ITEM_INGR);
-                    }
-
-                    recipeServings.setText(servingsInt + " Servings");
-
-                    caloriesText = String.valueOf(caloriesInt);
-                    recipeCalories.setText(caloriesText);
-                    recipeCarbs.setText(carbsInt + "g");
-                    recipeFat.setText(fatInt + "g");
-                    recipeProtein.setText(proteinInt + "g");
-                    recipeAttributes.setText(TextUtils.join("", attributes));
-                    recipeIngredients.setText(TextUtils.join("", ingredients));
+                    callToApi();
 
                 });
     }
 
+    // saves an item to Firebase
+    private void saveDataToFirebase(String itemId, String internalUrl, String recipeName, String recipeSource, String recipeImage, String recipeUrl, int recipeRating) {
+        // create new hashmap that holds the item information that will be saved to Firebase
+        HashMap<String, Object> itemMap = new HashMap<>();
+        // reference to the likes on Firebase
+        CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
+
+        // creates a new date and timestamp to be used to order the likes
+        Date now = new Date();
+        Timestamp timestamp = new Timestamp(now);
+
+        // each part of the recipe item to be put into the hashmap for Firebase
+        itemMap.put(Constants.ITEM_ID, itemId);
+        itemMap.put(Constants.ITEM_INTERNAL_URL, internalUrl);
+        itemMap.put(Constants.ITEM_NAME, recipeName);
+        itemMap.put(Constants.ITEM_SOURCE, recipeSource);
+        itemMap.put(Constants.ITEM_IMAGE, recipeImage);
+        itemMap.put(Constants.ITEM_URL, recipeUrl);
+        itemMap.put(Constants.ITEM_RATING, recipeRating);
+        itemMap.put("Timestamp", timestamp);
+
+        // sets the data in Firebase
+        likesRef.document(itemId).set(itemMap)
+                .addOnSuccessListener(aVoid -> {
+                    // clears the query inside of the likes fragment and clears focus
+                    // this avoids problems with potential filtering of the likes fragment when adding a new item to likes
+                    //updateQuery();
+                    Log.d("LOG: ", "Item saved to Firebase");
+                    // add 1 to numLikes
+                    int likes = sharedPreferences.getInt("numLikes", 0);
+                    likes += 1;
+                    // add it to numLikes
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt("numLikes", likes);
+                    editor.apply();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error saving Like. Please try again", Toast.LENGTH_SHORT).show();
+                    Log.d("LOG: ", e.toString());
+                });
+    }
+
     private void callToApi() {
+
+
 
         Retrofit retrofit = NetworkClient.getRetrofitClient();
         GetRecipeInfoAPI apiService = retrofit.create(GetRecipeInfoAPI.class);
@@ -460,6 +627,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");
                     }
+                    mDetailLayout.setVisibility(View.GONE);
                 }
             }
 
@@ -476,8 +644,6 @@ public class RecipeItemScreen extends AppCompatActivity {
             String labels, total_ing;
 
             JSONArray hit = new JSONArray(response);
-
-            //Log.d("RECIPEITEMSCREEN", "response: " + response);
 
             for (int i = 0; i < hit.length(); i++) {
                 JSONObject obj = hit.getJSONObject(i);

@@ -29,17 +29,12 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
-
         setContentView(R.layout.activity_help);
 
         RecyclerView helpRecycler = findViewById(R.id.help_list);
-        ImageButton backButton = findViewById(R.id.help_back);
+
+        TopToolbar topToolbar = findViewById(R.id.help_toolbar);
+        topToolbar.setTitle("Help");
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -57,9 +52,6 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, layoutManager.getOrientation());
         helpRecycler.addItemDecoration(dividerItemDecoration);
         helpRecycler.setLayoutManager(layoutManager);
-
-        // Close activity on button click
-        backButton.setOnClickListener(v -> finish());
     }
 
     @Override

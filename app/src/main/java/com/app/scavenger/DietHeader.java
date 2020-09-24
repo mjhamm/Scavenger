@@ -1,0 +1,18 @@
+package com.app.scavenger;
+
+public class DietHeader {
+
+    private String name;
+
+    DietHeader(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}

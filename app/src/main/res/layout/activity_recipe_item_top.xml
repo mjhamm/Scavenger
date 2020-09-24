@@ -57,9 +57,10 @@
                         android:theme="@style/RatingBar"
                         android:transitionName="recipeRating"
                         android:layout_alignParentStart="true"
+                        android:isIndicator="true"
                         android:layout_above="@id/recipe_name_detail"
                         android:scaleX=".6"
-                        android:rating="3.5"
+                        android:rating="5"
                         android:scaleY=".6"
                         android:layout_marginTop="8dp"
                         android:transformPivotY="20dp"
@@ -182,6 +183,6 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_scrolling" />
+    <include layout="@layout/activity_recipe_information" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
