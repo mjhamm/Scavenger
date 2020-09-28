@@ -30,6 +30,7 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.util.Pair;
+import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -44,13 +45,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 
+import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
+
 public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public static final String TAG = "SEARCH_ADAPTER";
+    public static final int SEARCH_UPDATED = 104;
 
     // variables for constructor
     private final ArrayList<RecipeItem> mRecipeItems;
     private final Context mContext;
+    private final Fragment searchFragment;
     private String userId;
     private boolean logged;
 
@@ -69,10 +74,11 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     // Constructor
-    SearchAdapter(Context context, ArrayList<RecipeItem> recipeItems, boolean logged) {
+    SearchAdapter(Context context, Fragment searchFragment, ArrayList<RecipeItem> recipeItems, boolean logged) {
         this.mContext = context;
         this.mRecipeItems = recipeItems;
         this.logged = logged;
+        this.searchFragment = searchFragment;
         // sets stableIds to true for better scrolling
         this.setHasStableIds(true);
     }
@@ -278,6 +284,11 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         mUpdateQuery.updateQuery();
     }
 
+    public void updateItem(int position, boolean liked) {
+        mRecipeItems.get(position).setLiked(liked);
+        notifyItemChanged(position);
+    }
+
     /*
     VIEW HOLDERS
     ________________________________________________________________________________________________
@@ -334,12 +345,13 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
                     intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
                     intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
+                    intent.putExtra("position", getAdapterPosition());
                     Pair<View, String> p1 = Pair.create(recipeHolder, "recipeHolder");
                     Pair<View, String> p2 = Pair.create(more_button, "recipeMore");
                     Pair<View, String> p3 = Pair.create(like_button, "recipeLike");
                     ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.
                             makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
-                    mContext.startActivity(intent, optionsCompat.toBundle());
+                    searchFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL, optionsCompat.toBundle());
                 }
             });
 

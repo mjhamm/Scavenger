@@ -38,16 +38,16 @@
             android:layout_height="match_parent">
 
             <RatingBar
+                android:id="@+id/ratingBar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/ratingBar"
-                android:layout_alignParentStart="true"
-                android:layout_above="@id/recipe_name"
                 style="?android:attr/ratingBarStyleIndicator"
-                android:transitionName="recipeRating"
-                android:theme="@style/RatingBar"
-                android:isIndicator="true"
                 android:layout_marginStart="16dp"
+                android:theme="@style/RatingBar"
+                android:transitionName="recipeRating"
+                android:layout_alignParentStart="true"
+                android:isIndicator="true"
+                android:layout_above="@id/recipe_name"
                 android:scaleX=".6"
                 android:rating="5"
                 android:scaleY=".6"

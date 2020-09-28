@@ -24,6 +24,7 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
@@ -40,6 +41,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
@@ -69,6 +71,8 @@ import retrofit2.http.Query;
 
 public class RecipeItemScreen extends AppCompatActivity {
 
+    public static final int NEW_COMMENT = 201;
+
     private TextView instructionsMainText, ingredientsMainText, nutritionMainTitle, calMainText, carbMainText, fatMainText, proteinMainText, recipeName, recipeSource, recipeServings, recipeCalories, recipeCarbs, recipeFat, recipeProtein, recipeAttributes, recipeIngredients, viewComments, mCommentsMainTitle, notConnectedText;
     private ImageView recipeImage, edamamBranding;
     private ImageButton recipeLike, recipeMore, commentButton;
@@ -81,11 +85,11 @@ public class RecipeItemScreen extends AppCompatActivity {
     private CommentsAdapter commentsAdapter;
     private View nutritionLine, ingredientsLine, instructionsLine, commentsLine;
 
-    private String userId, internalUrl, name, source, itemId, image, url, reportReason, servingsText, caloriesText, carbsText, fatText, proteinText;
+    private String userId, internalUrl, name, source, itemId, image, url, reportReason, servingsText, caloriesText, carbsText, fatText, proteinText, activityId;
     private ArrayList<String> ingredients, attributes, instructions;
     private ArrayList<CommentItem> commentItems;
     private boolean isLiked, logged;
-    private int rating, servingsInt, caloriesInt, carbsInt, fatInt, proteinInt;
+    private int rating, servingsInt, caloriesInt, carbsInt, fatInt, proteinInt, position;
     private int commentCount = 0;
     private InstructionsAdapter instructionsAdapter;
     private FrameLayout mDetailLayout;
@@ -107,12 +111,13 @@ public class RecipeItemScreen extends AppCompatActivity {
     }
 
     @Override
+    protected void onPostResume() {
+        super.onPostResume();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-
-        if (mDetailLayout != null && mDetailLayout.getVisibility() == View.VISIBLE) {
-            mDetailLayout.setVisibility(View.GONE);
-        }
     }
 
     @Override
@@ -123,7 +128,7 @@ public class RecipeItemScreen extends AppCompatActivity {
         // Makes bar on lower SDK's black with white icons
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            this.getWindow().getDecorView().setSystemUiVisibility( View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         }
 
         setContentView(R.layout.activity_recipe_item_top);
@@ -181,14 +186,18 @@ public class RecipeItemScreen extends AppCompatActivity {
         nutritionLine = findViewById(R.id.nutrition_underline);
         ingredientsLine = findViewById(R.id.ingredients_underline);
         instructionsLine = findViewById(R.id.instructions_underline);
-        commentsLine = findViewById(R.id.comment_underline);
+        commentsLine = findViewById(R.id.comments_underline);
+
+        mDetailLayout.setVisibility(View.VISIBLE);
 
         ImageButton mBackButton = findViewById(R.id.item_screen_back);
         mBackButton.setOnClickListener(v -> supportFinishAfterTransition());
 
+        notConnectedText.setVisibility(View.GONE);
+
         if (getIntent() != null) {
 
-            String activityId = getIntent().getExtras().getString("activity_id");
+            activityId = getIntent().getExtras().getString("activity_id");
 
             name = getIntent().getExtras().getString("recipe_name");
             source = getIntent().getExtras().getString("recipe_source");
@@ -197,18 +206,7 @@ public class RecipeItemScreen extends AppCompatActivity {
             image = getIntent().getExtras().getString("recipe_image");
             rating = getIntent().getExtras().getInt("recipe_rating");
             url = getIntent().getExtras().getString("recipe_url");
-
-            if (activityId != null) {
-                mDetailLayout.setVisibility(View.VISIBLE);
-                internalUrl = getIntent().getExtras().getString("recipe_uri");
-                if (activityId.equals("search")) {
-                    callToApi();
-                } else {
-                    getRecipeInfoFB();
-                }
-            } else {
-                callToApi();
-            }
+            position = getIntent().getExtras().getInt("position");
 
             recipeName.setText(name);
             recipeSource.setText(source);
@@ -234,7 +232,6 @@ public class RecipeItemScreen extends AppCompatActivity {
                             public void onSuccess() {
                                 supportStartPostponedEnterTransition();
                             }
-
                             @Override
                             public void onError(Exception e) {
                                 supportStartPostponedEnterTransition();
@@ -245,46 +242,60 @@ public class RecipeItemScreen extends AppCompatActivity {
                 recipeImage.setImageDrawable(null);
             }
 
-            notConnectedText.setVisibility(View.GONE);
+            if (con.connectedToInternet()) {
 
-            mLayoutManager = new LinearLayoutManager(this);
-            DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, mLayoutManager.getOrientation());
-            mCommentsRecyclerView.addItemDecoration(dividerItemDecoration);
+                if (activityId != null) {
+                    internalUrl = getIntent().getExtras().getString("recipe_uri");
+                    if (activityId.equals("search")) {
+                        callToApi();
+                    } else {
+                        getRecipeInfoFB();
+                    }
+                } else {
+                    callToApi();
+                }
 
-            // retrieve comments from FB for the item
-            retrieveCommentsFromFB(itemId, name, source);
+                mLayoutManager = new LinearLayoutManager(this);
+                DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, mLayoutManager.getOrientation());
+                mCommentsRecyclerView.addItemDecoration(dividerItemDecoration);
 
-            for (int i = 0; i < 4; i++) {
-                instructions.add("This is step number " + (i + 1) + ". The following instructions want you to preheat your oven." +
-                        " Once you have preheated your oven, continue to the next step which will walk you through the next thing to do.");
-            }
+                // retrieve comments from FB for the item
+                retrieveCommentsFromFB(itemId, name, source);
 
-            instructionsAdapter = new InstructionsAdapter(this, instructions);
+                for (int i = 0; i < 4; i++) {
+                    instructions.add("This is step number " + (i + 1) + ". The following instructions want you to preheat your oven." +
+                            " Once you have preheated your oven, continue to the next step which will walk you through the next thing to do.");
+                }
 
-            mInstructionsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-            mInstructionsRecyclerView.setAdapter(instructionsAdapter);
+                instructionsAdapter = new InstructionsAdapter(this, instructions);
 
-            ConstraintSet constraintSet = new ConstraintSet();
-            constraintSet.clone(mMainConstraintLayout);
+                mInstructionsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+                mInstructionsRecyclerView.setAdapter(instructionsAdapter);
 
-            // After check for instructions
-            if (instructions.size() == 0) {
-                constraintSet.setVisibility(viewRecipeButton.getId(), ConstraintSet.VISIBLE);
-                viewRecipeButton.setEnabled(true);
+                ConstraintSet constraintSet = new ConstraintSet();
+                constraintSet.clone(mMainConstraintLayout);
+
+                // After check for instructions
+                if (instructions.size() == 0) {
+                    constraintSet.setVisibility(viewRecipeButton.getId(), ConstraintSet.VISIBLE);
+                    viewRecipeButton.setEnabled(true);
+                } else {
+                    constraintSet.setVisibility(viewRecipeButton.getId(), ConstraintSet.GONE);
+                    viewRecipeButton.setEnabled(false);
+                    constraintSet.connect(mCommentsMainTitle.getId(), ConstraintSet.TOP, mInstructionsRecyclerView.getId(), ConstraintSet.BOTTOM);
+                }
+
+                constraintSet.applyTo(mMainConstraintLayout);
+
+                if (logged) {
+                    commentButton.setVisibility(View.VISIBLE);
+                } else {
+                    commentButton.setVisibility(View.GONE);
+                }
             } else {
-                constraintSet.setVisibility(viewRecipeButton.getId(), ConstraintSet.GONE);
-                viewRecipeButton.setEnabled(false);
-                constraintSet.connect(mCommentsMainTitle.getId(), ConstraintSet.TOP, mInstructionsRecyclerView.getId(), ConstraintSet.BOTTOM);
+                notConnectedText.setVisibility(View.VISIBLE);
+                hideAllLayouts();
             }
-
-            constraintSet.applyTo(mMainConstraintLayout);
-
-        }
-
-        if (logged) {
-            commentButton.setVisibility(View.VISIBLE);
-        } else {
-            commentButton.setVisibility(View.GONE);
         }
 
         commentButton.setOnClickListener(v -> {
@@ -293,7 +304,7 @@ public class RecipeItemScreen extends AppCompatActivity {
             intent.putExtra("recipe_name", name);
             intent.putExtra("recipe_source", source);
             intent.putExtra("recipe_id", itemId);
-            startActivity(intent);
+            startActivityForResult(intent, NEW_COMMENT);
         });
 
         viewComments.setOnClickListener(v -> {
@@ -302,7 +313,7 @@ public class RecipeItemScreen extends AppCompatActivity {
             intent.putExtra("recipe_name", name);
             intent.putExtra("recipe_source", source);
             intent.putExtra("recipe_id", itemId);
-            startActivity(intent);
+            startActivityForResult(intent, NEW_COMMENT);
         });
 
         viewRecipeButton.setOnClickListener(v -> {
@@ -371,6 +382,8 @@ public class RecipeItemScreen extends AppCompatActivity {
                 mLastClickTime = SystemClock.elapsedRealtime();
                 if (logged) {
                     v.startAnimation(scaleAnimation_Like);
+                    // update recyclerview item on other screen
+
                     if (isLiked) {
                         recipeLike.setImageResource(R.drawable.like_outline);
                         isLiked = false;
@@ -400,6 +413,8 @@ public class RecipeItemScreen extends AppCompatActivity {
                 }
             }
         });
+
+        mDetailLayout.setVisibility(View.GONE);
     }
 
     private void viewRecipe() {
@@ -408,13 +423,6 @@ public class RecipeItemScreen extends AppCompatActivity {
             openURLInChromeCustomTab(this, url);
         } else {
             openInDefaultBrowser(this, url);
-        }
-    }
-
-    private void checkConnection() {
-        if (!con.connectedToInternet()) {
-            notConnectedText.setVisibility(View.VISIBLE);
-            hideAllLayouts();
         }
     }
 
@@ -454,6 +462,8 @@ public class RecipeItemScreen extends AppCompatActivity {
 
     private void retrieveCommentsFromFB(String recipeId, String recipeName, String recipeSource) {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        commentItems.clear();
 
         // reference to the users likes
         CollectionReference commentsRef = db.collection(Constants.firebaseComments).document(recipeId).collection("comments");
@@ -505,6 +515,10 @@ public class RecipeItemScreen extends AppCompatActivity {
                 });
     }
 
+    private void updateComments() {
+
+    }
+
     private void getRecipeInfoFB() {
         retrieveLikesFromFirebase(itemId);
     }
@@ -546,11 +560,8 @@ public class RecipeItemScreen extends AppCompatActivity {
         // orders those likes by timestamp in descending order to show the most recent like on top
         likeRef.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-
                     internalUrl = queryDocumentSnapshots.getString(Constants.ITEM_INTERNAL_URL);
-
                     callToApi();
-
                 });
     }
 
@@ -597,8 +608,6 @@ public class RecipeItemScreen extends AppCompatActivity {
     }
 
     private void callToApi() {
-
-
 
         Retrofit retrofit = NetworkClient.getRetrofitClient();
         GetRecipeInfoAPI apiService = retrofit.create(GetRecipeInfoAPI.class);
@@ -810,10 +819,17 @@ public class RecipeItemScreen extends AppCompatActivity {
         likesRef.document(itemId)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
-                    //Log.d(TAG, "Successfully removed like");
+
+                    int likes = sharedPreferences.getInt("numLikes", 0);
+                    likes -= 1;
+                    // add it to numLikes
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt("numLikes", likes);
+                    editor.apply();
+                    Log.d("RecipeItemScreen: ", "Successfully removed like");
                 })
                 .addOnFailureListener(e -> {
-                    //Log.d(TAG, "Failed to remove like" + e.toString());
+                    Log.d("RecipeItemScreen: ", "Failed to remove like" + e.toString());
                 });
     }
 
@@ -821,5 +837,29 @@ public class RecipeItemScreen extends AppCompatActivity {
     private void getInfoFromSharedPrefs() {
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", null);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == NEW_COMMENT && resultCode == RESULT_OK) {
+            Log.d("RECIPEITEMSCREEN", "RESULT");
+            updateCommentsRecyclerView();
+        }
+    }
+
+    @Override
+    public void finish() {
+
+        // Send a result back to the recipeitemscreen to let it know to recheck the comments
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra("position", position);
+        returnIntent.putExtra("liked", isLiked);
+
+        //By not passing the intent in the result, the calling activity will get null data.
+        setResult(RESULT_OK, returnIntent);
+
+        super.finish();
     }
 }

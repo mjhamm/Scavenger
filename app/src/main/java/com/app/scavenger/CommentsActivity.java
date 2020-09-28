@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -251,5 +252,15 @@ public class CommentsActivity extends AppCompatActivity {
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
         logged = sharedPreferences.getBoolean("logged", false);
+    }
+
+    @Override
+    public void finish() {
+
+        // Send a result back to the recipeitemscreen to let it know to recheck the comments
+        Intent returnIntent = new Intent();
+        //By not passing the intent in the result, the calling activity will get null data.
+        setResult(RESULT_OK, returnIntent);
+        super.finish();
     }
 }

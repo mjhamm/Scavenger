@@ -2,8 +2,10 @@ package com.app.scavenger;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,9 +28,13 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 
+import static android.app.Activity.RESULT_OK;
+import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
+
 public class LikesFragment extends Fragment {
 
     //private static final String TAG = "Likes Fragment: ";
+    /*public static final int LIKE_UPDATED = 104;*/
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -109,7 +115,7 @@ public class LikesFragment extends Fragment {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         con = new ConnectionDetector(mContext);
-        adapter = new LikesAdapter(mContext, recipeItemList, userId);
+        adapter = new LikesAdapter(mContext, this, recipeItemList, userId);
 
         // sets the width of the SearchView to be the width of the screen
         mLikeSearch.setMaxWidth(Integer.MAX_VALUE);
@@ -396,7 +402,7 @@ public class LikesFragment extends Fragment {
                             }
                         }
                         // create the adapter with the new list
-                        adapter = new LikesAdapter(mContext, recipeItemList, userId);
+                        adapter = new LikesAdapter(mContext, this, recipeItemList, userId);
                         // set adapter
                         mLikesRecyclerView.setAdapter(adapter);
                     }
@@ -418,11 +424,40 @@ public class LikesFragment extends Fragment {
                 });
     }
 
+    private void updateRecycler(int position) {
+
+        if (adapter != null) {
+            recipeItemList.remove(position);
+            adapter.notifyItemRemoved(position);
+
+            if (adapter.getItemCount() == 0) {
+                adapter = null;
+                changeBGImage(1);
+            }
+        }
+    }
+
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", "");
         numLikes = sharedPreferences.getInt("numLikes", 0);
         actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+
+        if (requestCode == RECIPEITEMSCREENCALL && resultCode == RESULT_OK) {
+            Log.d("LikesFragment", "onActivityResult");
+            int position = data.getIntExtra("position", 0);
+            boolean liked = data.getBooleanExtra("liked", false);
+
+            if (!liked) {
+                updateRecycler(position);
+            }
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

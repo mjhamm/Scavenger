@@ -49,9 +49,9 @@
                     android:layout_height="match_parent">
 
                     <RatingBar
+                        android:id="@+id/ratingBar_detail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/ratingBar_detail"
                         style="?android:attr/ratingBarStyleIndicator"
                         android:layout_marginStart="16dp"
                         android:theme="@style/RatingBar"

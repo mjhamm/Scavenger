@@ -28,6 +28,7 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -44,10 +45,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
+
 @SuppressWarnings("unchecked")
 public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> implements Filterable {
 
     //private static final String TAG = "LOG: ";
+    public static final int LIKE_UPDATED = 104;
 
     // Database variables
     private FirebaseFirestore db;
@@ -56,6 +60,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     // Interface variables
     private UpdateSearch mCallback;
     private CheckZeroLikes mZeroLikes;
+    private final Fragment likesFragment;
 
     private final String userId;
     private final ArrayList<RecipeItem> mRecipeItemsFull;
@@ -75,12 +80,13 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         void checkZeroLikes();
     }
 
-    LikesAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId) {
+    LikesAdapter(Context context, Fragment likesFragment, ArrayList<RecipeItem> recipeItems, String userId) {
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
         this.userId = userId;
         this.mRecipeItemsFull = recipeItems;
+        this.likesFragment = likesFragment;
         mRecipeItemsFull.size();
         this.setHasStableIds(true);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -194,7 +200,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         // Recipe Source Name
         holder.recipeSource.setText(item.getmSourceName());
         // Recipe Rating
-        holder.mRatingBar.setRating(item.getItemRating());
+        holder.mRatingBar.setNumStars(item.getItemRating());
     }
 
     // Gets the Recipe Item's ID
@@ -303,12 +309,13 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
                 intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
                 intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
+                intent.putExtra("position", getAdapterPosition());
                 Pair<View, String> p1 = Pair.create(recipeHolder, "recipeHolder");
                 Pair<View, String> p2 = Pair.create(more_button, "recipeMore");
                 Pair<View, String> p3 = Pair.create(like_button, "recipeLike");
                 ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.
                         makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
-                mContext.startActivity(intent, optionsCompat.toBundle());
+                likesFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL, optionsCompat.toBundle());
             });
 
             // Like Button Click Listener

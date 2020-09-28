@@ -1,13 +1,17 @@
 package com.app.scavenger;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
+
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
 
@@ -17,6 +21,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, LikesAdapter.UpdateSearch, LikesAdapter.CheckZeroLikes, SearchAdapter.UpdateQuery {
 
     //public static final String TAG = "Main Activity";
+    //public static final int SEARCH_UPDATED = 104;
+    public static final int RECIPEITEMSCREENCALL = 104;
 
     // Fragment variables
     private Fragment fragment1 = null;
@@ -53,13 +59,6 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
-
         setContentView(R.layout.activity_main);
 
         // create instance of shared preferences and editor
@@ -233,5 +232,23 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
             LikesFragment likeFrag = (LikesFragment) fragment2;
             likeFrag.clearFilter();
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == RECIPEITEMSCREENCALL && resultCode == RESULT_OK) {
+            boolean checkSearch = data.getBooleanExtra("checkSearch", false);
+            Log.d("MainActivity: ", "checkSearch = " + checkSearch);
+
+            if (checkSearch) {
+                if (fragment1 != null) {
+                    SearchFragment searchFragment = (SearchFragment) fragment1;
+                    searchFragment.updateSearchFrag();
+                }
+            }
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+
     }
 }

@@ -2,9 +2,9 @@ package com.app.scavenger;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Rect;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,7 +18,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -39,9 +38,13 @@ import retrofit2.Retrofit;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
+import static android.app.Activity.RESULT_OK;
+import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
+
 public class SearchFragment extends Fragment {
 
     private static final String TAG = "SEARCH_FRAGMENT: ";
+    public static final int SEARCH_UPDATED = 104;
 
     private RecyclerView mSearchRecyclerView;
     private ArrayList<String> itemIds;
@@ -93,6 +96,11 @@ public class SearchFragment extends Fragment {
 
         recipeItemArrayList = new ArrayList<>();
         itemIds = new ArrayList<>();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -411,7 +419,7 @@ public class SearchFragment extends Fragment {
                 if (isAdded()) {
                     getActivity().runOnUiThread(() -> {
                         if (adapter == null) {
-                            adapter = new SearchAdapter(mContext, recipeItemArrayList, logged);
+                            adapter = new SearchAdapter(mContext, this, recipeItemArrayList, logged);
                         }
 
                         mSearchRecyclerView.setAdapter(adapter);
@@ -534,7 +542,6 @@ public class SearchFragment extends Fragment {
                     }
                 }
             }
-
             @Override
             public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
         });
@@ -543,5 +550,28 @@ public class SearchFragment extends Fragment {
     //method for creating a Toast
     private void toastMessage(String message) {
         Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateAdapter(int position, boolean liked) {
+
+        if (adapter != null) {
+            adapter.updateItem(position, liked);
+        }
+    }
+
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+
+        if (requestCode == RECIPEITEMSCREENCALL && resultCode == RESULT_OK) {
+
+            Log.d(TAG, "onActivityResult");
+            int position = data.getIntExtra("position", 0);
+            boolean liked = data.getBooleanExtra("liked", false);
+            //Log.d(TAG, "Position: " + position + " Liked: " + liked + " recipeItemArrayList Size: " + recipeItemArrayList.size() + " adapter: " + adapter.getItemCount());
+            updateAdapter(position, liked);
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }
