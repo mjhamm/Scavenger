@@ -95,7 +95,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     @NonNull
     @Override
     public LikesAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.row_card_item, parent, false);
+        View view = mInflater.inflate(R.layout.row_card_item_likes, parent, false);
         con = new ConnectionDetector(mContext);
         myDb = DatabaseHelper.getInstance(mContext);
 
@@ -200,7 +200,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         // Recipe Source Name
         holder.recipeSource.setText(item.getmSourceName());
         // Recipe Rating
-        holder.mRatingBar.setNumStars(item.getItemRating());
+        //holder.mRatingBar.setNumStars(item.getItemRating());
     }
 
     // Gets the Recipe Item's ID
@@ -279,7 +279,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         private final ImageView recipeImage;
         private final ImageButton more_button, like_button;
         private final CardView recipeHolder;
-        private final RatingBar mRatingBar;
+        //private final RatingBar mRatingBar;
 
         // View Holder variables
         private RecipeItem recipeItem;
@@ -293,7 +293,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             recipeHolder = itemView.findViewById(R.id.image_holder);
             like_button = itemView.findViewById(R.id.recipe_like);
             more_button = itemView.findViewById(R.id.more_button);
-            mRatingBar = itemView.findViewById(R.id.ratingBar);
+            //mRatingBar = itemView.findViewById(R.id.ratingBar);
 
             itemView.setOnClickListener(this);
 
@@ -306,7 +306,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 intent.putExtra("recipe_liked", mRecipeItems.get(getAdapterPosition()).isLiked());
                 intent.putExtra("recipe_id", mRecipeItems.get(getAdapterPosition()).getItemId());
                 intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
-                intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
+                //intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
                 intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
                 intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
                 intent.putExtra("position", getAdapterPosition());

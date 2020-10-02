@@ -18,7 +18,7 @@ import android.widget.Toast;
 //import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, LikesAdapter.UpdateSearch, LikesAdapter.CheckZeroLikes, SearchAdapter.UpdateQuery {
+public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, LikesAdapter.UpdateSearch, LikesAdapter.CheckZeroLikes, SearchAdapter.UpdateQuery, LikesFragment.CheckSearch {
 
     //public static final String TAG = "Main Activity";
     //public static final int SEARCH_UPDATED = 104;
@@ -235,19 +235,15 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == RECIPEITEMSCREENCALL && resultCode == RESULT_OK) {
-            boolean checkSearch = data.getBooleanExtra("checkSearch", false);
-            Log.d("MainActivity: ", "checkSearch = " + checkSearch);
-
-            if (checkSearch) {
-                if (fragment1 != null) {
-                    SearchFragment searchFragment = (SearchFragment) fragment1;
-                    searchFragment.updateSearchFrag();
-                }
-            }
+    public void checkSearch(String itemId, boolean liked) {
+        if (fragment1 != null) {
+            SearchFragment searchFragment = (SearchFragment) fragment1;
+            searchFragment.checkSearchForLikeChange(itemId, liked);
         }
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
     }

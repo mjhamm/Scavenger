@@ -100,7 +100,7 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
             // threshold should reflect how many total columns there are too
             // The minimum amount of items to have below your current scroll position
             // before loading more.
-            int visibleThreshold = 2;
+            int visibleThreshold = 4;
             if (!loading && (lastVisibleItemPosition + visibleThreshold) > totalItemCount/* && currentPage < 5*/) {
                 currentPage++;
                 mProgressBar.setVisibility(View.VISIBLE);

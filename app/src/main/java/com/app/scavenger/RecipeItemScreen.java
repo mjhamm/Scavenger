@@ -51,6 +51,7 @@ import android.view.animation.ScaleAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,6 +63,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -78,12 +80,13 @@ public class RecipeItemScreen extends AppCompatActivity {
     private ImageButton recipeLike, recipeMore, commentButton;
     private CardView mNutritionCard;
     private RatingBar ratingBar;
-    private MaterialButton viewRecipeButton;
+    private MaterialButton viewRecipeButton, mRetryConnection;
     private RecyclerView mInstructionsRecyclerView, mCommentsRecyclerView;
     private ConstraintLayout mMainConstraintLayout;
     private LinearLayoutManager mLayoutManager;
     private CommentsAdapter commentsAdapter;
     private View nutritionLine, ingredientsLine, instructionsLine, commentsLine;
+    private ProgressBar mDetailLoading;
 
     private String userId, internalUrl, name, source, itemId, image, url, reportReason, servingsText, caloriesText, carbsText, fatText, proteinText, activityId;
     private ArrayList<String> ingredients, attributes, instructions;
@@ -92,7 +95,7 @@ public class RecipeItemScreen extends AppCompatActivity {
     private int rating, servingsInt, caloriesInt, carbsInt, fatInt, proteinInt, position;
     private int commentCount = 0;
     private InstructionsAdapter instructionsAdapter;
-    private FrameLayout mDetailLayout;
+    //private FrameLayout mDetailLayout;
 
     private ConnectionDetector con;
     private FirebaseFirestore db;
@@ -127,17 +130,18 @@ public class RecipeItemScreen extends AppCompatActivity {
         // Update to the status bar on lower SDK's
         // Makes bar on lower SDK's black with white icons
 
+        ActivityCompat.postponeEnterTransition(this);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         }
 
         setContentView(R.layout.activity_recipe_item_top);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         CollapsingToolbarLayout toolBarLayout = findViewById(R.id.toolbar_layout);
         toolBarLayout.setTitle(getTitle());
-
-        ActivityCompat.postponeEnterTransition(this);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         db = FirebaseFirestore.getInstance();
@@ -178,7 +182,8 @@ public class RecipeItemScreen extends AppCompatActivity {
         mInstructionsRecyclerView = findViewById(R.id.instructions_recyclerView);
         mMainConstraintLayout = findViewById(R.id.constraint_layout);
         mCommentsMainTitle = findViewById(R.id.comments_main_title);
-        mDetailLayout = findViewById(R.id.detail_loading);
+        //mDetailLayout = findViewById(R.id.detail_loading);
+        mDetailLoading = findViewById(R.id.loading_detail);
         notConnectedText = findViewById(R.id.not_connected_text_recipeItem);
         commentButton = findViewById(R.id.comment_button);
         viewComments = findViewById(R.id.view_comments);
@@ -187,116 +192,17 @@ public class RecipeItemScreen extends AppCompatActivity {
         ingredientsLine = findViewById(R.id.ingredients_underline);
         instructionsLine = findViewById(R.id.instructions_underline);
         commentsLine = findViewById(R.id.comments_underline);
+        mRetryConnection = findViewById(R.id.recipe_retry_con_button);
 
-        mDetailLayout.setVisibility(View.VISIBLE);
+        //mDetailLayout.setVisibility(View.VISIBLE);
+        notConnectedText.setVisibility(View.GONE);
+        mRetryConnection.setVisibility(View.GONE);
 
         ImageButton mBackButton = findViewById(R.id.item_screen_back);
-        mBackButton.setOnClickListener(v -> supportFinishAfterTransition());
-
-        notConnectedText.setVisibility(View.GONE);
-
-        if (getIntent() != null) {
-
-            activityId = getIntent().getExtras().getString("activity_id");
-
-            name = getIntent().getExtras().getString("recipe_name");
-            source = getIntent().getExtras().getString("recipe_source");
-            isLiked = getIntent().getExtras().getBoolean("recipe_liked");
-            itemId = getIntent().getExtras().getString("recipe_id");
-            image = getIntent().getExtras().getString("recipe_image");
-            rating = getIntent().getExtras().getInt("recipe_rating");
-            url = getIntent().getExtras().getString("recipe_url");
-            position = getIntent().getExtras().getInt("position");
-
-            recipeName.setText(name);
-            recipeSource.setText(source);
-
-            if (isLiked) {
-                // set the image to filled
-                recipeLike.setImageResource(R.drawable.like_filled);
-                // if item isn't liked
-            } else {
-                // set the image to outline
-                recipeLike.setImageResource(R.drawable.like_outline);
-            }
-
-            ratingBar.setNumStars(rating);
-
-            if (image != null) {
-                Picasso.get()
-                        .load(image)
-                        .fit()
-                        .config(Bitmap.Config.RGB_565)
-                        .into(recipeImage, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                supportStartPostponedEnterTransition();
-                            }
-                            @Override
-                            public void onError(Exception e) {
-                                supportStartPostponedEnterTransition();
-                            }
-                        });
-            } else {
-                // if the image url is not found, set the drawable to null
-                recipeImage.setImageDrawable(null);
-            }
-
-            if (con.connectedToInternet()) {
-
-                if (activityId != null) {
-                    internalUrl = getIntent().getExtras().getString("recipe_uri");
-                    if (activityId.equals("search")) {
-                        callToApi();
-                    } else {
-                        getRecipeInfoFB();
-                    }
-                } else {
-                    callToApi();
-                }
-
-                mLayoutManager = new LinearLayoutManager(this);
-                DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, mLayoutManager.getOrientation());
-                mCommentsRecyclerView.addItemDecoration(dividerItemDecoration);
-
-                // retrieve comments from FB for the item
-                retrieveCommentsFromFB(itemId, name, source);
-
-                for (int i = 0; i < 4; i++) {
-                    instructions.add("This is step number " + (i + 1) + ". The following instructions want you to preheat your oven." +
-                            " Once you have preheated your oven, continue to the next step which will walk you through the next thing to do.");
-                }
-
-                instructionsAdapter = new InstructionsAdapter(this, instructions);
-
-                mInstructionsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-                mInstructionsRecyclerView.setAdapter(instructionsAdapter);
-
-                ConstraintSet constraintSet = new ConstraintSet();
-                constraintSet.clone(mMainConstraintLayout);
-
-                // After check for instructions
-                if (instructions.size() == 0) {
-                    constraintSet.setVisibility(viewRecipeButton.getId(), ConstraintSet.VISIBLE);
-                    viewRecipeButton.setEnabled(true);
-                } else {
-                    constraintSet.setVisibility(viewRecipeButton.getId(), ConstraintSet.GONE);
-                    viewRecipeButton.setEnabled(false);
-                    constraintSet.connect(mCommentsMainTitle.getId(), ConstraintSet.TOP, mInstructionsRecyclerView.getId(), ConstraintSet.BOTTOM);
-                }
-
-                constraintSet.applyTo(mMainConstraintLayout);
-
-                if (logged) {
-                    commentButton.setVisibility(View.VISIBLE);
-                } else {
-                    commentButton.setVisibility(View.GONE);
-                }
-            } else {
-                notConnectedText.setVisibility(View.VISIBLE);
-                hideAllLayouts();
-            }
-        }
+        mBackButton.setOnClickListener(v -> {
+            ratingBar.setVisibility(View.GONE);
+            supportFinishAfterTransition();
+        });
 
         commentButton.setOnClickListener(v -> {
             Intent intent = new Intent(this, CommentsActivity.class);
@@ -381,19 +287,31 @@ public class RecipeItemScreen extends AppCompatActivity {
                 }
                 mLastClickTime = SystemClock.elapsedRealtime();
                 if (logged) {
-                    v.startAnimation(scaleAnimation_Like);
                     // update recyclerview item on other screen
 
                     if (isLiked) {
-                        recipeLike.setImageResource(R.drawable.like_outline);
-                        isLiked = false;
-                        try {
-                            removeDataFromFirebase(itemId);
-                            myDb.removeDataFromView(itemId);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        new MaterialAlertDialogBuilder(this)
+                                .setTitle("Remove this recipe from your Likes?")
+                                .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
+                                .setCancelable(false)
+                                // Positive button - Remove the item from Firebase
+                                .setPositiveButton("Remove", (dialog, which) -> {
+                                    v.startAnimation(scaleAnimation_Like);
+                                    recipeLike.setImageResource(R.drawable.like_outline);
+                                    isLiked = false;
+                                    try {
+                                        removeDataFromFirebase(itemId);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                    myDb.removeDataFromView(itemId);
+                                })
+                                // dismiss the alert if cancel button is clicked
+                                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                                .create()
+                                .show();
                     } else {
+                        v.startAnimation(scaleAnimation_Like);
                         recipeLike.setImageResource(R.drawable.like_filled);
                         isLiked = true;
                         try {
@@ -414,7 +332,118 @@ public class RecipeItemScreen extends AppCompatActivity {
             }
         });
 
-        mDetailLayout.setVisibility(View.GONE);
+        mRetryConnection.setOnClickListener(v -> {
+            finish();
+            overridePendingTransition(0,0);
+            startActivity(getIntent());
+            overridePendingTransition(0,0);
+        });
+
+        if (getIntent() != null) {
+
+            name = getIntent().getExtras().getString("recipe_name");
+            source = getIntent().getExtras().getString("recipe_source");
+            isLiked = getIntent().getExtras().getBoolean("recipe_liked");
+            itemId = getIntent().getExtras().getString("recipe_id");
+            image = getIntent().getExtras().getString("recipe_image");
+            rating = getIntent().getExtras().getInt("recipe_rating");
+            url = getIntent().getExtras().getString("recipe_url");
+            position = getIntent().getExtras().getInt("position");
+
+            recipeName.setText(name);
+            recipeSource.setText(source);
+
+            if (isLiked) {
+                // set the image to filled
+                recipeLike.setImageResource(R.drawable.like_filled);
+                // if item isn't liked
+            } else {
+                // set the image to outline
+                recipeLike.setImageResource(R.drawable.like_outline);
+            }
+
+            ratingBar.setNumStars(rating);
+
+            if (con.connectedToInternet()) {
+
+                activityId = getIntent().getExtras().getString("activity_id");
+                if (activityId != null) {
+                    internalUrl = getIntent().getExtras().getString("recipe_uri");
+                    if (activityId.equals("search")) {
+                        callToApi();
+                    } else {
+                        getRecipeInfoFB();
+                    }
+                } else {
+                    callToApi();
+                }
+
+                mLayoutManager = new LinearLayoutManager(this);
+                DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, mLayoutManager.getOrientation());
+                mCommentsRecyclerView.addItemDecoration(dividerItemDecoration);
+
+                // retrieve comments from FB for the item
+                retrieveCommentsFromFB(itemId, name, source);
+
+                for (int i = 0; i < 4; i++) {
+                    instructions.add("This is step number " + (i + 1) + ". The following instructions want you to preheat your oven." +
+                            " Once you have preheated your oven, continue to the next step which will walk you through the next thing to do.");
+                }
+
+                instructionsAdapter = new InstructionsAdapter(this, instructions);
+
+                mInstructionsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+                mInstructionsRecyclerView.setAdapter(instructionsAdapter);
+
+                ConstraintSet constraintSet = new ConstraintSet();
+                constraintSet.clone(mMainConstraintLayout);
+
+                // After check for instructions
+                if (instructions.size() == 0) {
+                    constraintSet.setVisibility(viewRecipeButton.getId(), ConstraintSet.VISIBLE);
+                    viewRecipeButton.setEnabled(true);
+                } else {
+                    constraintSet.setVisibility(viewRecipeButton.getId(), ConstraintSet.GONE);
+                    viewRecipeButton.setEnabled(false);
+                    constraintSet.connect(mCommentsMainTitle.getId(), ConstraintSet.TOP, mInstructionsRecyclerView.getId(), ConstraintSet.BOTTOM);
+                }
+
+                constraintSet.applyTo(mMainConstraintLayout);
+
+                if (logged) {
+                    commentButton.setVisibility(View.VISIBLE);
+                } else {
+                    commentButton.setVisibility(View.GONE);
+                }
+            } else {
+                notConnectedText.setVisibility(View.VISIBLE);
+                mRetryConnection.setVisibility(View.VISIBLE);
+                hideAllLayouts();
+                //mDetailLayout.setVisibility(View.GONE);
+            }
+
+            if (image != null) {
+                Picasso.get()
+                        .load(image)
+                        .fit()
+                        .config(Bitmap.Config.RGB_565)
+                        .into(recipeImage, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                //mDetailLayout.setVisibility(View.GONE);
+                                supportStartPostponedEnterTransition();
+                            }
+                            @Override
+                            public void onError(Exception e) {
+                                //mDetailLayout.setVisibility(View.GONE);
+                                supportStartPostponedEnterTransition();
+                            }
+                        });
+            } else {
+                // if the image url is not found, set the drawable to null
+                recipeImage.setImageDrawable(null);
+            }
+        }
     }
 
     private void viewRecipe() {
@@ -515,10 +544,6 @@ public class RecipeItemScreen extends AppCompatActivity {
                 });
     }
 
-    private void updateComments() {
-
-    }
-
     private void getRecipeInfoFB() {
         retrieveLikesFromFirebase(itemId);
     }
@@ -609,6 +634,8 @@ public class RecipeItemScreen extends AppCompatActivity {
 
     private void callToApi() {
 
+        mDetailLoading.setVisibility(View.VISIBLE);
+
         Retrofit retrofit = NetworkClient.getRetrofitClient();
         GetRecipeInfoAPI apiService = retrofit.create(GetRecipeInfoAPI.class);
 
@@ -636,12 +663,14 @@ public class RecipeItemScreen extends AppCompatActivity {
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");
                     }
-                    mDetailLayout.setVisibility(View.GONE);
                 }
+                mDetailLoading.setVisibility(View.GONE);
             }
 
             @Override
-            public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
+            public void onFailure(@NonNull Call call, @NonNull Throwable t) {
+                mDetailLoading.setVisibility(View.GONE);
+            }
         });
     }
 
@@ -850,12 +879,19 @@ public class RecipeItemScreen extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        ratingBar.setVisibility(View.GONE);
+        super.onBackPressed();
+    }
+
+    @Override
     public void finish() {
 
         // Send a result back to the recipeitemscreen to let it know to recheck the comments
         Intent returnIntent = new Intent();
         returnIntent.putExtra("position", position);
         returnIntent.putExtra("liked", isLiked);
+        returnIntent.putExtra("itemId", itemId);
 
         //By not passing the intent in the result, the calling activity will get null data.
         setResult(RESULT_OK, returnIntent);

@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Locale;
 
 import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
@@ -289,6 +290,15 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         notifyItemChanged(position);
     }
 
+    public void updateItemByItemId(String itemId, boolean liked) {
+        for (RecipeItem item : mRecipeItems) {
+            if (item.getItemId().equals(itemId)) {
+                item.setLiked(liked);
+            }
+        }
+        notifyDataSetChanged();
+    }
+
     /*
     VIEW HOLDERS
     ________________________________________________________________________________________________
@@ -382,17 +392,29 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     }
                     mLastClickTime = SystemClock.elapsedRealtime();
                     if (logged) {
-                        v.startAnimation(scaleAnimation_Like);
                         if (item.isLiked()) {
-                            like_button.setImageResource(R.drawable.like_outline);
-                            item.setLiked(false);
-                            try {
-                                removeDataFromFirebase(item);
-                                myDb.removeDataFromView(item.getItemId());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            new MaterialAlertDialogBuilder(mContext)
+                                    .setTitle("Remove this recipe from your Likes?")
+                                    .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
+                                    .setCancelable(false)
+                                    // Positive button - Remove the item from Firebase
+                                    .setPositiveButton("Remove", (dialog, which) -> {
+                                        v.startAnimation(scaleAnimation_Like);
+                                        like_button.setImageResource(R.drawable.like_outline);
+                                        item.setLiked(false);
+                                        try {
+                                            removeDataFromFirebase(item);
+                                            myDb.removeDataFromView(item.getItemId());
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    })
+                                    // dismiss the alert if cancel button is clicked
+                                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                                    .create()
+                                    .show();
                         } else {
+                            v.startAnimation(scaleAnimation_Like);
                             like_button.setImageResource(R.drawable.like_filled);
                             item.setLiked(true);
                             try {

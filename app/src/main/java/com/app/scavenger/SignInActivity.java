@@ -42,21 +42,27 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.OAuthProvider;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SignInActivity extends AppCompatActivity {
@@ -355,7 +361,64 @@ public class SignInActivity extends AppCompatActivity {
     // Apple Sign In information and Methods ------------------------------------------------------------------------------------------------------------------
 
     private void appleSignIn() {
-        Log.d(TAG, "Apple Sign In");
+        progressHolder.setVisibility(View.VISIBLE);
+        OAuthProvider.Builder provider = OAuthProvider.newBuilder("apple.com");
+        List<String> scopes = new ArrayList<String>() {
+            {
+                add("email");
+                add("name");
+            }
+        };
+        provider.setScopes(scopes);
+
+        mAuth = FirebaseAuth.getInstance();
+        Task<AuthResult> pending = mAuth.getPendingAuthResult();
+        if (pending != null) {
+            pending.addOnSuccessListener(authResult -> {
+                // Get the user profile with authResult.getUser() and
+                // authResult.getAdditionalUserInfo(), and the ID
+                // token from Apple with authResult.getCredential().
+                Log.d(TAG, "appleSignIn");
+                FirebaseUser user = authResult.getUser();
+                toastMessage("Signed in successfully");
+                if (user != null) {
+                    retrieveLikesFromFirebase(user);
+                    updatePrefInfo(user.getUid());
+                    sendDataToFirebase(user);
+                }
+                finish();
+                progressHolder.setVisibility(View.GONE);
+            }).addOnFailureListener(e -> {
+                toastMessage("Issue Signing in. Please try again");
+                Log.w(TAG, "checkPending:onFailure", e);
+                progressHolder.setVisibility(View.GONE);
+            });
+        } else {
+            startSignInWithApple(provider);
+            Log.d(TAG, "pending: null");
+        }
+        //Log.d(TAG, "Apple Sign In");
+    }
+
+    private void startSignInWithApple(OAuthProvider.Builder provider) {
+        mAuth.startActivityForSignInWithProvider(this, provider.build())
+                .addOnSuccessListener(authResult -> {
+                    Log.d(TAG, "activitySignIn:onSuccess:" + authResult.getUser());
+                    FirebaseUser user = authResult.getUser();
+                    toastMessage("Signed in successfully");
+                    if (user != null) {
+                        retrieveLikesFromFirebase(user);
+                        updatePrefInfo(user.getUid());
+                        sendDataToFirebase(user);
+                    }
+                    finish();
+                    progressHolder.setVisibility(View.GONE);
+                })
+                .addOnFailureListener(e -> {
+                    toastMessage("Issue Signing up. Please try again");
+                    Log.w(TAG, "activitySignIn:onFailure", e);
+                    progressHolder.setVisibility(View.GONE);
+                });
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -454,13 +517,13 @@ public class SignInActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-
         signInTerms.setText("");
         signInTerms.setMovementMethod(null);
 
         if (callbackManager != null) {
             callbackManager = null;
         }
+
+        super.onDestroy();
     }
 }

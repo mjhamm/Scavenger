@@ -53,6 +53,7 @@ public class LikesFragment extends Fragment {
     private ImageView mLikes_BG;
     //--------------------------------------------
 
+    private CheckSearch mCheckSearch;
     private LikesAdapter adapter;
     private Context mContext;
     private SharedPreferences sharedPreferences;
@@ -65,6 +66,10 @@ public class LikesFragment extends Fragment {
     // Required empty public constructor
     public LikesFragment() {}
 
+    interface CheckSearch {
+        void checkSearch(String itemId, boolean liked);
+    }
+
     // Create a new instance of Likes Fragment
     // Add a bundle if you want to pass through variables on creation
     static LikesFragment newInstance() {
@@ -75,6 +80,8 @@ public class LikesFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getContext();
+        mCheckSearch = (CheckSearch) mContext;
+
     }
 
     @Override
@@ -437,6 +444,10 @@ public class LikesFragment extends Fragment {
         }
     }
 
+    public void checkSearchForLikeChange(String itemId, boolean liked) {
+        mCheckSearch.checkSearch(itemId, liked);
+    }
+
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
         logged = sharedPreferences.getBoolean("logged", false);
@@ -452,10 +463,13 @@ public class LikesFragment extends Fragment {
             Log.d("LikesFragment", "onActivityResult");
             int position = data.getIntExtra("position", 0);
             boolean liked = data.getBooleanExtra("liked", false);
+            String itemId = data.getStringExtra("itemId");
 
             if (!liked) {
                 updateRecycler(position);
             }
+
+            checkSearchForLikeChange(itemId,liked);
         }
 
         super.onActivityResult(requestCode, resultCode, data);

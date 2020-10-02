@@ -156,7 +156,7 @@ public class SearchFragment extends Fragment {
 
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                if (con.connectedToInternet() && numItemsChanged) {
+                if (con.connectedToInternet()) {
                     getMoreAsync();
                 }
             }
@@ -291,6 +291,14 @@ public class SearchFragment extends Fragment {
         }
     }
 
+    public void checkSearchForLikeChange(String itemId, boolean liked) {
+        Log.d(TAG, "checkSearchForLikeChange: " + recipeItemArrayList.size());
+        if (adapter != null) {
+            adapter.updateItemByItemId(itemId, liked);
+            //adapter.updateItem(position, liked);
+        }
+    }
+
     private void setMessageToRandom() {
         // Random number
         Random random_start_number = new Random();
@@ -368,10 +376,7 @@ public class SearchFragment extends Fragment {
                     if (response.body() != null) {
                         String result = response.body();
 
-                        numItemsChanged = true;
-                        numItemsBefore = 0;
-
-                        recipeItemArrayList.clear();
+                        //recipeItemArrayList.clear();
 
                         writeRecyclerAsync(result);
                     } else {
@@ -427,7 +432,6 @@ public class SearchFragment extends Fragment {
                             // sets BG Image to No Recipes Image
                             changeBGImage(1);
                         }
-                        numItemsBefore = recipeItemArrayList.size();
                         shimmer.stopShimmer();
                         shimmer.setVisibility(View.GONE);
                     });
@@ -518,7 +522,6 @@ public class SearchFragment extends Fragment {
 
         fromIngr = toIngr + 1;
         toIngr = fromIngr + 10;
-        Log.d(TAG, "from: " + fromIngr + " to: " + toIngr);
         Retrofit retrofit = NetworkClient.getRetrofitClient();
 
         ApiService apiService = retrofit.create(ApiService.class);
@@ -529,14 +532,9 @@ public class SearchFragment extends Fragment {
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {
 
-                    int numItemsAfter = 0;
-
                     if (response.body() != null) {
                         String result = response.body();
                         writeRecycler(result);
-
-                        numItemsAfter = recipeItemArrayList.size();
-                        numItemsChanged = numItemsAfter != numItemsBefore;
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");
                     }
@@ -559,8 +557,6 @@ public class SearchFragment extends Fragment {
         }
     }
 
-
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
@@ -569,7 +565,7 @@ public class SearchFragment extends Fragment {
             Log.d(TAG, "onActivityResult");
             int position = data.getIntExtra("position", 0);
             boolean liked = data.getBooleanExtra("liked", false);
-            //Log.d(TAG, "Position: " + position + " Liked: " + liked + " recipeItemArrayList Size: " + recipeItemArrayList.size() + " adapter: " + adapter.getItemCount());
+
             updateAdapter(position, liked);
         }
         super.onActivityResult(requestCode, resultCode, data);

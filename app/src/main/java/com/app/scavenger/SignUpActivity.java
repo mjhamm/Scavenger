@@ -50,17 +50,21 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.OAuthProvider;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity {
@@ -265,10 +269,82 @@ public class SignUpActivity extends AppCompatActivity {
                         .create()
                         .show();
             } else {
-                appleSignUp();
+                if (termsCheck.isChecked()) {
+                    appleSignUp();
+                } else {
+                    toastMessage("Please accept the Terms & Conditions");
+                }
             }
         });
     }
+
+    // Apple Sign In information and Methods ------------------------------------------------------------------------------------------------------------------
+
+    private void appleSignUp() {
+        progressHolder.setVisibility(View.VISIBLE);
+        OAuthProvider.Builder provider = OAuthProvider.newBuilder("apple.com");
+        List<String> scopes = new ArrayList<String>() {
+            {
+                add("email");
+                add("name");
+            }
+        };
+        provider.setScopes(scopes);
+
+        mAuth = FirebaseAuth.getInstance();
+        Task<AuthResult> pending = mAuth.getPendingAuthResult();
+        if (pending != null) {
+            pending.addOnSuccessListener(authResult -> {
+                // Get the user profile with authResult.getUser() and
+                // authResult.getAdditionalUserInfo(), and the ID
+                // token from Apple with authResult.getCredential().
+                FirebaseUser user = authResult.getUser();
+                toastMessage("Signed up successfully");
+                if (user != null) {
+                    name = user.getDisplayName();
+                    email = user.getEmail();
+                    retrieveLikesFromFirebase(user);
+                    updatePrefInfo(user.getUid());
+                    sendDataToFirebase(user);
+                }
+                finish();
+                progressHolder.setVisibility(View.GONE);
+            }).addOnFailureListener(e -> {
+                toastMessage("Issue Signing up. Please try again");
+                Log.w(TAG, "checkPending:onFailure", e);
+                progressHolder.setVisibility(View.GONE);
+            });
+        } else {
+            startSignInWithApple(provider);
+            Log.d(TAG, "pending: null");
+        }
+        //Log.d(TAG, "Apple Sign In");
+    }
+
+    private void startSignInWithApple(OAuthProvider.Builder provider) {
+        mAuth.startActivityForSignInWithProvider(this, provider.build())
+                .addOnSuccessListener(authResult -> {
+                    Log.d(TAG, "activitySignIn:onSuccess:" + authResult.getUser());
+                    FirebaseUser user = authResult.getUser();
+                    toastMessage("Signed up successfully");
+                    if (user != null) {
+                        name = user.getDisplayName();
+                        email = user.getEmail();
+                        retrieveLikesFromFirebase(user);
+                        updatePrefInfo(user.getUid());
+                        sendDataToFirebase(user);
+                    }
+                    finish();
+                    progressHolder.setVisibility(View.GONE);
+                })
+                .addOnFailureListener(e -> {
+                    toastMessage("Issue Signing up. Please try again");
+                    Log.w(TAG, "activitySignIn:onFailure", e);
+                    progressHolder.setVisibility(View.GONE);
+                });
+    }
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
     // Sends user information to Firebase
     private void sendDataToFirebase(FirebaseUser user) {
@@ -369,14 +445,6 @@ public class SignUpActivity extends AppCompatActivity {
                 });
     }
 
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    // Apple Sign Up Information and Methods ------------------------------------------------------------------------------------------------------------------
-
-    private void appleSignUp() {
-        Log.d(TAG, "Apple Sign Up");
-    }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
