@@ -78,7 +78,7 @@ public class SignInActivity extends AppCompatActivity {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
     private SharedPreferences sharedPreferences;
-    private String email = null, pass = null;
+    private String name = null, email = null, pass = null;
     private DatabaseHelper myDb;
     private GoogleSignInClient mGoogleSignInClient;
     private CallbackManager callbackManager;
@@ -166,7 +166,7 @@ public class SignInActivity extends AppCompatActivity {
                         .addOnCompleteListener(this, task -> {
                             if (task.isSuccessful()) {
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                toastMessage("Signed in successfully");
+                                //toastMessage("Signed in successfully");
                                 if (user != null) {
                                     retrieveLikesFromFirebase(user);
                                     updatePrefInfo(user.getUid());
@@ -264,8 +264,8 @@ public class SignInActivity extends AppCompatActivity {
     private void sendDataToFirebase(FirebaseUser user) {
         if (user != null) {
             HashMap<String, Object> data = new HashMap<>();
-            data.put("name", user.getDisplayName());
-            data.put("email", user.getEmail());
+            data.put("name", name);
+            data.put("email", email);
             db.collection(Constants.firebaseUser).document(user.getUid()).set(data);
         }
     }
@@ -305,19 +305,23 @@ public class SignInActivity extends AppCompatActivity {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "signInWithCredential:success");
                         FirebaseUser user = mAuth.getCurrentUser();
-                        toastMessage("Signed in successfully");
+                        //toastMessage("Signed in successfully");
                         if (user != null) {
+                            name = user.getDisplayName();
+                            email = user.getEmail();
                             retrieveLikesFromFirebase(user);
                             updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
                         }
+                        finish();
+                        progressHolder.setVisibility(View.GONE);
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
                         toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                     }
-                    finish();
-                    progressHolder.setVisibility(View.GONE);
+                    /*finish();
+                    progressHolder.setVisibility(View.GONE);*/
                 });
     }
 
@@ -340,19 +344,23 @@ public class SignInActivity extends AppCompatActivity {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "signInWithCredential:success");
                         FirebaseUser user = mAuth.getCurrentUser();
-                        toastMessage("Signed in successfully");
+                        //toastMessage("Signed in successfully");
                         if (user != null) {
+                            name = user.getDisplayName();
+                            email = user.getEmail();
                             retrieveLikesFromFirebase(user);
                             updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
                         }
+                        finish();
+                        progressHolder.setVisibility(View.GONE);
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
                         toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                     }
-                    finish();
-                    progressHolder.setVisibility(View.GONE);
+                    /*finish();
+                    progressHolder.setVisibility(View.GONE);*/
                 });
     }
 
@@ -380,8 +388,14 @@ public class SignInActivity extends AppCompatActivity {
                 // token from Apple with authResult.getCredential().
                 Log.d(TAG, "appleSignIn");
                 FirebaseUser user = authResult.getUser();
-                toastMessage("Signed in successfully");
+                //toastMessage("Signed in successfully");
                 if (user != null) {
+                    if (user.getDisplayName() == null) {
+                        name = "Anonymous";
+                    } else {
+                        name = user.getDisplayName();
+                    }
+                    email = user.getEmail();
                     retrieveLikesFromFirebase(user);
                     updatePrefInfo(user.getUid());
                     sendDataToFirebase(user);
@@ -405,8 +419,14 @@ public class SignInActivity extends AppCompatActivity {
                 .addOnSuccessListener(authResult -> {
                     Log.d(TAG, "activitySignIn:onSuccess:" + authResult.getUser());
                     FirebaseUser user = authResult.getUser();
-                    toastMessage("Signed in successfully");
+                    //toastMessage("Signed in successfully");
                     if (user != null) {
+                        if (user.getDisplayName() == null) {
+                            name = "Anonymous";
+                        } else {
+                            name = user.getDisplayName();
+                        }
+                        email = user.getEmail();
                         retrieveLikesFromFirebase(user);
                         updatePrefInfo(user.getUid());
                         sendDataToFirebase(user);

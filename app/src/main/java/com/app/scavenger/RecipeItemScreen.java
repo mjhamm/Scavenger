@@ -95,7 +95,6 @@ public class RecipeItemScreen extends AppCompatActivity {
     private int rating, servingsInt, caloriesInt, carbsInt, fatInt, proteinInt, position;
     private int commentCount = 0;
     private InstructionsAdapter instructionsAdapter;
-    //private FrameLayout mDetailLayout;
 
     private ConnectionDetector con;
     private FirebaseFirestore db;
@@ -121,6 +120,7 @@ public class RecipeItemScreen extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        mDetailLoading.setVisibility(View.GONE);
     }
 
     @Override
@@ -182,7 +182,6 @@ public class RecipeItemScreen extends AppCompatActivity {
         mInstructionsRecyclerView = findViewById(R.id.instructions_recyclerView);
         mMainConstraintLayout = findViewById(R.id.constraint_layout);
         mCommentsMainTitle = findViewById(R.id.comments_main_title);
-        //mDetailLayout = findViewById(R.id.detail_loading);
         mDetailLoading = findViewById(R.id.loading_detail);
         notConnectedText = findViewById(R.id.not_connected_text_recipeItem);
         commentButton = findViewById(R.id.comment_button);
@@ -194,10 +193,9 @@ public class RecipeItemScreen extends AppCompatActivity {
         commentsLine = findViewById(R.id.comments_underline);
         mRetryConnection = findViewById(R.id.recipe_retry_con_button);
 
-        //mDetailLayout.setVisibility(View.VISIBLE);
         notConnectedText.setVisibility(View.GONE);
         mRetryConnection.setVisibility(View.GONE);
-
+        
         ImageButton mBackButton = findViewById(R.id.item_screen_back);
         mBackButton.setOnClickListener(v -> {
             ratingBar.setVisibility(View.GONE);
@@ -419,7 +417,6 @@ public class RecipeItemScreen extends AppCompatActivity {
                 notConnectedText.setVisibility(View.VISIBLE);
                 mRetryConnection.setVisibility(View.VISIBLE);
                 hideAllLayouts();
-                //mDetailLayout.setVisibility(View.GONE);
             }
 
             if (image != null) {
@@ -430,12 +427,10 @@ public class RecipeItemScreen extends AppCompatActivity {
                         .into(recipeImage, new Callback() {
                             @Override
                             public void onSuccess() {
-                                //mDetailLayout.setVisibility(View.GONE);
                                 supportStartPostponedEnterTransition();
                             }
                             @Override
                             public void onError(Exception e) {
-                                //mDetailLayout.setVisibility(View.GONE);
                                 supportStartPostponedEnterTransition();
                             }
                         });

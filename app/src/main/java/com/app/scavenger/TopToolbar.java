@@ -12,9 +12,7 @@ import androidx.cardview.widget.CardView;
 
 public class TopToolbar extends LinearLayout {
 
-    private CardView toolbar;
     private TextView title;
-    private ImageButton backButton;
 
     public TopToolbar(Context context) {
         super(context);
@@ -49,9 +47,9 @@ public class TopToolbar extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        toolbar = findViewById(R.id.toolbar);
+        CardView toolbar = findViewById(R.id.toolbar);
         title = findViewById(R.id.title);
-        backButton = findViewById(R.id.back_button);
+        ImageButton backButton = findViewById(R.id.back_button);
 
         backButton.setOnClickListener(v -> setBackButton(getContext()));
     }

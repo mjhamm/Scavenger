@@ -225,7 +225,7 @@ public class SignUpActivity extends AppCompatActivity {
                         .addOnCompleteListener(this, task -> {
                             if (task.isSuccessful()) {
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                toastMessage("Signed up successfully.");
+                                //toastMessage("Signed up successfully.");
                                 if (user != null) {
                                     myDb.clearData();
                                     retrieveLikesFromFirebase(user);
@@ -299,9 +299,13 @@ public class SignUpActivity extends AppCompatActivity {
                 // authResult.getAdditionalUserInfo(), and the ID
                 // token from Apple with authResult.getCredential().
                 FirebaseUser user = authResult.getUser();
-                toastMessage("Signed up successfully");
+                //toastMessage("Signed up successfully");
                 if (user != null) {
-                    name = user.getDisplayName();
+                    if (user.getDisplayName() == null) {
+                        name = "Anonymous";
+                    } else {
+                        name = user.getDisplayName();
+                    }
                     email = user.getEmail();
                     retrieveLikesFromFirebase(user);
                     updatePrefInfo(user.getUid());
@@ -326,9 +330,13 @@ public class SignUpActivity extends AppCompatActivity {
                 .addOnSuccessListener(authResult -> {
                     Log.d(TAG, "activitySignIn:onSuccess:" + authResult.getUser());
                     FirebaseUser user = authResult.getUser();
-                    toastMessage("Signed up successfully");
+                    //toastMessage("Signed up successfully");
                     if (user != null) {
-                        name = user.getDisplayName();
+                        if (user.getDisplayName() == null) {
+                            name = "Anonymous";
+                        } else {
+                            name = user.getDisplayName();
+                        }
                         email = user.getEmail();
                         retrieveLikesFromFirebase(user);
                         updatePrefInfo(user.getUid());
@@ -348,10 +356,12 @@ public class SignUpActivity extends AppCompatActivity {
 
     // Sends user information to Firebase
     private void sendDataToFirebase(FirebaseUser user) {
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("name", name);
-        data.put("email", email);
-        db.collection("Users").document(user.getUid()).set(data);
+        if (user != null) {
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("name", name);
+            data.put("email", email);
+            db.collection(Constants.firebaseUser).document(user.getUid()).set(data);
+        }
     }
 
     // Google Sign Up information and Methods -----------------------------------------------------------------------------------------------------------------
@@ -379,14 +389,15 @@ public class SignUpActivity extends AppCompatActivity {
                             updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
                         }
+                        finish();
+                        progressHolder.setVisibility(View.GONE);
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signUpWithCredential:failure", task.getException());
                         toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                     }
-
-                    finish();
-                    progressHolder.setVisibility(View.GONE);
+                    /*finish();
+                    progressHolder.setVisibility(View.GONE);*/
                 });
     }
 
@@ -435,13 +446,15 @@ public class SignUpActivity extends AppCompatActivity {
                             updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
                         }
+                        finish();
+                        progressHolder.setVisibility(View.GONE);
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
                         toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                     }
-                    finish();
-                    progressHolder.setVisibility(View.GONE);
+                    /*finish();
+                    progressHolder.setVisibility(View.GONE);*/
                 });
     }
 
