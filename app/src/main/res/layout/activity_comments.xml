@@ -59,6 +59,38 @@
         android:layout_marginTop="4dp"
         android:background="@android:color/black"/>
 
+    <TextView
+        android:id="@+id/not_connected_text_comments"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:fontFamily="@font/roboto_condensed_regular"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:textSize="14sp"
+        android:text="Couldn't load comments. Please connect to the Internet in order to load comments."
+        app:layout_constraintTop_toBottomOf="@id/comment_underline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/comments_retry_connection"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:elevation="6dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/not_connected_text_comments"
+        android:text="Reload Comments"
+        android:textColor="@android:color/white"
+        android:textAllCaps="false"
+        android:textSize="14sp"
+        android:fontFamily="@font/roboto_medium"
+        android:layout_marginTop="16dp"
+        android:visibility="visible"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/comments_recyclerview"
         android:layout_width="match_parent"

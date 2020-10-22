@@ -88,17 +88,18 @@ public class SignUpActivity extends AppCompatActivity {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
     private CallbackManager callbackManager;
+    private boolean checkVerify = false;
 
     @Override
     protected void onStart() {
         super.onStart();
         // Gets the Firebase user
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        /*FirebaseUser currentUser = mAuth.getCurrentUser();
         // checks if the user isn't null
         if (currentUser != null) {
             // update the shared preferences with the user's userId
             updatePrefInfo(currentUser.getUid());
-        }
+        }*/
     }
 
     @Override
@@ -227,10 +228,16 @@ public class SignUpActivity extends AppCompatActivity {
                                 FirebaseUser user = mAuth.getCurrentUser();
                                 //toastMessage("Signed up successfully.");
                                 if (user != null) {
-                                    myDb.clearData();
-                                    retrieveLikesFromFirebase(user);
-                                    updatePrefInfo(user.getUid());
-                                    sendDataToFirebase(user);
+                                    user.sendEmailVerification();
+                                    checkVerify = true;
+
+                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                    editor.putBoolean("verify", checkVerify);
+                                    editor.apply();
+                                    //myDb.clearData();
+                                    //retrieveLikesFromFirebase(user);
+                                    //updatePrefInfo(user.getUid());
+                                    //sendDataToFirebase(user);
                                 }
                                 finish();
                                 progressHolder.setVisibility(View.GONE);
@@ -503,6 +510,7 @@ public class SignUpActivity extends AppCompatActivity {
         editor.putBoolean("logged", true);
         editor.putString("userId", userId);
         editor.putBoolean("refresh", true);
+        editor.putBoolean("verify", checkVerify);
         editor.apply();
     }
 

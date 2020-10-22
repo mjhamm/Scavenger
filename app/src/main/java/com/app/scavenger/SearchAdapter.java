@@ -359,9 +359,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     Pair<View, String> p1 = Pair.create(recipeHolder, "recipeHolder");
                     Pair<View, String> p2 = Pair.create(more_button, "recipeMore");
                     Pair<View, String> p3 = Pair.create(like_button, "recipeLike");
-                    ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.
-                            makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
-                    searchFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL, optionsCompat.toBundle());
+                    //ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
+                    //searchFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL, optionsCompat.toBundle());
+                    searchFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL);
                 }
             });
 
@@ -393,12 +393,12 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     mLastClickTime = SystemClock.elapsedRealtime();
                     if (logged) {
                         if (item.isLiked()) {
-                            new MaterialAlertDialogBuilder(mContext)
+                            /*new MaterialAlertDialogBuilder(mContext)
                                     .setTitle("Remove this recipe from your Likes?")
                                     .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
                                     .setCancelable(false)
                                     // Positive button - Remove the item from Firebase
-                                    .setPositiveButton("Remove", (dialog, which) -> {
+                                    .setPositiveButton("Remove", (dialog, which) -> {*/
                                         v.startAnimation(scaleAnimation_Like);
                                         like_button.setImageResource(R.drawable.like_outline);
                                         item.setLiked(false);
@@ -408,11 +408,11 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
-                                    })
+                                    /*})
                                     // dismiss the alert if cancel button is clicked
                                     .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                                     .create()
-                                    .show();
+                                    .show();*/
                         } else {
                             v.startAnimation(scaleAnimation_Like);
                             like_button.setImageResource(R.drawable.like_filled);

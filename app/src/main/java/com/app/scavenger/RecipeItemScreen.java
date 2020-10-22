@@ -195,147 +195,6 @@ public class RecipeItemScreen extends AppCompatActivity {
 
         notConnectedText.setVisibility(View.GONE);
         mRetryConnection.setVisibility(View.GONE);
-        
-        ImageButton mBackButton = findViewById(R.id.item_screen_back);
-        mBackButton.setOnClickListener(v -> {
-            ratingBar.setVisibility(View.GONE);
-            supportFinishAfterTransition();
-        });
-
-        commentButton.setOnClickListener(v -> {
-            Intent intent = new Intent(this, CommentsActivity.class);
-            intent.putExtra("focus", true);
-            intent.putExtra("recipe_name", name);
-            intent.putExtra("recipe_source", source);
-            intent.putExtra("recipe_id", itemId);
-            startActivityForResult(intent, NEW_COMMENT);
-        });
-
-        viewComments.setOnClickListener(v -> {
-            Intent intent = new Intent(this, CommentsActivity.class);
-            intent.putExtra("focus", false);
-            intent.putExtra("recipe_name", name);
-            intent.putExtra("recipe_source", source);
-            intent.putExtra("recipe_id", itemId);
-            startActivityForResult(intent, NEW_COMMENT);
-        });
-
-        viewRecipeButton.setOnClickListener(v -> {
-            boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
-            if (inAppBrowsingOn) {
-                openURLInChromeCustomTab(this, url);
-            } else {
-                openInDefaultBrowser(this, url);
-            }
-        });
-
-        // Nutrition Card Click Listener
-        // shows information about how we get our data
-        mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(this)
-                .setTitle(Constants.nutritionInformationTitle)
-                .setMessage(Constants.nutritionInformation)
-                .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
-                .show());
-
-        recipeMore.setOnClickListener(v -> {
-            PopupMenu popupMenu = new PopupMenu(this, recipeMore);
-            popupMenu.setOnMenuItemClickListener(item -> {
-                switch (item.getItemId()) {
-                    case R.id.menu_copy:
-                        copyRecipe();
-                        return true;
-                    case R.id.menu_view:
-                        viewRecipe();
-                        return true;
-                    case R.id.menu_share:
-                        shareRecipe();
-                        return true;
-                    case R.id.menu_report:
-                        reportRecipe();
-                        return true;
-                }
-                return false;
-            });
-            MenuInflater inflater = popupMenu.getMenuInflater();
-            inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
-            popupMenu.show();
-        });
-
-        // Creates animation for Like button - Animation to grow and shrink heart when clicked
-        Animation scaleAnimation_Like = new ScaleAnimation(0, 1, 0, 1, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        // sets the amount of time that the animation will play for
-        scaleAnimation_Like.setDuration(500);
-        // create an overshoot interpolator to give like animation growing look
-        OvershootInterpolator overshootInterpolator_Like = new OvershootInterpolator(4);
-        scaleAnimation_Like.setInterpolator(overshootInterpolator_Like);
-
-        // like button on click listener
-        recipeLike.setOnClickListener(v -> {
-            // checks whether or not the device is connected to the internet
-            if (!con.connectedToInternet()) {
-                new MaterialAlertDialogBuilder(this)
-                        .setTitle(Constants.noInternetTitle)
-                        .setMessage(Constants.noInternetMessage)
-                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                        .create()
-                        .show();
-            } else {
-                if (SystemClock.elapsedRealtime() - mLastClickTime < 1500) {
-                    return;
-                }
-                mLastClickTime = SystemClock.elapsedRealtime();
-                if (logged) {
-                    // update recyclerview item on other screen
-
-                    if (isLiked) {
-                        new MaterialAlertDialogBuilder(this)
-                                .setTitle("Remove this recipe from your Likes?")
-                                .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
-                                .setCancelable(false)
-                                // Positive button - Remove the item from Firebase
-                                .setPositiveButton("Remove", (dialog, which) -> {
-                                    v.startAnimation(scaleAnimation_Like);
-                                    recipeLike.setImageResource(R.drawable.like_outline);
-                                    isLiked = false;
-                                    try {
-                                        removeDataFromFirebase(itemId);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                    myDb.removeDataFromView(itemId);
-                                })
-                                // dismiss the alert if cancel button is clicked
-                                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                                .create()
-                                .show();
-                    } else {
-                        v.startAnimation(scaleAnimation_Like);
-                        recipeLike.setImageResource(R.drawable.like_filled);
-                        isLiked = true;
-                        try {
-                            saveDataToFirebase(itemId, internalUrl, name, source, image, url, rating);
-                            myDb.addDataToView(itemId);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                } else {
-                    new MaterialAlertDialogBuilder(this)
-                            .setTitle("You need to be Signed In")
-                            .setMessage("You must Sign Up or Sign In, in order to Like recipes.")
-                            .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                            .create()
-                            .show();
-                }
-            }
-        });
-
-        mRetryConnection.setOnClickListener(v -> {
-            finish();
-            overridePendingTransition(0,0);
-            startActivity(getIntent());
-            overridePendingTransition(0,0);
-        });
 
         if (getIntent() != null) {
 
@@ -439,6 +298,148 @@ public class RecipeItemScreen extends AppCompatActivity {
                 recipeImage.setImageDrawable(null);
             }
         }
+        
+        ImageButton mBackButton = findViewById(R.id.item_screen_back);
+        mBackButton.setOnClickListener(v -> {
+            ratingBar.setVisibility(View.GONE);
+            supportFinishAfterTransition();
+        });
+
+        commentButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CommentsActivity.class);
+            intent.putExtra("focus", true);
+            intent.putExtra("recipe_name", name);
+            intent.putExtra("recipe_source", source);
+            intent.putExtra("recipe_id", itemId);
+            startActivityForResult(intent, NEW_COMMENT);
+        });
+
+        viewComments.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CommentsActivity.class);
+            intent.putExtra("focus", false);
+            intent.putExtra("recipe_name", name);
+            intent.putExtra("recipe_source", source);
+            intent.putExtra("recipe_id", itemId);
+            startActivityForResult(intent, NEW_COMMENT);
+        });
+
+        viewRecipeButton.setOnClickListener(v -> {
+            boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
+            if (inAppBrowsingOn) {
+                openURLInChromeCustomTab(this, url);
+            } else {
+                openInDefaultBrowser(this, url);
+            }
+        });
+
+        // Nutrition Card Click Listener
+        // shows information about how we get our data
+        mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(this)
+                .setTitle(Constants.nutritionInformationTitle)
+                .setMessage(Constants.nutritionInformation)
+                .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
+                .show());
+
+        recipeMore.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(this, recipeMore);
+            popupMenu.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.menu_copy:
+                        copyRecipe();
+                        return true;
+                    case R.id.menu_view:
+                        viewRecipe();
+                        return true;
+                    case R.id.menu_share:
+                        shareRecipe();
+                        return true;
+                    case R.id.menu_report:
+                        reportRecipe();
+                        return true;
+                }
+                return false;
+            });
+            MenuInflater inflater = popupMenu.getMenuInflater();
+            inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
+            popupMenu.show();
+        });
+
+        // Creates animation for Like button - Animation to grow and shrink heart when clicked
+        Animation scaleAnimation_Like = new ScaleAnimation(0, 1, 0, 1, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        // sets the amount of time that the animation will play for
+        scaleAnimation_Like.setDuration(500);
+        // create an overshoot interpolator to give like animation growing look
+        OvershootInterpolator overshootInterpolator_Like = new OvershootInterpolator(4);
+        scaleAnimation_Like.setInterpolator(overshootInterpolator_Like);
+
+        // like button on click listener
+        recipeLike.setOnClickListener(v -> {
+            // checks whether or not the device is connected to the internet
+            if (!con.connectedToInternet()) {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle(Constants.noInternetTitle)
+                        .setMessage(Constants.noInternetMessage)
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                        .create()
+                        .show();
+            } else {
+                if (SystemClock.elapsedRealtime() - mLastClickTime < 1500) {
+                    return;
+                }
+                mLastClickTime = SystemClock.elapsedRealtime();
+                if (logged) {
+                    // update recyclerview item on other screen
+
+                    if (isLiked) {
+                        //new MaterialAlertDialogBuilder(this)
+                                //.setTitle("Remove this recipe from your Likes?")
+                                //.setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
+                                //.setCancelable(false)
+                                // Positive button - Remove the item from Firebase
+                                //.setPositiveButton("Remove", (dialog, which) -> {
+                                    v.startAnimation(scaleAnimation_Like);
+                                    recipeLike.setImageResource(R.drawable.like_outline);
+                                    isLiked = false;
+                                    try {
+                                        removeDataFromFirebase(itemId);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                    myDb.removeDataFromView(itemId);
+                                //})
+                                // dismiss the alert if cancel button is clicked
+                                //.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                                //.create()
+                                //.show();
+                    } else {
+                        v.startAnimation(scaleAnimation_Like);
+                        recipeLike.setImageResource(R.drawable.like_filled);
+                        isLiked = true;
+                        try {
+                            saveDataToFirebase(itemId, internalUrl, name, source, image, url, rating);
+                            myDb.addDataToView(itemId);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else {
+                    new MaterialAlertDialogBuilder(this)
+                            .setTitle("You need to be Signed In")
+                            .setMessage("You must Sign Up or Sign In, in order to Like recipes.")
+                            .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                            .create()
+                            .show();
+                }
+            }
+        });
+
+        mRetryConnection.setOnClickListener(v -> {
+            finish();
+            //overridePendingTransition(0,0);
+            startActivity(getIntent());
+            //overridePendingTransition(0,0);
+        });
+
     }
 
     private void viewRecipe() {
@@ -529,7 +530,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                     }
                     // After check for comments
                     if (commentCount == 0) {
-                        viewComments.setText("No Comments");
+                        viewComments.setText("No comments");
                     } else if (commentCount == 1) {
                         viewComments.setText("View " + commentCount + " comment");
                     } else {
@@ -628,6 +629,8 @@ public class RecipeItemScreen extends AppCompatActivity {
     }
 
     private void callToApi() {
+
+        Log.d("RecipeItemScreen", "internalUrl: " + internalUrl);
 
         mDetailLoading.setVisibility(View.VISIBLE);
 

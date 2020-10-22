@@ -22,6 +22,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
@@ -39,12 +41,14 @@ import java.util.Locale;
 
 public class CommentsActivity extends AppCompatActivity {
 
-    private TextView mPostComment, mRecipeName, mRecipeSource, mNotSignedText;
+    private TextView mPostComment, mRecipeName, mRecipeSource, mNotSignedText, mNotConnectedText;
     private EditText mCommentEditText;
     private ConstraintLayout mParentLayout;
     private CommentsAdapter commentsAdapter;
     private RecyclerView mCommentsRecyclerView;
     private FrameLayout mLoadingLayout;
+    private ConnectionDetector con;
+    private MaterialButton mReloadComments;
 
     private List<CommentItem> commentItems;
     private FirebaseAuth mAuth;
@@ -70,8 +74,11 @@ public class CommentsActivity extends AppCompatActivity {
         mNotSignedText = findViewById(R.id.not_signed_text);
         mCommentsRecyclerView = findViewById(R.id.comments_recyclerview);
         mLoadingLayout = findViewById(R.id.comments_loading);
+        mNotConnectedText = findViewById(R.id.not_connected_text_comments);
+        mReloadComments = findViewById(R.id.comments_retry_connection);
 
         mAuth = FirebaseAuth.getInstance();
+        con = new ConnectionDetector(this);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -92,7 +99,9 @@ public class CommentsActivity extends AppCompatActivity {
             boolean focus = getIntent().getExtras().getBoolean("focus", false);
 
             if (focus) {
-                mCommentEditText.requestFocus();
+                if (logged) {
+                    mCommentEditText.requestFocus();
+                }
             } else {
                 mParentLayout.requestFocus();
             }
@@ -118,7 +127,24 @@ public class CommentsActivity extends AppCompatActivity {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, mLayoutManager.getOrientation());
         mCommentsRecyclerView.addItemDecoration(dividerItemDecoration);
 
-        retrieveCommentsFromFB(recipeId);
+        if (con.connectedToInternet()) {
+            mNotConnectedText.setVisibility(View.GONE);
+            mReloadComments.setVisibility(View.GONE);
+            retrieveCommentsFromFB(recipeId);
+        } else {
+            mLoadingLayout.setVisibility(View.GONE);
+            mReloadComments.setVisibility(View.VISIBLE);
+            mNotConnectedText.setVisibility(View.VISIBLE);
+        }
+
+        mReloadComments.setOnClickListener(v -> {
+            if (con.connectedToInternet()) {
+                mLoadingLayout.setVisibility(View.VISIBLE);
+                mNotConnectedText.setVisibility(View.GONE);
+                mReloadComments.setVisibility(View.GONE);
+                retrieveCommentsFromFB(recipeId);
+            }
+        });
 
         mCommentEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -144,7 +170,16 @@ public class CommentsActivity extends AppCompatActivity {
             // check if connected to the internet before posting
 
             if (!mCommentEditText.getText().toString().isEmpty()) {
-                postComment(userName, mCommentEditText.getText().toString());
+                if (con.connectedToInternet()) {
+                    postComment(userName, mCommentEditText.getText().toString());
+                } else {
+                    new MaterialAlertDialogBuilder(this)
+                            .setTitle(Constants.noInternetTitle)
+                            .setMessage(Constants.noInternetMessage)
+                            .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                            .create()
+                            .show();
+                }
             }
 
         });
@@ -209,6 +244,8 @@ public class CommentsActivity extends AppCompatActivity {
     }
 
     private void retrieveCommentsFromFB(String recipeId) {
+
+        mLoadingLayout.setVisibility(View.VISIBLE);
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // reference to the users likes

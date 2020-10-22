@@ -98,7 +98,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         }
 
         private void reportComment(String name, String detail) {
-            reportReason = "N/A";
+            reportReason = "Spam";
             final CharSequence[] listItems = {"Spam","Inappropriate"};
             new MaterialAlertDialogBuilder(mContext)
                     .setTitle("Why are you reporting this?")
@@ -135,6 +135,9 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
             if (mAuth.getCurrentUser() != null) {
                 userId = mAuth.getCurrentUser().getUid();
+            } else {
+                userId = "Not Signed In";
+                name = "N/A";
             }
 
             // Date information

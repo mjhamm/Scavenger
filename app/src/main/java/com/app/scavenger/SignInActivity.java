@@ -94,6 +94,10 @@ public class SignInActivity extends AppCompatActivity {
         if (sharedPreferences.getBoolean("logged", false)) {
             finish();
         }
+
+        if (sharedPreferences.getBoolean("verify", false)) {
+            Toast.makeText(this, "A verification has been sent to your email. Please verify your email in order to Sign In", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -166,14 +170,32 @@ public class SignInActivity extends AppCompatActivity {
                         .addOnCompleteListener(this, task -> {
                             if (task.isSuccessful()) {
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                //toastMessage("Signed in successfully");
                                 if (user != null) {
+                                    if (user.isEmailVerified()) {
+                                        retrieveLikesFromFirebase(user);
+                                        updatePrefInfo(user.getUid());
+                                        sendDataToFirebase(user);
+                                    } else {
+                                        new MaterialAlertDialogBuilder(SignInActivity.this)
+                                                .setTitle("Email Address not Verified.")
+                                                .setMessage("The Email Address that you have entered has not been verified. Please check your email and verify in order to Sign In. If you continue to have issues, please reach out to Scavenger Support at support@thescavengerapp.com.")
+                                                .setPositiveButton("OK", (dialog, which) -> {
+                                                    dialog.dismiss();
+                                                    progressHolder.setVisibility(View.GONE);
+                                                    emailEdit.requestFocus();
+                                                })
+                                                .create()
+                                                .show();
+                                    }
+                                }
+                                //toastMessage("Signed in successfully");
+                                /*if (user != null) {
                                     retrieveLikesFromFirebase(user);
                                     updatePrefInfo(user.getUid());
                                     sendDataToFirebase(user);
                                 }
                                 finish();
-                                progressHolder.setVisibility(View.GONE);
+                                progressHolder.setVisibility(View.GONE);*/
                             } else {
                                 Log.w(TAG, "SignInWithEmail:failure", task.getException());
                                 new MaterialAlertDialogBuilder(SignInActivity.this)
@@ -268,6 +290,9 @@ public class SignInActivity extends AppCompatActivity {
             data.put("email", email);
             db.collection(Constants.firebaseUser).document(user.getUid()).set(data);
         }
+
+        finish();
+        progressHolder.setVisibility(View.GONE);
     }
 
     // Facebook Sign In information and Methods -----------------------------------------------------------------------------------------------------------------
@@ -313,8 +338,8 @@ public class SignInActivity extends AppCompatActivity {
                             updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
                         }
-                        finish();
-                        progressHolder.setVisibility(View.GONE);
+                        //finish();
+                        //progressHolder.setVisibility(View.GONE);
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
@@ -352,8 +377,8 @@ public class SignInActivity extends AppCompatActivity {
                             updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
                         }
-                        finish();
-                        progressHolder.setVisibility(View.GONE);
+                        //finish();
+                        //progressHolder.setVisibility(View.GONE);
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
@@ -400,8 +425,8 @@ public class SignInActivity extends AppCompatActivity {
                     updatePrefInfo(user.getUid());
                     sendDataToFirebase(user);
                 }
-                finish();
-                progressHolder.setVisibility(View.GONE);
+                //finish();
+                //progressHolder.setVisibility(View.GONE);
             }).addOnFailureListener(e -> {
                 toastMessage("Issue Signing in. Please try again");
                 Log.w(TAG, "checkPending:onFailure", e);
@@ -431,8 +456,8 @@ public class SignInActivity extends AppCompatActivity {
                         updatePrefInfo(user.getUid());
                         sendDataToFirebase(user);
                     }
-                    finish();
-                    progressHolder.setVisibility(View.GONE);
+                    //finish();
+                    //progressHolder.setVisibility(View.GONE);
                 })
                 .addOnFailureListener(e -> {
                     toastMessage("Issue Signing up. Please try again");
@@ -469,6 +494,7 @@ public class SignInActivity extends AppCompatActivity {
         editor.putBoolean("logged", true);
         editor.putString("userId", userId);
         editor.putBoolean("refresh", true);
+        editor.putBoolean("verify", false);
         editor.apply();
     }
 

@@ -313,9 +313,9 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 Pair<View, String> p1 = Pair.create(recipeHolder, "recipeHolder");
                 Pair<View, String> p2 = Pair.create(more_button, "recipeMore");
                 Pair<View, String> p3 = Pair.create(like_button, "recipeLike");
-                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.
-                        makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
-                likesFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL, optionsCompat.toBundle());
+                //ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
+                //likesFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL, optionsCompat.toBundle());
+                likesFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL);
             });
 
             // Like Button Click Listener
@@ -335,12 +335,12 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                     // else - ask user if they want to remove the recipe from their likes
                 } else {
                     recipeItem = mRecipeItems.get(position);
-                    new MaterialAlertDialogBuilder(mContext)
+                   /*new MaterialAlertDialogBuilder(mContext)
                             .setTitle("Remove this recipe from your Likes?")
                             .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
                             .setCancelable(false)
                             // Positive button - Remove the item from Firebase
-                            .setPositiveButton("Remove", (dialog, which) -> {
+                            .setPositiveButton("Remove", (dialog, which) -> {*/
                                 try {
                                     removeDataFromFirebase(recipeItem);
                                 } catch (Exception e) {
@@ -393,11 +393,11 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                 editor.putInt("numLikes", actualNumLikes);
                                 editor.apply();
 
-                            })
+                            /*})
                             // dismiss the alert if cancel button is clicked
                             .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                             .create()
-                            .show();
+                            .show();*/
                 }
             });
 
