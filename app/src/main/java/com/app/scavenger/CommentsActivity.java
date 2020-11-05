@@ -234,10 +234,10 @@ public class CommentsActivity extends AppCompatActivity {
 
         commentReference.document().set(commentInfo)
                 .addOnSuccessListener(aVoid -> {
-                    Log.d("CommentsActivity","Report saved to Firebase");
+                    Log.d("CommentsActivity","Comment saved to Firebase");
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error sending report", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Error posting comment. Please check connection and try again", Toast.LENGTH_SHORT).show();
                     Log.d("CommentsActivity", e.toString());
                 });
 

@@ -22,12 +22,6 @@ public class ForgotPassword extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        /*if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }*/
-
         setContentView(R.layout.activity_forgot_password);
 
         EditText forgot_editText = findViewById(R.id.forgot_editText);

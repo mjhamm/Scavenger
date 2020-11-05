@@ -220,6 +220,7 @@ public class SignUpActivity extends AppCompatActivity {
             } else {
                 progressHolder.setVisibility(View.VISIBLE);
                 name = fullName.getText().toString();
+                Log.d(TAG, "name: " + name);
                 email = emailEdit.getText().toString();
                 pass = passEdit.getText().toString();
                 mAuth.createUserWithEmailAndPassword(email, pass)
@@ -230,17 +231,16 @@ public class SignUpActivity extends AppCompatActivity {
                                 if (user != null) {
                                     user.sendEmailVerification();
                                     checkVerify = true;
-
+                                    sendDataToFirebase(user);
                                     SharedPreferences.Editor editor = sharedPreferences.edit();
                                     editor.putBoolean("verify", checkVerify);
                                     editor.apply();
                                     //myDb.clearData();
                                     //retrieveLikesFromFirebase(user);
                                     //updatePrefInfo(user.getUid());
-                                    //sendDataToFirebase(user);
                                 }
-                                finish();
                                 progressHolder.setVisibility(View.GONE);
+                                finish();
                                 // Sign in success
                             } else {
                                 // Sign in failed
@@ -318,8 +318,8 @@ public class SignUpActivity extends AppCompatActivity {
                     updatePrefInfo(user.getUid());
                     sendDataToFirebase(user);
                 }
-                finish();
                 progressHolder.setVisibility(View.GONE);
+                finish();
             }).addOnFailureListener(e -> {
                 toastMessage("Issue Signing up. Please try again");
                 Log.w(TAG, "checkPending:onFailure", e);
@@ -349,8 +349,8 @@ public class SignUpActivity extends AppCompatActivity {
                         updatePrefInfo(user.getUid());
                         sendDataToFirebase(user);
                     }
-                    finish();
                     progressHolder.setVisibility(View.GONE);
+                    finish();
                 })
                 .addOnFailureListener(e -> {
                     toastMessage("Issue Signing up. Please try again");
@@ -396,15 +396,13 @@ public class SignUpActivity extends AppCompatActivity {
                             updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
                         }
-                        finish();
                         progressHolder.setVisibility(View.GONE);
+                        finish();
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signUpWithCredential:failure", task.getException());
                         toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                     }
-                    /*finish();
-                    progressHolder.setVisibility(View.GONE);*/
                 });
     }
 
@@ -453,8 +451,8 @@ public class SignUpActivity extends AppCompatActivity {
                             updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
                         }
-                        finish();
                         progressHolder.setVisibility(View.GONE);
+                        finish();
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithCredential:failure", task.getException());

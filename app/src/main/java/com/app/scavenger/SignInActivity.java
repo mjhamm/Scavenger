@@ -15,6 +15,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
+
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -73,7 +75,7 @@ public class SignInActivity extends AppCompatActivity {
     private MaterialButton signInButton;
     private EditText emailEdit, passEdit;
     private FrameLayout progressHolder;
-    private TextView signInTerms;
+    private TextView signInTerms, mResendVerificationButton;
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
@@ -83,6 +85,7 @@ public class SignInActivity extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
     private CallbackManager callbackManager;
     private ConnectionDetector con;
+    private long mLastClickTime = 0;
 
     // Required empty public constructor
     public SignInActivity() {}
@@ -97,6 +100,14 @@ public class SignInActivity extends AppCompatActivity {
 
         if (sharedPreferences.getBoolean("verify", false)) {
             Toast.makeText(this, "A verification has been sent to your email. Please verify your email in order to Sign In", Toast.LENGTH_LONG).show();
+
+            if (mResendVerificationButton != null) {
+                mResendVerificationButton.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (mResendVerificationButton != null) {
+                mResendVerificationButton.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -143,6 +154,7 @@ public class SignInActivity extends AppCompatActivity {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+        mResendVerificationButton = findViewById(R.id.verify_text);
         signInButton = findViewById(R.id.signIn_Button);
         // Views from Sign In activity
         TextView signUpText = findViewById(R.id.signUp_text);
@@ -152,9 +164,22 @@ public class SignInActivity extends AppCompatActivity {
         signInTerms = findViewById(R.id.accept_terms_signin);
         progressHolder = findViewById(R.id.signIn_progressHolder);
 
+        mResendVerificationButton.setOnClickListener(v -> {
+            hideKeyboard(this);
+            if (SystemClock.elapsedRealtime() - mLastClickTime < 5000) {
+                return;
+            }
+            mLastClickTime = SystemClock.elapsedRealtime();
+            if (mAuth.getCurrentUser() != null) {
+                Log.d(TAG, "current user: " + mAuth.getCurrentUser());
+                mAuth.getCurrentUser().sendEmailVerification();
+                Toast.makeText(this, "A verification has been sent to your email. Please verify your email in order to Sign In", Toast.LENGTH_LONG).show();
+            }
+        });
+
         // Sign in with email button ---------------------------------------------------------------
         signInButton.setOnClickListener(v -> {
-            hideKeyboard(SignInActivity.this);
+            hideKeyboard(this);
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle(Constants.noInternetTitle)
@@ -174,10 +199,10 @@ public class SignInActivity extends AppCompatActivity {
                                     if (user.isEmailVerified()) {
                                         retrieveLikesFromFirebase(user);
                                         updatePrefInfo(user.getUid());
-                                        sendDataToFirebase(user);
+                                        //sendDataToFirebase(user);
                                     } else {
                                         new MaterialAlertDialogBuilder(SignInActivity.this)
-                                                .setTitle("Email Address not Verified.")
+                                                .setTitle("Email Address not Verified")
                                                 .setMessage("The Email Address that you have entered has not been verified. Please check your email and verify in order to Sign In. If you continue to have issues, please reach out to Scavenger Support at support@thescavengerapp.com.")
                                                 .setPositiveButton("OK", (dialog, which) -> {
                                                     dialog.dismiss();
@@ -188,18 +213,10 @@ public class SignInActivity extends AppCompatActivity {
                                                 .show();
                                     }
                                 }
-                                //toastMessage("Signed in successfully");
-                                /*if (user != null) {
-                                    retrieveLikesFromFirebase(user);
-                                    updatePrefInfo(user.getUid());
-                                    sendDataToFirebase(user);
-                                }
-                                finish();
-                                progressHolder.setVisibility(View.GONE);*/
                             } else {
                                 Log.w(TAG, "SignInWithEmail:failure", task.getException());
                                 new MaterialAlertDialogBuilder(SignInActivity.this)
-                                        .setTitle("Invalid Email or Password.")
+                                        .setTitle("Invalid Email or Password")
                                         .setMessage("The Email Address or Password that you have used is invalid. Please check typing and try again. If you continue to have issues, please reach out to Scavenger Support at support@thescavengerapp.com.")
                                         .setPositiveButton("OK", (dialog, which) -> {
                                             dialog.dismiss();
@@ -290,9 +307,6 @@ public class SignInActivity extends AppCompatActivity {
             data.put("email", email);
             db.collection(Constants.firebaseUser).document(user.getUid()).set(data);
         }
-
-        finish();
-        progressHolder.setVisibility(View.GONE);
     }
 
     // Facebook Sign In information and Methods -----------------------------------------------------------------------------------------------------------------
@@ -335,8 +349,8 @@ public class SignInActivity extends AppCompatActivity {
                             name = user.getDisplayName();
                             email = user.getEmail();
                             retrieveLikesFromFirebase(user);
-                            updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
+                            updatePrefInfo(user.getUid());
                         }
                         //finish();
                         //progressHolder.setVisibility(View.GONE);
@@ -374,8 +388,8 @@ public class SignInActivity extends AppCompatActivity {
                             name = user.getDisplayName();
                             email = user.getEmail();
                             retrieveLikesFromFirebase(user);
-                            updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
+                            updatePrefInfo(user.getUid());
                         }
                         //finish();
                         //progressHolder.setVisibility(View.GONE);
@@ -422,8 +436,8 @@ public class SignInActivity extends AppCompatActivity {
                     }
                     email = user.getEmail();
                     retrieveLikesFromFirebase(user);
-                    updatePrefInfo(user.getUid());
                     sendDataToFirebase(user);
+                    updatePrefInfo(user.getUid());
                 }
                 //finish();
                 //progressHolder.setVisibility(View.GONE);
@@ -453,8 +467,8 @@ public class SignInActivity extends AppCompatActivity {
                         }
                         email = user.getEmail();
                         retrieveLikesFromFirebase(user);
-                        updatePrefInfo(user.getUid());
                         sendDataToFirebase(user);
+                        updatePrefInfo(user.getUid());
                     }
                     //finish();
                     //progressHolder.setVisibility(View.GONE);
@@ -496,6 +510,9 @@ public class SignInActivity extends AppCompatActivity {
         editor.putBoolean("refresh", true);
         editor.putBoolean("verify", false);
         editor.apply();
+
+        progressHolder.setVisibility(View.GONE);
+        finish();
     }
 
     private void retrieveLikesFromFirebase(FirebaseUser user) {

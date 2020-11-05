@@ -27,6 +27,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <!--<com.google.android.material.button.MaterialButton
+                android:id="@+id/resend_verification_email_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Resend Verification Email"
+                android:textAllCaps="false"
+                android:layout_marginTop="8dp"
+                app:layout_constraintStart_toStartOf="@id/signIn_Button"
+                app:layout_constraintEnd_toEndOf="@id/signIn_Button"
+                app:layout_constraintBottom_toTopOf="@id/signIn_Button"
+                app:layout_constraintTop_toBottomOf="@id/forgot_signIn"
+                android:visibility="visible"/>-->
+
             <EditText
                 android:id="@+id/email_editText"
                 android:layout_width="match_parent"
@@ -61,17 +74,37 @@
                 android:id="@+id/forgot_signIn"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/verify_text"
+                app:layout_constraintStart_toStartOf="@id/password_editText"
                 app:layout_constraintTop_toBottomOf="@id/password_editText"
                 android:text="@string/forgot_your_password"
                 android:textColor="@android:color/black"
                 android:fontFamily="@font/roboto_condensed_regular"
                 android:layout_marginTop="8dp"
-                android:layout_marginStart="24dp"
+                android:layout_marginEnd="8dp"
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp"
                 android:paddingEnd="24dp"
                 android:paddingStart="0dp"
+                android:textSize="12sp"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <TextView
+                android:id="@+id/verify_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="@id/password_editText"
+                app:layout_constraintTop_toBottomOf="@id/password_editText"
+                android:text="Resend Verification Email?"
+                android:textColor="@android:color/black"
+                android:fontFamily="@font/roboto_condensed_regular"
+                android:gravity="end"
+                android:layout_marginTop="8dp"
+                android:paddingTop="8dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="0dp"
+                android:paddingBottom="8dp"
                 android:textSize="12sp"
                 android:clickable="true"
                 android:focusable="true"/>
