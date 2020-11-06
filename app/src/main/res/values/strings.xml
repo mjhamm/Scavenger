@@ -54,8 +54,7 @@
     <string name="protein">Protein</string>
     <string name="ingredients">Ingredients</string>
     <string name="nutrition_facts">Nutrition Facts</string>
-    <string name="view_recipe">View Recipe</string>
-    <string name="edamam_branding">Edamam Branding</string>
+    <string name="view_recipe">View Recipe Website</string>
 
     <!-- Forgot Password Information -->
     <string name="password_instructions_text">Please enter your email address. Reset instructions will be sent to you.</string>

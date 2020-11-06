@@ -10,7 +10,7 @@
 
     <item
         android:id="@+id/menu_view"
-        android:title="View Recipe Website"
+        android:title="@string/view_recipe"
         android:orderInCategory="15"
         app:showAsAction="collapseActionView"/>
 

@@ -5,6 +5,8 @@ import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.jetbrains.annotations.NotNull;
+
 public class RecyclerViewVerticalSpacing extends RecyclerView.ItemDecoration {
 
     private final int bottomSpaceHeight;
@@ -16,8 +18,8 @@ public class RecyclerViewVerticalSpacing extends RecyclerView.ItemDecoration {
     }
 
     @Override
-    public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
-                               RecyclerView.State state) {
+    public void getItemOffsets(Rect outRect, @NotNull View view, @NotNull RecyclerView parent,
+                               @NotNull RecyclerView.State state) {
         outRect.bottom = bottomSpaceHeight;
         outRect.top = topSpaceHeight;
     }

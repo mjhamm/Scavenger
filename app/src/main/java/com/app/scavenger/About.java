@@ -12,10 +12,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ImageButton;
 import java.util.ArrayList;
 
 // About activity that lists information about Scavenger
@@ -53,11 +51,6 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
         aboutRecycler.setLayoutManager(layoutManager);
 
         inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
-
-
-        // Close activity through back button
-        //backButton.setOnClickListener(v -> finish());
-
     }
 
     @Override

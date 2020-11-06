@@ -2,6 +2,7 @@ package com.app.scavenger;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.NetworkInfo;
 
 // Class to check whether or not the device is connected to the internet
@@ -18,10 +19,12 @@ class ConnectionDetector {
     boolean connectedToInternet(){
         ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivity != null) {
-            NetworkInfo[] info = connectivity.getAllNetworkInfo();
-            for (NetworkInfo networkInfo : info) {
+            Network[] networks = connectivity.getAllNetworks();
+            NetworkInfo networkInfo;
+            for (Network mNetwork : networks) {
+                networkInfo = connectivity.getNetworkInfo(mNetwork);
                 // If connected to Internet through Network or Wifi - return true
-                if (networkInfo.getState() == NetworkInfo.State.CONNECTED) {
+                if (networkInfo.getState().equals(NetworkInfo.State.CONNECTED)) {
                     return true;
                 }
             }

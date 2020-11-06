@@ -9,6 +9,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.checkbox.MaterialCheckBox;
@@ -55,7 +56,9 @@ public class GroceryListAdapter extends RecyclerView.Adapter<GroceryListAdapter.
         holder.groceryRemoveButton.setVisibility(isTapped ? View.VISIBLE : View.GONE);
 
         holder.grocerySelectButton.setVisibility(showSelectItem ? View.VISIBLE : View.GONE);
-        holder.grocerySelectButton.setBackground(isSelected ? mContext.getResources().getDrawable(R.drawable.ic_baseline_check_circle_24) : mContext.getResources().getDrawable(R.drawable.circle));
+        if (isSelected)
+            holder.grocerySelectButton.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_check_circle_24));
+        else holder.grocerySelectButton.setBackground(ContextCompat.getDrawable(mContext, R.drawable.circle));
 
         holder.groceryTextView.setText(groceryItem.getGroceryItemName());
     }
@@ -71,10 +74,6 @@ public class GroceryListAdapter extends RecyclerView.Adapter<GroceryListAdapter.
 
     public interface ItemClickListener {
         void onItemClick(View view, int position);
-    }
-
-    private void removeGroceryItemFromFirebase(String item) {
-
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

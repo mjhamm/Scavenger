@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,6 +46,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
@@ -76,7 +78,7 @@ public class RecipeItemScreen extends AppCompatActivity {
     public static final int NEW_COMMENT = 201;
 
     private TextView instructionsMainText, ingredientsMainText, nutritionMainTitle, calMainText, carbMainText, fatMainText, proteinMainText, recipeName, recipeSource, recipeServings, recipeCalories, recipeCarbs, recipeFat, recipeProtein, recipeAttributes, recipeIngredients, viewComments, mCommentsMainTitle, notConnectedText;
-    private ImageView recipeImage, edamamBranding;
+    private ImageView recipeImage;
     private ImageButton recipeLike, recipeMore, commentButton;
     private CardView mNutritionCard;
     private RatingBar ratingBar;
@@ -186,7 +188,6 @@ public class RecipeItemScreen extends AppCompatActivity {
         notConnectedText = findViewById(R.id.not_connected_text_recipeItem);
         commentButton = findViewById(R.id.comment_button);
         viewComments = findViewById(R.id.view_comments);
-        edamamBranding = findViewById(R.id.edamam_branding);
         nutritionLine = findViewById(R.id.nutrition_underline);
         ingredientsLine = findViewById(R.id.ingredients_underline);
         instructionsLine = findViewById(R.id.instructions_underline);
@@ -203,6 +204,8 @@ public class RecipeItemScreen extends AppCompatActivity {
             isLiked = getIntent().getExtras().getBoolean("recipe_liked");
             itemId = getIntent().getExtras().getString("recipe_id");
             image = getIntent().getExtras().getString("recipe_image");
+
+            Log.d("RecipeItemScreen: ","image: " + image);
             rating = getIntent().getExtras().getInt("recipe_rating");
             url = getIntent().getExtras().getString("recipe_url");
             position = getIntent().getExtras().getInt("position");
@@ -343,21 +346,19 @@ public class RecipeItemScreen extends AppCompatActivity {
         recipeMore.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(this, recipeMore);
             popupMenu.setOnMenuItemClickListener(item -> {
-                switch (item.getItemId()) {
-                    case R.id.menu_copy:
-                        copyRecipe();
-                        return true;
-                    case R.id.menu_view:
-                        viewRecipe();
-                        return true;
-                    case R.id.menu_share:
-                        shareRecipe();
-                        return true;
-                    case R.id.menu_report:
-                        reportRecipe();
-                        return true;
+                if (item.getItemId() == R.id.menu_copy) {
+                    copyRecipe();
+                    return true;
+                } else if (item.getItemId() == R.id.menu_view) {
+                    viewRecipe();
+                    return true;
+                } else if (item.getItemId() == R.id.menu_share) {
+                    shareRecipe();
+                    return true;
+                } else {
+                    reportRecipe();
+                    return true;
                 }
-                return false;
             });
             MenuInflater inflater = popupMenu.getMenuInflater();
             inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
@@ -442,6 +443,15 @@ public class RecipeItemScreen extends AppCompatActivity {
 
     }
 
+    private int getStatusBarHeight() {
+        Rect rectangle = new Rect();
+        Window window = getWindow();
+        window.getDecorView().getWindowVisibleDisplayFrame(rectangle);
+        int statusBarHeight = rectangle.top;
+        int contentViewTop = window.findViewById(Window.ID_ANDROID_CONTENT).getTop();
+        return contentViewTop - statusBarHeight;
+    }
+
     private void viewRecipe() {
         boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
         if (inAppBrowsingOn) {
@@ -453,7 +463,6 @@ public class RecipeItemScreen extends AppCompatActivity {
 
     private void hideAllLayouts() {
         nutritionMainTitle.setVisibility(View.GONE);
-        edamamBranding.setVisibility(View.GONE);
         nutritionLine.setVisibility(View.GONE);
         recipeServings.setVisibility(View.GONE);
         mNutritionCard.setVisibility(View.GONE);
@@ -855,9 +864,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                     editor.apply();
                     Log.d("RecipeItemScreen: ", "Successfully removed like");
                 })
-                .addOnFailureListener(e -> {
-                    Log.d("RecipeItemScreen: ", "Failed to remove like" + e.toString());
-                });
+                .addOnFailureListener(e -> Log.d("RecipeItemScreen: ", "Failed to remove like" + e.toString()));
     }
 
     // Sets all variables related to logged status and user info

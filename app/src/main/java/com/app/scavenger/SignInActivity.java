@@ -371,6 +371,7 @@ public class SignInActivity extends AppCompatActivity {
 
     private void googleSignIn() {
         Intent intent = mGoogleSignInClient.getSignInIntent();
+        // DEPRECATED
         startActivityForResult(intent, RC_SIGN_IN);
     }
 
@@ -493,7 +494,6 @@ public class SignInActivity extends AppCompatActivity {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
-                //noinspection ConstantConditions
                 Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
                 firebaseAuthWithGoogle(account.getIdToken());
             } catch (ApiException e) {
@@ -540,11 +540,7 @@ public class SignInActivity extends AppCompatActivity {
             signInButton.setEnabled(false);
         } else {
             if (emailEdit.getText().toString().trim().contains("@")) {
-                if (!passEdit.getText().toString().trim().isEmpty()) {
-                    signInButton.setEnabled(true);
-                } else {
-                    signInButton.setEnabled(false);
-                }
+                signInButton.setEnabled(!passEdit.getText().toString().trim().isEmpty());
             } else {
                 signInButton.setEnabled(false);
             }

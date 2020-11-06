@@ -1,34 +1,24 @@
 package com.app.scavenger;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.ImageButton;
-
-import com.google.firebase.database.core.utilities.Tree;
-
 import java.util.ArrayList;
 
 public class DietPreferences extends AppCompatActivity implements DietsAdapter.ItemClickListener {
-
-    private RecyclerView mRecyclerView;
-    private DietsAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_diet_preferences);
 
-        mRecyclerView = findViewById(R.id.diet_recyclerView);
+        RecyclerView mRecyclerView = findViewById(R.id.diet_recyclerView);
         TopToolbar topToolbar = findViewById(R.id.diets_toolbar);
         topToolbar.setTitle("Dietary Preferences");
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         ArrayList<Object> options = new ArrayList<>();
 
@@ -68,7 +58,7 @@ public class DietPreferences extends AppCompatActivity implements DietsAdapter.I
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, layoutManager.getOrientation());
         mRecyclerView.addItemDecoration(dividerItemDecoration);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new DietsAdapter(this, options);
+        DietsAdapter adapter = new DietsAdapter(this, options);
         adapter.setClickListener(this);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setAdapter(adapter);

@@ -1,15 +1,10 @@
 package com.app.scavenger;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.widget.EditText;
-import android.widget.ImageButton;
-
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,7 +21,6 @@ public class ForgotPassword extends AppCompatActivity {
 
         EditText forgot_editText = findViewById(R.id.forgot_editText);
         MaterialButton forgot_pass_button = findViewById(R.id.forgot_pass_button);
-        //ImageButton backButton = findViewById(R.id.forgotPass_back);
         ConnectionDetector con = new ConnectionDetector(this);
 
         TopToolbar topToolbar = findViewById(R.id.forgot_toolbar);
@@ -43,11 +37,7 @@ public class ForgotPassword extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.toString().trim().length() != 0) {
-                    if (s.toString().trim().contains("@")) {
-                        forgot_pass_button.setEnabled(true);
-                    } else {
-                        forgot_pass_button.setEnabled(false);
-                    }
+                    forgot_pass_button.setEnabled(s.toString().trim().contains("@"));
                 } else {
                     forgot_pass_button.setEnabled(false);
                 }

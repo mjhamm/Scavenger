@@ -1,6 +1,5 @@
 package com.app.scavenger;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -18,19 +17,22 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.core.util.Pair;
+
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
@@ -44,7 +46,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-
 import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
 
 @SuppressWarnings("unchecked")
@@ -278,7 +279,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         private final TextView recipeName, recipeSource;
         private final ImageView recipeImage;
         private final ImageButton more_button, like_button;
-        private final CardView recipeHolder;
         //private final RatingBar mRatingBar;
 
         // View Holder variables
@@ -290,7 +290,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             recipeName = itemView.findViewById(R.id.recipe_name);
             recipeSource = itemView.findViewById(R.id.recipe_source);
             recipeImage = itemView.findViewById(R.id.recipe_image);
-            recipeHolder = itemView.findViewById(R.id.image_holder);
+            //CardView recipeHolder = itemView.findViewById(R.id.image_holder);
             like_button = itemView.findViewById(R.id.recipe_like);
             more_button = itemView.findViewById(R.id.more_button);
             //mRatingBar = itemView.findViewById(R.id.ratingBar);
@@ -298,25 +298,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             itemView.setOnClickListener(this);
 
             // Recipe Image Click Listener
-            recipeImage.setOnClickListener(v -> {
-                Intent intent = new Intent(mContext, RecipeItemScreen.class);
-                intent.putExtra("activity_id", "like");
-                intent.putExtra("recipe_name", mRecipeItems.get(getAdapterPosition()).getmRecipeName());
-                intent.putExtra("recipe_source", mRecipeItems.get(getAdapterPosition()).getmSourceName());
-                intent.putExtra("recipe_liked", mRecipeItems.get(getAdapterPosition()).isLiked());
-                intent.putExtra("recipe_id", mRecipeItems.get(getAdapterPosition()).getItemId());
-                intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
-                //intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
-                intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
-                intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
-                intent.putExtra("position", getAdapterPosition());
-                Pair<View, String> p1 = Pair.create(recipeHolder, "recipeHolder");
-                Pair<View, String> p2 = Pair.create(more_button, "recipeMore");
-                Pair<View, String> p3 = Pair.create(like_button, "recipeLike");
-                //ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
-                //likesFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL, optionsCompat.toBundle());
-                likesFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL);
-            });
+            recipeImage.setOnClickListener(this::openRecipeDetail);
 
             // Like Button Click Listener
             like_button.setOnClickListener(v -> {
@@ -411,22 +393,14 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 // create a menu with options (copy, share, report)
                 PopupMenu popupMenu = new PopupMenu(mContext, more_button);
                 popupMenu.setOnMenuItemClickListener(item -> {
-                    switch (item.getItemId()) {
-                        // copy the recipe url
-                        case R.id.menu_copy:
-                            copyRecipe();
-                            return true;
-                        case R.id.menu_view:
-                            viewRecipe();
-                            return true;
-                            // share the recipe through text, email, facebook
-                        case R.id.menu_share:
-                            shareRecipe();
-                            return true;
-                            // report the recipe for profanity, nudity, or website
-                        case R.id.menu_report:
-                            reportRecipe();
-                            return true;
+                    if (item.getItemId() == R.id.menu_copy) {
+                        copyRecipe();
+                    } else if (item.getItemId() == R.id.menu_view) {
+                        viewRecipe();
+                    } else if (item.getItemId() == R.id.menu_share) {
+                        shareRecipe();
+                    } else {
+                        reportRecipe();
                     }
                     return false;
                 });
@@ -595,5 +569,20 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
 
         @Override
         public void onClick(View v) {}
+
+        private void openRecipeDetail(View v) {
+            Intent intent = new Intent(mContext, RecipeItemScreen.class);
+            intent.putExtra("activity_id", "like");
+            intent.putExtra("recipe_name", mRecipeItems.get(getAdapterPosition()).getmRecipeName());
+            intent.putExtra("recipe_source", mRecipeItems.get(getAdapterPosition()).getmSourceName());
+            intent.putExtra("recipe_liked", mRecipeItems.get(getAdapterPosition()).isLiked());
+            intent.putExtra("recipe_id", mRecipeItems.get(getAdapterPosition()).getItemId());
+            intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
+            //intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
+            intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
+            intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
+            intent.putExtra("position", getAdapterPosition());
+            likesFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL);
+        }
     }
 }

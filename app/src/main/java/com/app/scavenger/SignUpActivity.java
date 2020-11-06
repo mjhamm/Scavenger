@@ -375,6 +375,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void googleSignUp() {
         Intent signInIntent = mGoogleSignUpClient.getSignInIntent();
+        // DEPRECATED
         startActivityForResult(signInIntent, RC_SIGN_UP);
     }
 
@@ -476,7 +477,6 @@ public class SignUpActivity extends AppCompatActivity {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
-                //noinspection ConstantConditions
                 Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
                 firebaseAuthWithGoogle(account.getIdToken());
             } catch (ApiException e) {

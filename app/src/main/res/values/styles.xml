@@ -24,30 +24,6 @@
         <item name="colorControlNormal">@color/colorPrimary</item>
     </style>
 
-    <!--<style name="CollapsedTitleColor" parent="TextAppearance.AppCompat.Title">
-        <item name="android:textColor">@android:color/black</item>
-        <item name="fontFamily">@font/roboto_medium</item>
-        <item name="android:textSize">16sp</item>
-    </style>-->
-
-    <!--<style name="MyCardView" parent="@style/Widget.MaterialComponents.CardView">
-        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.MaterialCardView.Cut</item>
-    </style>-->
-
-    <!--<style name="ShapeAppearanceOverlay.MaterialCardView.Cut" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSizeTopRight">0dp</item>
-        <item name="cornerSizeTopLeft">0dp</item>
-        <item name="cornerSizeBottomRight">8dp</item>
-        <item name="cornerSizeBottomLeft">8dp</item>
-    </style>-->
-
-    <!--<style name="ExpandedTitleColor" parent="TextAppearance.AppCompat.Title">
-        <item name="android:textColor">@android:color/black</item>
-        <item name="fontFamily">@font/roboto_medium</item>
-        <item name="android:textSize">30sp</item>
-    </style>-->
-
     <!-- Reminder Alert Theme -->
     <style name="ReminderAlertTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
         <item name="materialAlertDialogBodyTextStyle">@style/ReminderBodyAlert</item>

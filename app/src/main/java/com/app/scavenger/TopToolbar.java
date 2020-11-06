@@ -8,8 +8,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.cardview.widget.CardView;
-
 public class TopToolbar extends LinearLayout {
 
     private TextView title;
@@ -47,7 +45,6 @@ public class TopToolbar extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        CardView toolbar = findViewById(R.id.toolbar);
         title = findViewById(R.id.title);
         ImageButton backButton = findViewById(R.id.back_button);
 

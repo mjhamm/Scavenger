@@ -1,6 +1,7 @@
 package com.app.scavenger;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,8 +12,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -82,6 +88,24 @@ public class LikesFragment extends Fragment {
         mContext = getContext();
         mCheckSearch = (CheckSearch) mContext;
 
+        /*registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        // There are no request code
+                        Intent data = result.getData();
+                        Log.d("LikesFragment", "onActivityResult");
+                        int position = data.getIntExtra("position", 0);
+                        boolean liked = data.getBooleanExtra("liked", false);
+                        String itemId = data.getStringExtra("itemId");
+
+                        if (!liked) {
+                            updateRecycler(position);
+                        }
+
+                        checkSearchForLikeChange(itemId,liked);
+                    }
+                });*/
     }
 
     @Override
@@ -192,21 +216,21 @@ public class LikesFragment extends Fragment {
                 likes_message.setVisibility(View.VISIBLE);
                 likes_message.setText(R.string.not_signed_in);
                 retryConButton.setVisibility(View.GONE);
-                mLikes_BG.setImageDrawable(getResources().getDrawable(R.drawable.not_signedin_bg_screen));
+                mLikes_BG.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.not_signedin_bg_screen));
                 break;
             // no likes
             case 1:
                 likes_message.setVisibility(View.VISIBLE);
                 likes_message.setText(R.string.no_likes);
                 retryConButton.setVisibility(View.GONE);
-                mLikes_BG.setImageDrawable(getResources().getDrawable(R.drawable.no_likes_bg_screen));
+                mLikes_BG.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.no_likes_bg_screen));
                 break;
             // no internet
             case 2:
                 likes_message.setVisibility(View.VISIBLE);
                 likes_message.setText(R.string.likes_not_connected);
                 retryConButton.setVisibility(View.VISIBLE);
-                mLikes_BG.setImageDrawable(getResources().getDrawable(R.drawable.no_internet_bg_screen));
+                mLikes_BG.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.no_internet_bg_screen));
                 break;
         }
     }
@@ -217,7 +241,6 @@ public class LikesFragment extends Fragment {
             mLikeSearch.setQuery("", false);
             mLikeSearch.clearFocus();
         }
-
     }
 
     // method that refreshes the fragment when the user is reconnected to the internet
@@ -359,27 +382,21 @@ public class LikesFragment extends Fragment {
                             image = documentSnapshot.getString(Constants.ITEM_IMAGE);
                             url = documentSnapshot.getString(Constants.ITEM_URL);
                             if (documentSnapshot.getLong(Constants.ITEM_RATING) != null) {
-                                //noinspection ConstantConditions
                                 rating = documentSnapshot.getLong(Constants.ITEM_RATING).intValue();
                             }
                             if (documentSnapshot.getLong(Constants.ITEM_YIELD) != null) {
-                                //noinspection ConstantConditions
                                 serves = documentSnapshot.getLong(Constants.ITEM_YIELD).intValue();
                             }
                             if (documentSnapshot.getLong(Constants.ITEM_CAL) != null) {
-                                //noinspection ConstantConditions
                                 cals = documentSnapshot.getLong(Constants.ITEM_CAL).intValue();
                             }
                             if (documentSnapshot.getLong(Constants.ITEM_CARB) != null) {
-                                //noinspection ConstantConditions
                                 carb = documentSnapshot.getLong(Constants.ITEM_CARB).intValue();
                             }
                             if (documentSnapshot.getLong(Constants.ITEM_FAT) != null) {
-                                //noinspection ConstantConditions
                                 fat = documentSnapshot.getLong(Constants.ITEM_FAT).intValue();
                             }
                             if (documentSnapshot.getLong(Constants.ITEM_PROTEIN) != null) {
-                                //noinspection ConstantConditions
                                 protein = documentSnapshot.getLong(Constants.ITEM_PROTEIN).intValue();
                             }
                             if (documentSnapshot.exists()) {

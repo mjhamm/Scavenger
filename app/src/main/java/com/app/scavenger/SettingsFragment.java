@@ -88,16 +88,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         accessToken = AccessToken.getCurrentAccessToken();
 
         // -------------------------------------------------------------------------
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
 
         signIn.setOnPreferenceClickListener(v -> {
             openSignIn();
@@ -139,6 +129,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         });
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+    }
+
     private void openHelp() {
         startActivity(new Intent(mContext, Help.class));
     }
@@ -151,9 +146,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         startActivity(new Intent(mContext, SignInActivity.class));
     }
 
-    private void openDiets() {
+    /*private void openDiets() {
         startActivity(new Intent(mContext, DietPreferences.class));
-    }
+    }*/
 
     //private void openGroceryList() { startActivity(new Intent(mContext, GroceryListActivity.class)); }
 

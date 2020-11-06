@@ -17,8 +17,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,19 +29,17 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 public class CommentsActivity extends AppCompatActivity {
 
-    private TextView mPostComment, mRecipeName, mRecipeSource, mNotSignedText, mNotConnectedText;
+    private TextView mPostComment;
+    private TextView mNotConnectedText;
     private EditText mCommentEditText;
-    private ConstraintLayout mParentLayout;
     private CommentsAdapter commentsAdapter;
     private RecyclerView mCommentsRecyclerView;
     private FrameLayout mLoadingLayout;
@@ -51,7 +47,6 @@ public class CommentsActivity extends AppCompatActivity {
     private MaterialButton mReloadComments;
 
     private List<CommentItem> commentItems;
-    private FirebaseAuth mAuth;
     private LinearLayoutManager mLayoutManager;
 
     private String userId, userName, recipeName, recipeSource, recipeId;
@@ -68,16 +63,16 @@ public class CommentsActivity extends AppCompatActivity {
 
         mPostComment = findViewById(R.id.post_textButton);
         mCommentEditText = findViewById(R.id.comment_editText);
-        mParentLayout = findViewById(R.id.parent_layout);
-        mRecipeName = findViewById(R.id.comment_recipeName);
-        mRecipeSource = findViewById(R.id.comment_recipeSource);
-        mNotSignedText = findViewById(R.id.not_signed_text);
+        ConstraintLayout mParentLayout = findViewById(R.id.parent_layout);
+        TextView mRecipeName = findViewById(R.id.comment_recipeName);
+        TextView mRecipeSource = findViewById(R.id.comment_recipeSource);
+        TextView mNotSignedText = findViewById(R.id.not_signed_text);
         mCommentsRecyclerView = findViewById(R.id.comments_recyclerview);
         mLoadingLayout = findViewById(R.id.comments_loading);
         mNotConnectedText = findViewById(R.id.not_connected_text_comments);
         mReloadComments = findViewById(R.id.comments_retry_connection);
 
-        mAuth = FirebaseAuth.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
         con = new ConnectionDetector(this);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -233,9 +228,7 @@ public class CommentsActivity extends AppCompatActivity {
         commentInfo.put("detail", commentItem.getDetail());
 
         commentReference.document().set(commentInfo)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("CommentsActivity","Comment saved to Firebase");
-                })
+                .addOnSuccessListener(aVoid -> Log.d("CommentsActivity","Comment saved to Firebase"))
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Error posting comment. Please check connection and try again", Toast.LENGTH_SHORT).show();
                     Log.d("CommentsActivity", e.toString());

@@ -1,30 +1,24 @@
 package com.app.scavenger;
 
-import androidx.annotation.NonNull;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.MenuInflater;
@@ -34,7 +28,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -47,7 +40,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -57,19 +49,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
 
 public class GroceryListActivity extends AppCompatActivity {
 
@@ -77,9 +62,7 @@ public class GroceryListActivity extends AppCompatActivity {
     public static final String TAG = "GroceryListActivity";
 
     private ConstraintLayout mSignInLayout;
-    private MaterialButton mEmailSignIn, mGoogleSignIn, mFacebookSignIn;
-    private TextView mSignUpText;
-    private FrameLayout progressHolder, mBottomBar;
+    private FrameLayout progressHolder;
     private GroceryListAdapter adapter;
     private RecyclerView mGroceryRecyclerView;
     private SharedPreferences sharedPreferences;
@@ -94,6 +77,7 @@ public class GroceryListActivity extends AppCompatActivity {
     private ImageButton mMoreButton, mDeleteSelectedItems, mBackButton;
     private ShimmerFrameLayout mShimmerLayout;
     private View mHorizontalBar;
+    private ActivityResultLauncher<Intent> googleActivityResultLauncher;
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -119,13 +103,6 @@ public class GroceryListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        /*if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }*/
-
         setContentView(R.layout.activity_grocery_list);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -136,9 +113,9 @@ public class GroceryListActivity extends AppCompatActivity {
         mMoreButton = findViewById(R.id.list_clear);
         mAddItemButton = findViewById(R.id.addCustomItemRow);
         terms = findViewById(R.id.accept_terms_signin);
-        mSignUpText = findViewById(R.id.signUp_text);
+        TextView mSignUpText = findViewById(R.id.signUp_text);
         mGroceryRecyclerView = findViewById(R.id.grocery_recyclerView);
-        mEmailSignIn = findViewById(R.id.signIn_Button);
+        MaterialButton mEmailSignIn = findViewById(R.id.signIn_Button);
         mSignInLayout = findViewById(R.id.signIn_layout);
         progressHolder = findViewById(R.id.signIn_progressHolder);
         mShimmerLayout = findViewById(R.id.grocery_shimmerLayout);
@@ -158,25 +135,39 @@ public class GroceryListActivity extends AppCompatActivity {
         getInfoFromSharedPrefs();
 
         // Google Info -----------------------------------------------------------------------------------
-        mGoogleSignIn = findViewById(R.id.google_signIn);
+        MaterialButton mGoogleSignIn = findViewById(R.id.google_signIn);
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestProfile()
                 .requestEmail()
                 .requestIdToken(getString(R.string.clientId_web_googleSignIn))
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        googleActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == RC_SIGN_IN) {
+                Intent data = result.getData();
+                progressHolder.setVisibility(View.VISIBLE);
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                try {
+                    GoogleSignInAccount account = task.getResult(ApiException.class);
+                    Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
+                    firebaseAuthWithGoogle(account.getIdToken());
+                } catch (ApiException e) {
+                    Log.d(TAG, "Google sign in failed", e);
+                    progressHolder.setVisibility(View.GONE);
+                }
+            }
+        });
         // -----------------------------------------------------------------------------------------------
 
         // Facebook Info ---------------------------------------------------------------------------------
-        mFacebookSignIn = findViewById(R.id.facebook_signIn);
+        MaterialButton mFacebookSignIn = findViewById(R.id.facebook_signIn);
         callbackManager = CallbackManager.Factory.create();
         // -----------------------------------------------------------------------------------------------
 
         // close the activity
         ImageButton closeButton = findViewById(R.id.list_close);
-        closeButton.setOnClickListener(v -> {
-            finish();
-        });
+        closeButton.setOnClickListener(v -> finish());
 
         mBackButton.setOnClickListener(v -> {
             mDeleteSelectedItems.setVisibility(View.GONE);
@@ -216,52 +207,45 @@ public class GroceryListActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
         });
 
-        mAddItemButton.setOnClickListener(v -> {
-            addCustomItem();
-        });
+        mAddItemButton.setOnClickListener(v -> addCustomItem());
 
         mMoreButton.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(this, mMoreButton);
             popupMenu.setOnMenuItemClickListener(item -> {
-                switch (item.getItemId()) {
-                    case R.id.action_sendlist:
-                        Log.d(TAG, "SEND LIST");
-                        break;
-                    case R.id.action_selectitems:
-                        Log.d(TAG, "SELECT ITEMS");
+                if (item.getItemId() == R.id.action_sendlist) {
+                    Log.d(TAG, "SEND LIST");
+                } else if (item.getItemId() == R.id.action_selectitems) {
+                    Log.d(TAG, "SELECT ITEMS");
 
-                        if (!groceryItemsList.isEmpty()) {
-                            closeButton.setClickable(false);
-                            closeButton.setVisibility(View.INVISIBLE);
+                    if (!groceryItemsList.isEmpty()) {
+                        closeButton.setClickable(false);
+                        closeButton.setVisibility(View.INVISIBLE);
+                        mBackButton.setClickable(true);
+                        mBackButton.setVisibility(View.VISIBLE);
+                        mDeleteSelectedItems.setVisibility(View.VISIBLE);
 
-                            mBackButton.setClickable(true);
-                            mBackButton.setVisibility(View.VISIBLE);
-                            mDeleteSelectedItems.setVisibility(View.VISIBLE);
-
-                            for (GroceryListItem groceryListItem : groceryItemsList) {
-                                groceryListItem.setmGroceryItemTapped(false);
-                                groceryListItem.setShowSelectItems(true);
-                            }
-                            adapter.notifyDataSetChanged();
+                        for (GroceryListItem groceryListItem : groceryItemsList) {
+                            groceryListItem.setmGroceryItemTapped(false);
+                            groceryListItem.setShowSelectItems(true);
                         }
-                        break;
-                    case R.id.action_clearlist:
-                        // clear list
-                        new MaterialAlertDialogBuilder(this)
-                                .setTitle("Clear your Grocery List?")
-                                .setMessage("This will remove all items in your list. Are you sure you want to continue?")
-                                .setCancelable(false)
-                                .setPositiveButton("Clear", (dialog, which) -> clearList())
-                                .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
-                                .create()
-                                .show();
-                        break;
+                        adapter.notifyDataSetChanged();
+                    }
+                } else {
+                    // clear list
+                    new MaterialAlertDialogBuilder(this)
+                            .setTitle("Clear your Grocery List?")
+                            .setMessage("This will remove all items in your list. Are you sure you want to continue?")
+                            .setCancelable(false)
+                            .setPositiveButton("Clear", (dialog, which) -> clearList())
+                            .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
+                            .create()
+                            .show();
                 }
+                MenuInflater inflater = popupMenu.getMenuInflater();
+                inflater.inflate(R.menu.grocery_list_menu, popupMenu.getMenu());
+                popupMenu.show();
                 return false;
             });
-            MenuInflater inflater = popupMenu.getMenuInflater();
-            inflater.inflate(R.menu.grocery_list_menu, popupMenu.getMenu());
-            popupMenu.show();
         });
 
         // SIGN IN WITH EMAIL ----------------------------------------------------------------------------------------------
@@ -361,7 +345,7 @@ public class GroceryListActivity extends AppCompatActivity {
                         .create()
                         .show();
             } else {
-                googleSignIn();
+                openGoogleSignInForResult();
             }
         });
 
@@ -389,9 +373,9 @@ public class GroceryListActivity extends AppCompatActivity {
 
     // Google Sign In information and Methods -----------------------------------------------------------------------------------------------------------------
 
-    private void googleSignIn() {
+    private void openGoogleSignInForResult() {
         Intent intent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(intent, RC_SIGN_IN);
+        googleActivityResultLauncher.launch(intent);
     }
 
     // Authenticate Google Sign In with Firebase to make sure user exists and then can sign in
@@ -480,19 +464,6 @@ public class GroceryListActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         callbackManager.onActivityResult(requestCode, resultCode,data);
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_SIGN_IN) {
-            progressHolder.setVisibility(View.VISIBLE);
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            try {
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                //noinspection ConstantConditions
-                Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
-                firebaseAuthWithGoogle(account.getIdToken());
-            } catch (ApiException e) {
-                Log.d(TAG, "Google sign in failed", e);
-                progressHolder.setVisibility(View.GONE);
-            }
-        }
     }
 
     @Override
@@ -577,12 +548,8 @@ public class GroceryListActivity extends AppCompatActivity {
         itemMap.put("items", groceryItemsFromFB);
 
         groceryRef.document(userId).set(itemMap)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Grocery item saved to Firebase");
-                })
-                .addOnFailureListener(e -> {
-                    Log.d(TAG, "Error saving grocery item to Firebase : " + e.toString());
-                });
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Grocery item saved to Firebase"))
+                .addOnFailureListener(e -> Log.d(TAG, "Error saving grocery item to Firebase : " + e.toString()));
     }
 
     private void retrieveListFromFirebase(FirebaseUser user) {

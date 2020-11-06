@@ -1,7 +1,6 @@
 package com.app.scavenger;
 
 import android.content.Context;
-import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -12,29 +11,25 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHolder> {
 
     private final List<CommentItem> mCommentArray;
     private final LayoutInflater mInflater;
     private final String recipeId, recipeName, recipeSource;
-    private FirebaseAuth mAuth;
-    private Context mContext;
+    private final FirebaseAuth mAuth;
+    private final Context mContext;
     private String reportReason;
-    private ConnectionDetector con;
+    private final ConnectionDetector con;
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     // data is passed into the constructor
@@ -131,7 +126,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
         // Send report to Server under reports with Phone information
         private void sendCommentReport(String recipeId, String name, String detail, String recipeName, String recipeSource) {
-            String userId = null;
+            String userId;
 
             if (mAuth.getCurrentUser() != null) {
                 userId = mAuth.getCurrentUser().getUid();

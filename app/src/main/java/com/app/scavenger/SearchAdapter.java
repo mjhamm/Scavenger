@@ -311,7 +311,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         private final TextView recipeName, recipeSource;
         private final ImageView recipeImage;
         private final ImageButton more_button, like_button;
-        private final CardView recipeHolder;
         private final RatingBar mRatingBar;
 
         // recipe item
@@ -330,7 +329,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             like_button = itemView.findViewById(R.id.recipe_like);
             more_button = itemView.findViewById(R.id.more_button);
             mRatingBar = itemView.findViewById(R.id.ratingBar);
-            recipeHolder = itemView.findViewById(R.id.image_holder);
 
             // sets the click listener for the recipe item
             itemView.setOnClickListener(this);
@@ -356,11 +354,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
                     intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
                     intent.putExtra("position", getAdapterPosition());
-                    Pair<View, String> p1 = Pair.create(recipeHolder, "recipeHolder");
-                    Pair<View, String> p2 = Pair.create(more_button, "recipeMore");
-                    Pair<View, String> p3 = Pair.create(like_button, "recipeLike");
-                    //ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation((Activity)mContext, p1, p2, p3);
-                    //searchFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL, optionsCompat.toBundle());
+                    // DEPRECATED
                     searchFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL);
                 }
             });
@@ -441,19 +435,14 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
                 PopupMenu popupMenu = new PopupMenu(mContext, more_button);
                 popupMenu.setOnMenuItemClickListener(item -> {
-                    switch (item.getItemId()) {
-                        case R.id.menu_copy:
-                            copyRecipe();
-                            return true;
-                        case R.id.menu_view:
-                            viewRecipe();
-                            return true;
-                        case R.id.menu_share:
-                            shareRecipe();
-                            return true;
-                        case R.id.menu_report:
-                            reportRecipe();
-                            return true;
+                    if (item.getItemId() == R.id.menu_copy) {
+                        copyRecipe();
+                    } else if (item.getItemId() == R.id.menu_view) {
+                        viewRecipe();
+                    } else if (item.getItemId() == R.id.menu_share) {
+                        shareRecipe();
+                    } else {
+                        reportRecipe();
                     }
                     return false;
                 });

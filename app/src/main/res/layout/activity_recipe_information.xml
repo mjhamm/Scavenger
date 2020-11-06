@@ -76,7 +76,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/edamam_branding"
+            app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="6dp"
             android:layout_marginStart="16dp"
@@ -99,29 +99,15 @@
             android:layout_marginTop="4dp"
             android:background="@color/bg_gray"/>
 
-        <ImageView
-            android:id="@+id/edamam_branding"
-            android:layout_width="80dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:src="@drawable/edamam_badge"
-            android:elevation="6dp"
-            android:translationZ="6dp"
-            android:contentDescription="@string/edamam_branding"
-            app:layout_constraintTop_toTopOf="@id/nutritionFacts_main_title"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/nutritionFacts_main_title"/>
-
         <TextView
             android:id="@+id/servings_detail"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_alignEnd="@id/edamam_branding"
+            app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
             android:fontFamily="@font/roboto_condensed_regular"
-            android:gravity="end"
+            android:gravity="start"
             android:text="0 Servings"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="14sp"

@@ -1,7 +1,5 @@
 package com.app.scavenger;
 
-import java.util.ArrayList;
-
 public class Constants {
 
     // Edamam Key Information
@@ -12,8 +10,8 @@ public class Constants {
     public static final String firebaseUser = "Users";
     public static final String firebaseLikes = "Likes";
     public static final String firebaseComments = "Comments";
-    public static final String firebaseGrocery = "GroceryList";
-    public static final String firebaseIngrListId = "VCHP0Xze7IyETG4NT6at";
+    //public static final String firebaseGrocery = "GroceryList";
+    //public static final String firebaseIngrListId = "VCHP0Xze7IyETG4NT6at";
     public static final String firebaseRecipeReports = "RecipeReports";
     public static final String firebaseCommentReports = "CommentReports";
     public static final String firebaseReports = "reports";

@@ -27,19 +27,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <!--<com.google.android.material.button.MaterialButton
-                android:id="@+id/resend_verification_email_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Resend Verification Email"
-                android:textAllCaps="false"
-                android:layout_marginTop="8dp"
-                app:layout_constraintStart_toStartOf="@id/signIn_Button"
-                app:layout_constraintEnd_toEndOf="@id/signIn_Button"
-                app:layout_constraintBottom_toTopOf="@id/signIn_Button"
-                app:layout_constraintTop_toBottomOf="@id/forgot_signIn"
-                android:visibility="visible"/>-->
-
             <EditText
                 android:id="@+id/email_editText"
                 android:layout_width="match_parent"

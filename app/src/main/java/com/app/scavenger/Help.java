@@ -13,11 +13,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
@@ -85,16 +84,16 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
                 // Open help center
             case 1:
                 if (sharedPreferences.getBoolean("inAppBrowser", true)) {
-                    openURLInChromeCustomTab(this, Constants.scavengerHelpURL);
+                    openURLInChromeCustomTab(this);
                 } else {
-                    openInDefaultBrowser(this, Constants.scavengerHelpURL);
+                    openInDefaultBrowser(this);
                 }
                 break;
         }
     }
 
     // opens the recipe in the users default browser
-    private void openURLInChromeCustomTab(Context context, String url) {
+    private void openURLInChromeCustomTab(Context context) {
         try {
             CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
             CustomTabsIntent customTabsIntent = builder1.build();
@@ -102,7 +101,7 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
             builder1.setInstantAppsEnabled(true);
             customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
             builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
-            customTabsIntent.launchUrl(context, Uri.parse(url));
+            customTabsIntent.launchUrl(context, Uri.parse(Constants.scavengerHelpURL));
         } catch (ActivityNotFoundException e) {
             e.printStackTrace();
             Log.e("ChromeCustomTabError: ", "Activity Error");
@@ -110,9 +109,9 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
     }
 
     // open the recipe in the App Browser
-    private void openInDefaultBrowser(Context context, String url) {
+    private void openInDefaultBrowser(Context context) {
         try {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.scavengerHelpURL));
             context.startActivity(browserIntent);
         } catch (ActivityNotFoundException e) {
             e.printStackTrace();

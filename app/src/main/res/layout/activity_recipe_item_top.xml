@@ -41,7 +41,7 @@
                     android:transitionName="recipeImage"
                     android:scaleType="centerCrop"
                     android:background="#85000000"
-                    android:tint="#50000000"/>
+                    app:tint="#50000000"/>
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -111,11 +111,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
                 android:gravity="top"
-                android:minHeight="60dp"
-                app:contentInsetStart="0dp"
+                android:minHeight="80dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginTop="24dp"
+                app:contentInsetStart="0dp"
+                android:layout_marginTop="30dp"
                 app:layout_collapseMode="pin"
                 app:title=""
                 android:translationZ="6dp"

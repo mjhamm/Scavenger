@@ -9,6 +9,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -127,6 +128,11 @@ public class SearchFragment extends Fragment {
 
         con = new ConnectionDetector(mContext);
 
+        if (savedInstanceState != null) {
+            queryString = savedInstanceState.getString("query");
+            mSearchView.setQuery(queryString, false);
+        }
+
         // sets BG Image to default
         if (!con.connectedToInternet()) {
             changeBGImage(2);
@@ -224,21 +230,21 @@ public class SearchFragment extends Fragment {
                 matchMessage.setVisibility(View.GONE);
                 startup_message.setVisibility(View.VISIBLE);
                 setMessageToRandom();
-                mSearch_mainBG.setImageDrawable(getResources().getDrawable(R.drawable.default_bg_screen));
+                mSearch_mainBG.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.default_bg_screen));
                 break;
                 // no recipes
             case 1:
                 matchMessage.setVisibility(View.VISIBLE);
                 startup_message.setVisibility(View.VISIBLE);
                 startup_message.setText(R.string.no_recipes_found);
-                mSearch_mainBG.setImageDrawable(getResources().getDrawable(R.drawable.no_recipes_bg_screen));
+                mSearch_mainBG.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.no_recipes_bg_screen));
                 break;
                 // no internet
             case 2:
                 matchMessage.setVisibility(View.GONE);
                 startup_message.setVisibility(View.VISIBLE);
                 startup_message.setText(R.string.no_internet_connection);
-                mSearch_mainBG.setImageDrawable(getResources().getDrawable(R.drawable.no_internet_bg_screen));
+                mSearch_mainBG.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.no_internet_bg_screen));
                 break;
         }
     }
@@ -251,16 +257,6 @@ public class SearchFragment extends Fragment {
             if (!con.connectedToInternet() && recipeItemArrayList.isEmpty()) {
                 changeBGImage(2);
             }
-        }
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        if (savedInstanceState != null) {
-            queryString = savedInstanceState.getString("query");
-            mSearchView.setQuery(queryString, false);
         }
     }
 
@@ -557,6 +553,7 @@ public class SearchFragment extends Fragment {
         }
     }
 
+    // DEPRECATED
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
