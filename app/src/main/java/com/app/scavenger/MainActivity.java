@@ -225,16 +225,16 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     }
 
     @Override
-    public void checkSearch(String itemId, boolean liked) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+    }
+
+    @Override
+    public void checkSearch(int itemId, boolean liked) {
         if (fragment1 != null) {
             SearchFragment searchFragment = (SearchFragment) fragment1;
             searchFragment.checkSearchForLikeChange(itemId, liked);
         }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
     }
 }

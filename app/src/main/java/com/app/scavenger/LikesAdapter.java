@@ -209,13 +209,14 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     private void removeDataFromFirebase(RecipeItem recipeItem) {
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
 
-        likesRef.document(recipeItem.getItemId())
+        // testing
+        likesRef.document(String.valueOf(recipeItem.getItemId()))
                 .delete()
                 .addOnSuccessListener(aVoid -> {
-                    //Log.d(TAG, "Successfully removed like");
+                    Log.d("Likes Adapter", "Successfully removed like");
                 })
                 .addOnFailureListener(e -> {
-                    //Log.d(TAG, "Failed to remove like" + e.toString());
+                    Log.d("Likes Adapter", "Failed to remove like" + e.toString());
                 });
     }
 
@@ -317,12 +318,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                     // else - ask user if they want to remove the recipe from their likes
                 } else {
                     recipeItem = mRecipeItems.get(position);
-                   /*new MaterialAlertDialogBuilder(mContext)
-                            .setTitle("Remove this recipe from your Likes?")
-                            .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
-                            .setCancelable(false)
-                            // Positive button - Remove the item from Firebase
-                            .setPositiveButton("Remove", (dialog, which) -> {*/
                                 try {
                                     removeDataFromFirebase(recipeItem);
                                 } catch (Exception e) {
@@ -330,9 +325,11 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                 }
 
                                 // remove the item from the like item list in Database
-                                myDb.removeDataFromView(recipeItem.getItemId());
+                    // testing
+                     myDb.removeDataFromView(recipeItem.getItemId());
                                 // add the item to the removed table in Database
-                                myDb.addRemovedItem(recipeItem.getItemId());
+                    // testing
+                     myDb.addRemovedItem(recipeItem.getItemId());
 
                                 // Let search adapter know that something has changed
                                 update();
@@ -341,7 +338,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                 Iterator<RecipeItem> i = mRecipeItems.iterator();
                                 while (i.hasNext()) {
                                     RecipeItem item = i.next();
-                                    if (item.getItemId().equals(recipeItem.getItemId())) {
+                                    // testing
+                                    if (item.getItemId() == recipeItem.getItemId()) {
                                         i.remove();
                                     }
                                 }
@@ -350,7 +348,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                 Iterator<RecipeItem> fullIterator = mRecipeItemsFull.iterator();
                                 while (fullIterator.hasNext()) {
                                     RecipeItem item = fullIterator.next();
-                                    if (item.getItemId().equals(recipeItem.getItemId())) {
+                                    // testing
+                                    if (item.getItemId() == recipeItem.getItemId()) {
                                         fullIterator.remove();
                                     }
                                 }
@@ -374,12 +373,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                 editor.putInt("actualNumLikes", actualNumLikes);
                                 editor.putInt("numLikes", actualNumLikes);
                                 editor.apply();
-
-                            /*})
-                            // dismiss the alert if cancel button is clicked
-                            .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                            .create()
-                            .show();*/
                 }
             });
 

@@ -544,11 +544,11 @@ public class SignUpActivity extends AppCompatActivity {
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(user.getUid()).collection(Constants.firebaseLikes);
         likesRef.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    String itemId;
+                    int itemId;
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            itemId = documentSnapshot.getString("itemId");
+                            itemId = documentSnapshot.getLong("itemId").intValue();
                             myDb.addDataToView(itemId);
                         }
                     }

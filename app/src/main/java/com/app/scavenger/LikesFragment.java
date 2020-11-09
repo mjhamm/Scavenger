@@ -73,7 +73,7 @@ public class LikesFragment extends Fragment {
     public LikesFragment() {}
 
     interface CheckSearch {
-        void checkSearch(String itemId, boolean liked);
+        void checkSearch(int itemId, boolean liked);
     }
 
     // Create a new instance of Likes Fragment
@@ -340,15 +340,16 @@ public class LikesFragment extends Fragment {
         likesRef.orderBy(Constants.firebaseTime, Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
 
-                    String itemId, name, source, image, url;
-                    int serves = 0;
+                    String name, source, image, url;
+                    int itemId;
+                    /*int serves = 0;
                     int cals = 0;
                     int carb = 1;
                     int fat = 1;
                     int protein = 1;
                     int rating = 0;
                     ArrayList<String> att = new ArrayList<>();
-                    ArrayList<String> ingr = new ArrayList<>();
+                    ArrayList<String> ingr = new ArrayList<>();*/
 
                     // if the number of likes the user has is 0
                     // display likes message and let user know they have 0 likes
@@ -376,12 +377,12 @@ public class LikesFragment extends Fragment {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                             // creates a new recipe item for each item in the snapshot
                             RecipeItem item = new RecipeItem();
-                            itemId = documentSnapshot.getString(Constants.ITEM_ID);
+                            itemId = documentSnapshot.getLong(Constants.ITEM_ID).intValue();
                             name = documentSnapshot.getString(Constants.ITEM_NAME);
                             source = documentSnapshot.getString(Constants.ITEM_SOURCE);
                             image = documentSnapshot.getString(Constants.ITEM_IMAGE);
                             url = documentSnapshot.getString(Constants.ITEM_URL);
-                            if (documentSnapshot.getLong(Constants.ITEM_RATING) != null) {
+                            /*if (documentSnapshot.getLong(Constants.ITEM_RATING) != null) {
                                 rating = documentSnapshot.getLong(Constants.ITEM_RATING).intValue();
                             }
                             if (documentSnapshot.getLong(Constants.ITEM_YIELD) != null) {
@@ -404,20 +405,20 @@ public class LikesFragment extends Fragment {
                                 att = (ArrayList<String>) documentSnapshot.get(Constants.ITEM_ATT);
                                 //noinspection unchecked
                                 ingr = (ArrayList<String>) documentSnapshot.get(Constants.ITEM_INGR);
-                            }
+                            }*/
                             item.setItemId(itemId);
                             item.setmRecipeName(name);
                             item.setmSourceName(source);
                             item.setmImageUrl(image);
                             item.setmRecipeURL(url);
-                            item.setItemRating(rating);
-                            item.setmServings(serves);
-                            item.setmCalories(cals);
-                            item.setmCarbs(carb);
-                            item.setmFat(fat);
-                            item.setmProtein(protein);
-                            item.setmRecipeAttributes(att);
-                            item.setmIngredients(ingr);
+                            //item.setItemRating(rating);
+                            //item.setmServings(serves);
+                            //item.setmCalories(cals);
+                            //item.setmCarbs(carb);
+                            //item.setmFat(fat);
+                            //item.setmProtein(protein);
+                            //item.setmRecipeAttributes(att);
+                            //item.setmIngredients(ingr);
 
                             // in order to make sure there is no doubles of items in the user's list
                             // if the list already contains the exact item, it won't add it
@@ -461,7 +462,7 @@ public class LikesFragment extends Fragment {
         }
     }
 
-    public void checkSearchForLikeChange(String itemId, boolean liked) {
+    public void checkSearchForLikeChange(int itemId, boolean liked) {
         mCheckSearch.checkSearch(itemId, liked);
     }
 
@@ -480,7 +481,7 @@ public class LikesFragment extends Fragment {
             Log.d("LikesFragment", "onActivityResult");
             int position = data.getIntExtra("position", 0);
             boolean liked = data.getBooleanExtra("liked", false);
-            String itemId = data.getStringExtra("itemId");
+            int itemId = data.getIntExtra("itemId", 0);
 
             if (!liked) {
                 updateRecycler(position);

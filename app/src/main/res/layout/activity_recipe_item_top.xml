@@ -34,14 +34,14 @@
                 app:layout_collapseMode="pin"
                 android:fitsSystemWindows="true">
 
-                <ImageView
+                <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/recipe_image_detail"
                     android:layout_width="match_parent"
                     android:layout_height="320dp"
                     android:transitionName="recipeImage"
                     android:scaleType="centerCrop"
-                    android:background="#85000000"
-                    app:tint="#50000000"/>
+                    android:tint="#50000000"
+                    android:background="#85000000"/>
 
                 <RelativeLayout
                     android:layout_width="match_parent"

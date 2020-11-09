@@ -90,11 +90,11 @@ public class RecipeItemScreen extends AppCompatActivity {
     private View nutritionLine, ingredientsLine, instructionsLine, commentsLine;
     private ProgressBar mDetailLoading;
 
-    private String userId, internalUrl, name, source, itemId, image, url, reportReason, servingsText, caloriesText, carbsText, fatText, proteinText, activityId;
+    private String userId, internalUrl, name, source, /*itemId,*/ image, url, reportReason, servingsText, caloriesText, carbsText, fatText, proteinText, activityId;
     private ArrayList<String> ingredients, attributes, instructions;
     private ArrayList<CommentItem> commentItems;
     private boolean isLiked, logged;
-    private int rating, servingsInt, caloriesInt, carbsInt, fatInt, proteinInt, position;
+    private int rating, servingsInt, caloriesInt, carbsInt, fatInt, proteinInt, position, itemId;
     private int commentCount = 0;
     private InstructionsAdapter instructionsAdapter;
 
@@ -202,7 +202,8 @@ public class RecipeItemScreen extends AppCompatActivity {
             name = getIntent().getExtras().getString("recipe_name");
             source = getIntent().getExtras().getString("recipe_source");
             isLiked = getIntent().getExtras().getBoolean("recipe_liked");
-            itemId = getIntent().getExtras().getString("recipe_id");
+            itemId = getIntent().getExtras().getInt("recipe_id");
+//            itemId = getIntent().getExtras().getString("recipe_id");
             image = getIntent().getExtras().getString("recipe_image");
 
             Log.d("RecipeItemScreen: ","image: " + image);
@@ -402,11 +403,11 @@ public class RecipeItemScreen extends AppCompatActivity {
                                     recipeLike.setImageResource(R.drawable.like_outline);
                                     isLiked = false;
                                     try {
-                                        removeDataFromFirebase(itemId);
+                                        //removeDataFromFirebase(itemId);
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
-                                    myDb.removeDataFromView(itemId);
+                                    //myDb.removeDataFromView(itemId);
                                 //})
                                 // dismiss the alert if cancel button is clicked
                                 //.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
@@ -417,8 +418,8 @@ public class RecipeItemScreen extends AppCompatActivity {
                         recipeLike.setImageResource(R.drawable.like_filled);
                         isLiked = true;
                         try {
-                            saveDataToFirebase(itemId, internalUrl, name, source, image, url, rating);
-                            myDb.addDataToView(itemId);
+                            //saveDataToFirebase(itemId, internalUrl, name, source, image, url, rating);
+                            //myDb.addDataToView(itemId);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -494,13 +495,15 @@ public class RecipeItemScreen extends AppCompatActivity {
         retrieveCommentsFromFB(itemId, name, source);
     }
 
-    private void retrieveCommentsFromFB(String recipeId, String recipeName, String recipeSource) {
+    private void retrieveCommentsFromFB(int recipeId, String recipeName, String recipeSource) {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         commentItems.clear();
 
+        String itemIdString = String.format("%s", itemId);
+
         // reference to the users likes
-        CollectionReference commentsRef = db.collection(Constants.firebaseComments).document(recipeId).collection("comments");
+        CollectionReference commentsRef = db.collection(Constants.firebaseComments).document(itemIdString).collection("comments");
         // orders those likes by timestamp in descending order to show the most recent like on top
         commentsRef.orderBy(Constants.firebaseTime, com.google.firebase.firestore.Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -530,7 +533,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                             }
                         }
                         // create the adapter with the new list
-                        commentsAdapter = new CommentsAdapter(this, commentItems, recipeId, recipeName, recipeSource);
+                        //commentsAdapter = new CommentsAdapter(this, commentItems, recipeId, recipeName, recipeSource);
                         // set adapter
                         mCommentsRecyclerView.setLayoutManager(mLayoutManager);
                         mCommentsRecyclerView.setAdapter(commentsAdapter);
@@ -545,12 +548,11 @@ public class RecipeItemScreen extends AppCompatActivity {
                     } else {
                         viewComments.setText("View all " + commentCount + " comments");
                     }
-                    //mLoadingLayout.setVisibility(View.GONE);
                 });
     }
 
     private void getRecipeInfoFB() {
-        retrieveLikesFromFirebase(itemId);
+        //retrieveLikesFromFirebase(itemId);
     }
 
     // open the recipe in the App Browser

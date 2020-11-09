@@ -173,7 +173,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         // source
         holder.recipeSource.setText(item.getmSourceName());
         // rating
-        holder.mRatingBar.setNumStars(item.getItemRating());
+        // testing
+        holder.mRatingBar.setRating(item.getItemRating());
+//        holder.mRatingBar.setNumStars(item.getItemRating());
     }
 
     // Sets all variables related to logged status and user info
@@ -195,16 +197,17 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         // each part of the recipe item to be put into the hashmap for Firebase
         itemMap.put(Constants.ITEM_ID, item.getItemId());
-        itemMap.put(Constants.ITEM_INTERNAL_URL, item.getItemUri());
+        //itemMap.put(Constants.ITEM_INTERNAL_URL, item.getItemUri());
         itemMap.put(Constants.ITEM_NAME, item.getmRecipeName());
         itemMap.put(Constants.ITEM_SOURCE, item.getmSourceName());
         itemMap.put(Constants.ITEM_IMAGE, item.getmImageUrl());
         itemMap.put(Constants.ITEM_URL, item.getmRecipeURL());
-        itemMap.put(Constants.ITEM_RATING, item.getItemRating());
+        //itemMap.put(Constants.ITEM_RATING, item.getItemRating());
         itemMap.put("Timestamp", timestamp);
 
         // sets the data in Firebase
-        likesRef.document(item.getItemId()).set(itemMap)
+        // testing
+        likesRef.document(String.valueOf(item.getItemId())).set(itemMap)
                 .addOnSuccessListener(aVoid -> {
                     // clears the query inside of the likes fragment and clears focus
                     // this avoids problems with potential filtering of the likes fragment when adding a new item to likes
@@ -230,7 +233,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
 
         // deletes the document in firebase with the matching item id
-        likesRef.document(recipeItem.getItemId())
+        // testing
+        likesRef.document(String.valueOf(recipeItem.getItemId()))
                 .delete()
                 .addOnSuccessListener(aVoid -> {
                     // updates the query inside of likes fragment
@@ -290,9 +294,10 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         notifyItemChanged(position);
     }
 
-    public void updateItemByItemId(String itemId, boolean liked) {
+    public void updateItemByItemId(int itemId, boolean liked) {
         for (RecipeItem item : mRecipeItems) {
-            if (item.getItemId().equals(itemId)) {
+            // testing
+            if (item.getItemId() == itemId) {
                 item.setLiked(liked);
             }
         }
@@ -352,7 +357,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
                     intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
                     intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
-                    intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
+                    //intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
                     intent.putExtra("position", getAdapterPosition());
                     // DEPRECATED
                     searchFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL);
@@ -387,32 +392,23 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     mLastClickTime = SystemClock.elapsedRealtime();
                     if (logged) {
                         if (item.isLiked()) {
-                            /*new MaterialAlertDialogBuilder(mContext)
-                                    .setTitle("Remove this recipe from your Likes?")
-                                    .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
-                                    .setCancelable(false)
-                                    // Positive button - Remove the item from Firebase
-                                    .setPositiveButton("Remove", (dialog, which) -> {*/
                                         v.startAnimation(scaleAnimation_Like);
                                         like_button.setImageResource(R.drawable.like_outline);
                                         item.setLiked(false);
                                         try {
                                             removeDataFromFirebase(item);
+                                            // testing
                                             myDb.removeDataFromView(item.getItemId());
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
-                                    /*})
-                                    // dismiss the alert if cancel button is clicked
-                                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                                    .create()
-                                    .show();*/
                         } else {
                             v.startAnimation(scaleAnimation_Like);
                             like_button.setImageResource(R.drawable.like_filled);
                             item.setLiked(true);
                             try {
                                 saveDataToFirebase(item);
+                                // testing
                                 myDb.addDataToView(item.getItemId());
                             } catch (Exception e) {
                                 e.printStackTrace();

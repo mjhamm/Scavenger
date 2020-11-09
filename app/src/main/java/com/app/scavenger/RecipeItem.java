@@ -13,9 +13,14 @@ class RecipeItem {
     //Empty Constructor
     RecipeItem() {}
 
-    private String itemId;
+    // testing
+    //private String itemId;
+    @Expose
+    @SerializedName("id")
+    private int itemId;
 
-    private int itemRating;
+    private float itemRating;
+    //private int itemRating;
 
     @Expose
     @SerializedName("uri")
@@ -34,11 +39,13 @@ class RecipeItem {
     private String mImageUrl;
 
     @Expose
-    @SerializedName("label")
+//    @SerializedName("label")
+    @SerializedName("title")
     private String mRecipeName;
 
     @Expose
-    @SerializedName("source")
+    @SerializedName("sourceName")
+//    @SerializedName("source")
     private String mSourceName;
 
     @Expose
@@ -54,7 +61,8 @@ class RecipeItem {
     private int mProtein;
 
     @Expose
-    @SerializedName("url")
+//    @SerializedName("url")
+    @SerializedName("sourceUrl")
     private String mRecipeURL;
 
     @Expose
@@ -68,22 +76,41 @@ class RecipeItem {
     private boolean clicked;
     private boolean liked;
 
+    // testing
+//    @Exclude
+//    String getItemId() {
+//        return itemId;
+//    }
+//
+//    void setItemId(String itemId) {
+//        this.itemId = itemId;
+//    }
+
     @Exclude
-    String getItemId() {
+    int getItemId() {
         return itemId;
     }
 
-    void setItemId(String itemId) {
+    void setItemId(int itemId) {
         this.itemId = itemId;
     }
 
-    int getItemRating() {
+    float getItemRating() {
         return itemRating;
     }
 
-    void setItemRating(int itemRating) {
+    void setItemRating(float itemRating) {
         this.itemRating = itemRating;
     }
+
+    // testing
+//    int getItemRating() {
+//        return itemRating;
+//    }
+//
+//    void setItemRating(int itemRating) {
+//        this.itemRating = itemRating;
+//    }
 
     String getItemUri() {
         return mRecipeUri;

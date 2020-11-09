@@ -48,7 +48,9 @@ public class SearchFragment extends Fragment {
     public static final int SEARCH_UPDATED = 104;
 
     private RecyclerView mSearchRecyclerView;
-    private ArrayList<String> itemIds;
+    // testing
+    //private ArrayList<String> itemIds;
+    private ArrayList<Integer> itemIds;
     private SearchAdapter adapter;
     private Context mContext;
     private SearchView mSearchView;
@@ -69,8 +71,11 @@ public class SearchFragment extends Fragment {
     private DatabaseHelper myDb;
 
     interface ApiService {
-        @GET("/search?")
-        Call<String> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients, @Query("from") int fromIngr, @Query("to") int toIngr);
+        @GET("complexSearch?")
+        Call<String> getRecipeData(@Query("apiKey") String apiKey, @Query("query") String ingredients, @Query("addRecipeInformation") boolean addInfo, @Query("offset") int fromIngr, @Query("number") int toIngr);
+        // testing
+        /*@GET("/search?")
+        Call<String> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients, @Query("from") int fromIngr, @Query("to") int toIngr);*/
     }
 
     // Required empty public constructor
@@ -163,7 +168,9 @@ public class SearchFragment extends Fragment {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                 if (con.connectedToInternet()) {
-                    getMoreAsync();
+                    if (recipeItemArrayList.size() >= 9) {
+                        getMoreAsync();
+                    }
                 }
             }
         };
@@ -270,11 +277,12 @@ public class SearchFragment extends Fragment {
         if (!recipeItemArrayList.isEmpty()) {
             Cursor removedItems = myDb.getRemovedItems();
             while (removedItems.moveToNext()) {
-                for (Object item : recipeItemArrayList) {
-                    if (item instanceof RecipeItem) {
-                        if (((RecipeItem) item).getItemId().equals(removedItems.getString(1))) {
-                            ((RecipeItem)item).setLiked(false);
-                            myDb.removeRemovedItem( ((RecipeItem) item).getItemId());
+                for (RecipeItem item : recipeItemArrayList) {
+                    if (item != null) {
+                        // testing
+                        if (item.getItemId() == removedItems.getInt(1)) {
+                            item.setLiked(false);
+                            myDb.removeRemovedItem(item.getItemId());
                         }
                     }
                 }
@@ -287,7 +295,7 @@ public class SearchFragment extends Fragment {
         }
     }
 
-    public void checkSearchForLikeChange(String itemId, boolean liked) {
+    public void checkSearchForLikeChange(int itemId, boolean liked) {
         Log.d(TAG, "checkSearchForLikeChange: " + recipeItemArrayList.size());
         if (adapter != null) {
             adapter.updateItemByItemId(itemId, liked);
@@ -363,12 +371,17 @@ public class SearchFragment extends Fragment {
         fromIngr = 0;
         toIngr = 10;
 
-        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
+        // testing
+        //Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
+        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(), true, fromIngr ,toIngr);
+
         queryString = getIngredientsSearch();
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                Log.d(TAG, "response: " + response.code());
                 if (response.isSuccessful()) {
+                    Log.d(TAG, "success: ");
                     if (response.body() != null) {
                         String result = response.body();
 
@@ -377,12 +390,25 @@ public class SearchFragment extends Fragment {
                         writeRecyclerAsync(result);
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");
+                        Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                        shimmer.stopShimmer();
+                        shimmer.setVisibility(View.GONE);
+                        changeBGImage(0);
+                        toastMessage("Something went wrong. Please try again");
                     }
+                } else {
+                    Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                    shimmer.stopShimmer();
+                    shimmer.setVisibility(View.GONE);
+                    changeBGImage(0);
+                    toastMessage("Something went wrong. Please try again");
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
+            public void onFailure(@NonNull Call call, @NonNull Throwable t) {
+                Log.d(TAG, "failure: " + "throwable: " + t.toString() + " call: " + call.toString());
+            }
         });
     }
 
@@ -438,39 +464,100 @@ public class SearchFragment extends Fragment {
         }).start();
     }
 
+    // testing
+//    private void writeRecycler(String response) {
+//        try {
+//            JSONObject hits, recipes;
+//
+//            JSONObject obj = new JSONObject(response);
+//            JSONArray dataArray = obj.getJSONArray("hits");
+//
+//            for (int i = 0; i < dataArray.length(); i++) {
+//
+//                RecipeItem item = new RecipeItem();
+//                hits = dataArray.getJSONObject(i);
+//                recipes = hits.getJSONObject("recipe");
+//
+//                // Image
+//                item.setmImageUrl(recipes.getString("image"));
+//                // Name
+//                item.setmRecipeName(recipes.getString("label"));
+//                // Source
+//                item.setmSourceName(recipes.getString("source"));
+//                // URL
+//                item.setmRecipeURL(recipes.getString("url"));
+//                // Rating
+//                item.setItemRating(randomItemRating());
+//                // Internal URL
+//                item.setItemUri(recipes.getString("uri"));
+//                // Unique ID
+//                item.setItemId(randomItemId(item));
+//
+//                // checks if item in contained in db liked items to set as liked
+//                if (itemIds.contains(item.getItemId())) {
+//                    item.setLiked(true);
+//                }
+//
+//                recipeItemArrayList.add(item);
+//            }
+//
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
     private void writeRecycler(String response) {
         try {
             JSONObject hits, recipes;
 
             JSONObject obj = new JSONObject(response);
-            JSONArray dataArray = obj.getJSONArray("hits");
+            JSONArray dataArray = obj.getJSONArray("results");
 
             for (int i = 0; i < dataArray.length(); i++) {
 
                 RecipeItem item = new RecipeItem();
                 hits = dataArray.getJSONObject(i);
-                recipes = hits.getJSONObject("recipe");
+                //recipes = results.getJSONObject("recipe");
 
                 // Image
-                item.setmImageUrl(recipes.getString("image"));
+                item.setmImageUrl(hits.getString("image"));
+                Log.d(TAG, "image: " + hits.get("image"));
                 // Name
-                item.setmRecipeName(recipes.getString("label"));
+                if (hits.getString("title").equals("null")) {
+                    item.setmRecipeName("Recipe Name Not Found");
+                } else {
+                    item.setmRecipeName(hits.getString("title"));
+                    Log.d(TAG, "title: " + hits.get("title"));
+                }
                 // Source
-                item.setmSourceName(recipes.getString("source"));
+                if (hits.getString("sourceName").equals("null")) {
+                    item.setmSourceName("Source Name Not Found");
+                } else {
+                    item.setmSourceName(hits.getString("sourceName"));
+                    Log.d(TAG, "sourceName: " + hits.get("sourceName"));
+                }
                 // URL
-                item.setmRecipeURL(recipes.getString("url"));
+                if (hits.getString("sourceUrl").equals("null") || hits.getString("sourceUrl").isEmpty()) {
+                    item.setmRecipeURL("https://www.thescavengerapp.com");
+                } else {
+                    item.setmRecipeURL(hits.getString("sourceUrl"));
+                    Log.d(TAG, "sourceUrl: " + hits.get("sourceUrl"));
+                }
                 // Rating
-                item.setItemRating(randomItemRating());
+                item.setItemRating(itemRating(hits.getDouble("spoonacularScore")));
+                Log.d(TAG, "rating: " + hits.getDouble("spoonacularScore"));
+                Log.d(TAG, "New Rating: " + itemRating(hits.getDouble("spoonacularScore")));
                 // Internal URL
-                item.setItemUri(recipes.getString("uri"));
+                //item.setItemUri(results.getString("uri"));
                 // Unique ID
-                item.setItemId(randomItemId(item));
+                item.setItemId(hits.getInt("id"));
+                Log.d(TAG, "id: " + hits.get("id"));
 
                 // checks if item in contained in db liked items to set as liked
                 if (itemIds.contains(item.getItemId())) {
                     item.setLiked(true);
                 }
-                
+
                 recipeItemArrayList.add(item);
             }
 
@@ -479,10 +566,18 @@ public class SearchFragment extends Fragment {
         }
     }
 
-    int randomItemRating() {
-        int min = 1;
+    private float itemRating(double rating) {
+        /*int min = 1;
         int max = 5;
-        return new Random().nextInt((max - min) + 1) + min;
+        return new Random().nextInt((max - min) + 1) + min;*/
+        float newRating = (float) rating / 20;
+        if (newRating <= 0) {
+            return (float) 0.1;
+        } else if (newRating > 5) {
+            return 5;
+        } else {
+            return newRating;
+        }
     }
 
     boolean isLastVisible() {
@@ -500,7 +595,8 @@ public class SearchFragment extends Fragment {
         itemIds.clear();
         likesData.moveToPosition(-1);
         while (likesData.moveToNext()) {
-            itemIds.add(likesData.getString(1));
+            // testing
+            itemIds.add(likesData.getInt(1));
         }
         likesData.close();
     }
@@ -522,7 +618,9 @@ public class SearchFragment extends Fragment {
 
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
+        // testing
+//        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
+        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(), true, fromIngr, toIngr);
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
@@ -533,6 +631,11 @@ public class SearchFragment extends Fragment {
                         writeRecycler(result);
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");
+                        Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                        shimmer.stopShimmer();
+                        shimmer.setVisibility(View.GONE);
+                        changeBGImage(0);
+                        toastMessage("Something went wrong. Please try again");
                     }
                 }
             }

@@ -6,6 +6,8 @@ public class Constants {
     public static final String appId = "bd790cc2";
     public static final String appKey = "56fdf6a5593ad5199e8040a29b9fbfd6";
 
+    public static final String apiKey = "1e479374e15a4bf2981d5a78098381b1";
+
     // Common String Information
     public static final String firebaseUser = "Users";
     public static final String firebaseLikes = "Likes";
