@@ -149,7 +149,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     // Returns the total count of items in the list
     @Override
     public int getItemCount() {
-        return mRecipeItems.size();
+        return mRecipeItems == null ? 0 : mRecipeItems.size();
     }
 
     // Returns the hashcode of the item at the adapters position
@@ -573,7 +573,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
             //intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
             intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
-            intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
+            //intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
             intent.putExtra("position", getAdapterPosition());
             likesFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL);
         }

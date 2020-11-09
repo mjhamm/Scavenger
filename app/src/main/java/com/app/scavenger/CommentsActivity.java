@@ -49,7 +49,8 @@ public class CommentsActivity extends AppCompatActivity {
     private List<CommentItem> commentItems;
     private LinearLayoutManager mLayoutManager;
 
-    private String userId, userName, recipeName, recipeSource, recipeId;
+    private String userId, userName, recipeName, recipeSource;
+    private int recipeId;
     private boolean logged;
     private SharedPreferences sharedPreferences;
 
@@ -90,7 +91,7 @@ public class CommentsActivity extends AppCompatActivity {
 
             recipeName = getIntent().getExtras().getString("recipe_name");
             recipeSource = getIntent().getExtras().getString("recipe_source");
-            recipeId = getIntent().getExtras().getString("recipe_id");
+            recipeId = getIntent().getExtras().getInt("recipe_id");
             boolean focus = getIntent().getExtras().getBoolean("focus", false);
 
             if (focus) {
@@ -203,7 +204,7 @@ public class CommentsActivity extends AppCompatActivity {
 
     }
 
-    private void sendCommentToFB(String recipeId, String userId, CommentItem commentItem) {
+    private void sendCommentToFB(int recipeId, String userId, CommentItem commentItem) {
         // Send comment data to FB
 
         Calendar calendar = Calendar.getInstance();
@@ -220,7 +221,7 @@ public class CommentsActivity extends AppCompatActivity {
 
         HashMap<String, Object> commentInfo = new HashMap<>();
 
-        CollectionReference commentReference = db.collection(Constants.firebaseComments).document(recipeId).collection("comments");
+        CollectionReference commentReference = db.collection(Constants.firebaseComments).document(String.valueOf(recipeId)).collection("comments");
 
         commentInfo.put("Timestamp", timestamp);
         commentInfo.put("User ID", userId);
@@ -236,13 +237,13 @@ public class CommentsActivity extends AppCompatActivity {
 
     }
 
-    private void retrieveCommentsFromFB(String recipeId) {
+    private void retrieveCommentsFromFB(int recipeId) {
 
         mLoadingLayout.setVisibility(View.VISIBLE);
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // reference to the users likes
-        CollectionReference commentsRef = db.collection(Constants.firebaseComments).document(recipeId).collection("comments");
+        CollectionReference commentsRef = db.collection(Constants.firebaseComments).document(String.valueOf(recipeId)).collection("comments");
         // orders those likes by timestamp in descending order to show the most recent like on top
         commentsRef.orderBy(Constants.firebaseTime, Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {

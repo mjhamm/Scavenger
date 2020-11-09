@@ -71,6 +71,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public class RecipeItemScreen extends AppCompatActivity {
@@ -94,8 +95,9 @@ public class RecipeItemScreen extends AppCompatActivity {
     private ArrayList<String> ingredients, attributes, instructions;
     private ArrayList<CommentItem> commentItems;
     private boolean isLiked, logged;
-    private int rating, servingsInt, caloriesInt, carbsInt, fatInt, proteinInt, position, itemId;
+    private int servingsInt, caloriesInt, carbsInt, fatInt, proteinInt, position, itemId;
     private int commentCount = 0;
+    private float rating;
     private InstructionsAdapter instructionsAdapter;
 
     private ConnectionDetector con;
@@ -105,8 +107,10 @@ public class RecipeItemScreen extends AppCompatActivity {
     private long mLastClickTime = 0;
 
     interface GetRecipeInfoAPI {
-        @GET("/search?")
-        Call<String> getRecipeData(@Query("r") String internalUrl, @Query("app_id") String appId, @Query("app_key") String appKey);
+        @GET("{itemId}/information?")
+        Call<String> getRecipeData(@Path("itemId") int itemId, @Query("apiKey") String apiKey, @Query("includeNutrition") boolean includeNutr);
+        /*@GET("/search?")
+        Call<String> getRecipeData(@Query("r") String internalUrl, @Query("app_id") String appId, @Query("app_key") String appKey);*/
     }
 
     @Override
@@ -134,9 +138,9 @@ public class RecipeItemScreen extends AppCompatActivity {
 
         ActivityCompat.postponeEnterTransition(this);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-        }
+        }*/
 
         setContentView(R.layout.activity_recipe_item_top);
 
@@ -206,8 +210,9 @@ public class RecipeItemScreen extends AppCompatActivity {
 //            itemId = getIntent().getExtras().getString("recipe_id");
             image = getIntent().getExtras().getString("recipe_image");
 
-            Log.d("RecipeItemScreen: ","image: " + image);
-            rating = getIntent().getExtras().getInt("recipe_rating");
+            //Log.d("RecipeItemScreen: ","image: " + image);
+            //rating = getIntent().getExtras().getInt("recipe_rating");
+
             url = getIntent().getExtras().getString("recipe_url");
             position = getIntent().getExtras().getInt("position");
 
@@ -223,13 +228,11 @@ public class RecipeItemScreen extends AppCompatActivity {
                 recipeLike.setImageResource(R.drawable.like_outline);
             }
 
-            ratingBar.setNumStars(rating);
-
             if (con.connectedToInternet()) {
 
                 activityId = getIntent().getExtras().getString("activity_id");
                 if (activityId != null) {
-                    internalUrl = getIntent().getExtras().getString("recipe_uri");
+                    //internalUrl = getIntent().getExtras().getString("recipe_uri");
                     if (activityId.equals("search")) {
                         callToApi();
                     } else {
@@ -246,7 +249,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                 // retrieve comments from FB for the item
                 retrieveCommentsFromFB(itemId, name, source);
 
-                for (int i = 0; i < 4; i++) {
+                /*for (int i = 0; i < 4; i++) {
                     instructions.add("This is step number " + (i + 1) + ". The following instructions want you to preheat your oven." +
                             " Once you have preheated your oven, continue to the next step which will walk you through the next thing to do.");
                 }
@@ -254,7 +257,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                 instructionsAdapter = new InstructionsAdapter(this, instructions);
 
                 mInstructionsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-                mInstructionsRecyclerView.setAdapter(instructionsAdapter);
+                mInstructionsRecyclerView.setAdapter(instructionsAdapter);*/
 
                 ConstraintSet constraintSet = new ConstraintSet();
                 constraintSet.clone(mMainConstraintLayout);
@@ -301,6 +304,8 @@ public class RecipeItemScreen extends AppCompatActivity {
                 // if the image url is not found, set the drawable to null
                 recipeImage.setImageDrawable(null);
             }
+        } else {
+            Toast.makeText(this, "Something went wrong while retrieving data. Please try again", Toast.LENGTH_SHORT).show();
         }
         
         ImageButton mBackButton = findViewById(R.id.item_screen_back);
@@ -393,33 +398,22 @@ public class RecipeItemScreen extends AppCompatActivity {
                     // update recyclerview item on other screen
 
                     if (isLiked) {
-                        //new MaterialAlertDialogBuilder(this)
-                                //.setTitle("Remove this recipe from your Likes?")
-                                //.setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
-                                //.setCancelable(false)
-                                // Positive button - Remove the item from Firebase
-                                //.setPositiveButton("Remove", (dialog, which) -> {
-                                    v.startAnimation(scaleAnimation_Like);
-                                    recipeLike.setImageResource(R.drawable.like_outline);
-                                    isLiked = false;
-                                    try {
-                                        //removeDataFromFirebase(itemId);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                    //myDb.removeDataFromView(itemId);
-                                //})
-                                // dismiss the alert if cancel button is clicked
-                                //.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                                //.create()
-                                //.show();
+                        v.startAnimation(scaleAnimation_Like);
+                        recipeLike.setImageResource(R.drawable.like_outline);
+                        isLiked = false;
+                        try {
+                            removeDataFromFirebase(itemId);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        myDb.removeDataFromView(itemId);
                     } else {
                         v.startAnimation(scaleAnimation_Like);
                         recipeLike.setImageResource(R.drawable.like_filled);
                         isLiked = true;
                         try {
-                            //saveDataToFirebase(itemId, internalUrl, name, source, image, url, rating);
-                            //myDb.addDataToView(itemId);
+                            saveDataToFirebase(itemId, name, source, image, url);
+                            myDb.addDataToView(itemId);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -437,20 +431,20 @@ public class RecipeItemScreen extends AppCompatActivity {
 
         mRetryConnection.setOnClickListener(v -> {
             finish();
-            //overridePendingTransition(0,0);
             startActivity(getIntent());
-            //overridePendingTransition(0,0);
         });
 
     }
 
-    private int getStatusBarHeight() {
-        Rect rectangle = new Rect();
-        Window window = getWindow();
-        window.getDecorView().getWindowVisibleDisplayFrame(rectangle);
-        int statusBarHeight = rectangle.top;
-        int contentViewTop = window.findViewById(Window.ID_ANDROID_CONTENT).getTop();
-        return contentViewTop - statusBarHeight;
+    private float itemRating(double rating) {
+        float newRating = (float) rating / 20;
+        if (newRating <= 0) {
+            return (float) 0.1;
+        } else if (newRating > 5) {
+            return 5;
+        } else {
+            return newRating;
+        }
     }
 
     private void viewRecipe() {
@@ -533,7 +527,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                             }
                         }
                         // create the adapter with the new list
-                        //commentsAdapter = new CommentsAdapter(this, commentItems, recipeId, recipeName, recipeSource);
+                        commentsAdapter = new CommentsAdapter(this, commentItems, recipeId, recipeName, recipeSource);
                         // set adapter
                         mCommentsRecyclerView.setLayoutManager(mLayoutManager);
                         mCommentsRecyclerView.setAdapter(commentsAdapter);
@@ -552,7 +546,7 @@ public class RecipeItemScreen extends AppCompatActivity {
     }
 
     private void getRecipeInfoFB() {
-        //retrieveLikesFromFirebase(itemId);
+        retrieveLikesFromFirebase(itemId);
     }
 
     // open the recipe in the App Browser
@@ -583,12 +577,12 @@ public class RecipeItemScreen extends AppCompatActivity {
     }
 
     // Retrieves the user's likes from Firebase using their userId
-    private void retrieveLikesFromFirebase(String itemId) {
+    private void retrieveLikesFromFirebase(int itemId) {
 
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // reference to the users likes
-        DocumentReference likeRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes).document(itemId);
+        DocumentReference likeRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes).document(String.valueOf(itemId));
         // orders those likes by timestamp in descending order to show the most recent like on top
         likeRef.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -598,7 +592,7 @@ public class RecipeItemScreen extends AppCompatActivity {
     }
 
     // saves an item to Firebase
-    private void saveDataToFirebase(String itemId, String internalUrl, String recipeName, String recipeSource, String recipeImage, String recipeUrl, int recipeRating) {
+    private void saveDataToFirebase(int itemId, String recipeName, String recipeSource, String recipeImage, String recipeUrl) {
         // create new hashmap that holds the item information that will be saved to Firebase
         HashMap<String, Object> itemMap = new HashMap<>();
         // reference to the likes on Firebase
@@ -610,16 +604,14 @@ public class RecipeItemScreen extends AppCompatActivity {
 
         // each part of the recipe item to be put into the hashmap for Firebase
         itemMap.put(Constants.ITEM_ID, itemId);
-        itemMap.put(Constants.ITEM_INTERNAL_URL, internalUrl);
         itemMap.put(Constants.ITEM_NAME, recipeName);
         itemMap.put(Constants.ITEM_SOURCE, recipeSource);
         itemMap.put(Constants.ITEM_IMAGE, recipeImage);
         itemMap.put(Constants.ITEM_URL, recipeUrl);
-        itemMap.put(Constants.ITEM_RATING, recipeRating);
         itemMap.put("Timestamp", timestamp);
 
         // sets the data in Firebase
-        likesRef.document(itemId).set(itemMap)
+        likesRef.document(String.valueOf(itemId)).set(itemMap)
                 .addOnSuccessListener(aVoid -> {
                     // clears the query inside of the likes fragment and clears focus
                     // this avoids problems with potential filtering of the likes fragment when adding a new item to likes
@@ -648,7 +640,8 @@ public class RecipeItemScreen extends AppCompatActivity {
         Retrofit retrofit = NetworkClient.getRetrofitClient();
         GetRecipeInfoAPI apiService = retrofit.create(GetRecipeInfoAPI.class);
 
-        Call<String> call = apiService.getRecipeData(internalUrl, Constants.appId, Constants.appKey);
+        Call<String> call = apiService.getRecipeData(itemId, Constants.apiKey, true);
+        //Call<String> call = apiService.getRecipeData(internalUrl, Constants.appId, Constants.appKey);
 
         call.enqueue(new retrofit2.Callback<String>() {
             @Override
@@ -666,12 +659,15 @@ public class RecipeItemScreen extends AppCompatActivity {
                         recipeCarbs.setText(carbsText);
                         recipeFat.setText(fatText);
                         recipeProtein.setText(proteinText);
+                        ratingBar.setRating(rating);
                         recipeAttributes.setText(TextUtils.join("", attributes));
                         recipeIngredients.setText(TextUtils.join("", ingredients));
 
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");
                     }
+                } else {
+                    Log.d("RECIPEITEMSCREEN", "not successful");
                 }
                 mDetailLoading.setVisibility(View.GONE);
             }
@@ -684,6 +680,114 @@ public class RecipeItemScreen extends AppCompatActivity {
     }
 
     private void getRecipeData(String response) {
+        try {
+            JSONObject nutr, ing;
+            String total_ing;
+            ArrayList<String> list_ingredients = new ArrayList<>();
+//            JSONObject totalNutrients, carbs, fat, protein;
+//            JSONArray healthLabelsArray;
+            ArrayList<String> list_healthLabels = new ArrayList<>();
+            String labels;
+
+            JSONObject hit = new JSONObject(response);
+
+            // servings integer
+            servingsInt = hit.getInt("servings");
+            // servings string
+            servingsText = String.valueOf(servingsInt);
+
+            // rating
+            rating = itemRating(hit.getDouble("spoonacularScore"));
+
+            // nutrition info
+            JSONObject nutrition = hit.getJSONObject("nutrition");
+            // nutrients
+            JSONArray nutrients = nutrition.getJSONArray("nutrients");
+            for (int i = 0; i < nutrients.length(); i++) {
+                nutr = nutrients.getJSONObject(i);
+                // calories
+                if (nutr.getString("title").equalsIgnoreCase("calories")) {
+                    if (nutr.getInt("amount") >= 0 && nutr.getInt("amount") < 1) {
+                        caloriesInt = 1;
+                    } else {
+                        caloriesInt = nutr.getInt("amount");
+                        caloriesInt = caloriesInt * servingsInt;
+                    }
+                    // carbs
+                } else if (nutr.getString("title").equalsIgnoreCase("carbohydrates")) {
+                    if (nutr.getInt("amount") >= 0 && nutr.getInt("amount") < 1) {
+                        carbsInt = 1;
+                    } else {
+                        carbsInt = nutr.getInt("amount");
+                        carbsInt = carbsInt * servingsInt;
+                    }
+                    // fat
+                } else if (nutr.getString("title").equalsIgnoreCase("fat")) {
+                    if (nutr.getInt("amount") >= 0 && nutr.getInt("amount") < 1) {
+                        fatInt = 1;
+                    } else {
+                        fatInt = nutr.getInt("amount");
+                        fatInt = fatInt * servingsInt;
+                    }
+                    // protein
+                } else if (nutr.getString("title").equalsIgnoreCase("protein")) {
+                    if (nutr.getInt("amount") >= 0 && nutr.getInt("amount") < 1) {
+                        proteinInt = 1;
+                    } else {
+                        proteinInt = nutr.getInt("amount");
+                        proteinInt = proteinInt * servingsInt;
+                    }
+                }
+            }
+            // multiply by number of servings to get total nutrients
+            // calories
+            caloriesText = String.valueOf(caloriesInt);
+            // carbs
+            carbsText = carbsInt + "g";
+            // fat
+            fatText = fatInt + "g";
+            // protein
+            proteinText = proteinInt + "g";
+
+            // diets
+            JSONArray dietLabelsArray = hit.getJSONArray("diets");
+            for (int j = 0; j < dietLabelsArray.length(); j++) {
+                labels = dietLabelsArray.getString(j);
+                if (!list_healthLabels.contains("\n\u2022 " + labels + "\n")) {
+                    list_healthLabels.add("\n\u2022 " + labels + "\n");
+                }
+                attributes = list_healthLabels;
+            }
+
+            // ingredients
+            JSONArray ingredientsArray = hit.getJSONArray("extendedIngredients");
+            for (int k = 0; k < ingredientsArray.length(); k++) {
+                ing = ingredientsArray.getJSONObject(k);
+                total_ing = ing.getString("original");
+
+                // UPDATE - 1.0.1
+                // Replaces huge spaces in between ingredients
+                total_ing = total_ing.replace("\n", "");
+
+                // Gets rid of duplicate ingredients in recipe
+                if (!list_ingredients.contains("\n\u2022 " + total_ing + "\n")) {
+                    list_ingredients.add("\n\u2022 " + total_ing + "\n");
+                }
+                ingredients = list_ingredients;
+            }
+
+            // instructions
+            /*JSONArray instructionsArray = hit.getJSONArray("analyzedInstructions");
+            for (int m = 0; m < instructionsArray.length(); m++) {
+
+            }*/
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*private void getRecipeData(String response) {
         try {
             JSONObject ing, totalNutrients, carbs, fat, protein;
             JSONArray dietLabelsArray, healthLabelsArray, ingredientsArray;
@@ -775,7 +879,7 @@ public class RecipeItemScreen extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     private void copyRecipe() {
         ClipboardManager clipboardManager = (ClipboardManager) this.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -851,10 +955,10 @@ public class RecipeItemScreen extends AppCompatActivity {
 
     // Gets the Recipe Item's ID
     // Removes the document in the users Likes with the Item ID
-    private void removeDataFromFirebase(String itemId) {
+    private void removeDataFromFirebase(int itemId) {
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
 
-        likesRef.document(itemId)
+        likesRef.document(String.valueOf(itemId))
                 .delete()
                 .addOnSuccessListener(aVoid -> {
 

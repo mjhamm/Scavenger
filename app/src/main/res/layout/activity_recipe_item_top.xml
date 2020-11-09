@@ -115,7 +115,6 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 app:contentInsetStart="0dp"
-                android:layout_marginTop="30dp"
                 app:layout_collapseMode="pin"
                 app:title=""
                 android:translationZ="6dp"

@@ -25,7 +25,8 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
     private final List<CommentItem> mCommentArray;
     private final LayoutInflater mInflater;
-    private final String recipeId, recipeName, recipeSource;
+    private final String recipeName, recipeSource;
+    private final int recipeId;
     private final FirebaseAuth mAuth;
     private final Context mContext;
     private String reportReason;
@@ -33,7 +34,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     // data is passed into the constructor
-    CommentsAdapter(Context context, List<CommentItem> commentArray, String recipeId, String recipeName, String recipeSource) {
+    CommentsAdapter(Context context, List<CommentItem> commentArray, int recipeId, String recipeName, String recipeSource) {
         this.mInflater = LayoutInflater.from(context);
         this.mCommentArray = commentArray;
         this.recipeId = recipeId;
@@ -125,7 +126,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         }
 
         // Send report to Server under reports with Phone information
-        private void sendCommentReport(String recipeId, String name, String detail, String recipeName, String recipeSource) {
+        private void sendCommentReport(int recipeId, String name, String detail, String recipeName, String recipeSource) {
             String userId;
 
             if (mAuth.getCurrentUser() != null) {
@@ -147,7 +148,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
             HashMap<String, Object> reportCommentInfo = new HashMap<>();
 
-            CollectionReference reportingReference = db.collection(Constants.firebaseCommentReports).document(recipeId).collection(Constants.firebaseReports);
+            CollectionReference reportingReference = db.collection(Constants.firebaseCommentReports).document(String.valueOf(recipeId)).collection(Constants.firebaseReports);
 
             reportCommentInfo.put("Report", reportReason);
             reportCommentInfo.put("Timestamp", timestamp);
