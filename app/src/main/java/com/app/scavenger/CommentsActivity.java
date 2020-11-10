@@ -101,6 +101,7 @@ public class CommentsActivity extends AppCompatActivity {
             } else {
                 mParentLayout.requestFocus();
             }
+
         }
 
         mRecipeName.setText(recipeName);

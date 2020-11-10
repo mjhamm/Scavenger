@@ -1,7 +1,5 @@
 package com.app.scavenger;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
@@ -565,6 +563,7 @@ public class GroceryListActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
 
                             if (documentSnapshot.exists()) {
+                                //noinspection unchecked
                                 groceryItemsFromFB = (ArrayList<String>) documentSnapshot.get("items");
                             }
 

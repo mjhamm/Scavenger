@@ -128,9 +128,9 @@ public class DietsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
     }
 
-    public class HeaderViewHolder extends RecyclerView.ViewHolder {
+    public static class HeaderViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView mHeaderText;
+        private final TextView mHeaderText;
 
         public HeaderViewHolder(@NonNull View itemView) {
             super(itemView);

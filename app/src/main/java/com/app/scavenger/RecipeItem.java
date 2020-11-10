@@ -1,8 +1,5 @@
 package com.app.scavenger;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.google.firebase.firestore.Exclude;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -22,13 +19,13 @@ class RecipeItem {
     private float itemRating;
     //private int itemRating;
 
-    @Expose
+    /*@Expose
     @SerializedName("uri")
     private String mRecipeUri;
 
     @Expose
     @SerializedName("dietLabels")
-    private ArrayList<String> mRecipeAttributes;
+    private ArrayList<String> mRecipeAttributes;*/
 
     @Expose
     @SerializedName("ingredients")
@@ -48,7 +45,7 @@ class RecipeItem {
 //    @SerializedName("source")
     private String mSourceName;
 
-    @Expose
+    /*@Expose
     @SerializedName("CHOCDF")
     private int mCarbs;
 
@@ -58,33 +55,22 @@ class RecipeItem {
 
     @Expose
     @SerializedName("PROCNT")
-    private int mProtein;
+    private int mProtein;*/
 
     @Expose
 //    @SerializedName("url")
     @SerializedName("sourceUrl")
     private String mRecipeURL;
 
-    @Expose
+    /*@Expose
     @SerializedName("yield")
     private int mServings;
 
     @Expose
     @SerializedName("calories")
-    private int mCalories;
+    private int mCalories;*/
 
-    private boolean clicked;
     private boolean liked;
-
-    // testing
-//    @Exclude
-//    String getItemId() {
-//        return itemId;
-//    }
-//
-//    void setItemId(String itemId) {
-//        this.itemId = itemId;
-//    }
 
     @Exclude
     int getItemId() {
@@ -101,23 +87,6 @@ class RecipeItem {
 
     void setItemRating(float itemRating) {
         this.itemRating = itemRating;
-    }
-
-    // testing
-//    int getItemRating() {
-//        return itemRating;
-//    }
-//
-//    void setItemRating(int itemRating) {
-//        this.itemRating = itemRating;
-//    }
-
-    String getItemUri() {
-        return mRecipeUri;
-    }
-
-    void setItemUri(String mRecipeUri) {
-        this.mRecipeUri = mRecipeUri;
     }
 
     void setmImageUrl(String mImageUrl) {
@@ -144,14 +113,6 @@ class RecipeItem {
         return mSourceName;
     }
 
-    boolean isClicked() {
-        return clicked;
-    }
-
-    void setClicked(boolean clicked) {
-        this.clicked = clicked;
-    }
-
     boolean isLiked() {
         return liked;
     }
@@ -160,14 +121,51 @@ class RecipeItem {
         this.liked = liked;
     }
 
+    ArrayList<String> getmIngredients() {
+        return mIngredients;
+    }
+
+    String getmRecipeURL() {
+        return mRecipeURL;
+    }
+
+    void setmRecipeURL(String mRecipeURL) {
+        this.mRecipeURL = mRecipeURL;
+    }
+
+    // testing
+    /*@Exclude
+    String getItemId() {
+        return itemId;
+    }
+
+    void setItemId(String itemId) {
+        this.itemId = itemId;
+    }
+
+    // testing
+    int getItemRating() {
+        return itemRating;
+    }
+
+    void setItemRating(int itemRating) {
+        this.itemRating = itemRating;
+    }
+
+    void setItemUri(String mRecipeUri) {
+        this.mRecipeUri = mRecipeUri;
+    }
+
+    String getItemUri() {
+        return mRecipeUri;
+    }
+
     ArrayList<String> getmRecipeAttributes() {
         return mRecipeAttributes;
     }
 
-    void setmRecipeAttributes(ArrayList<String> mRecipeAttributes) { this.mRecipeAttributes = mRecipeAttributes; }
-
-    ArrayList<String> getmIngredients() {
-        return mIngredients;
+    void setmRecipeAttributes(ArrayList<String> mRecipeAttributes) {
+        this.mRecipeAttributes = mRecipeAttributes;
     }
 
     void setmIngredients(ArrayList<String> mIngredients) {
@@ -198,14 +196,6 @@ class RecipeItem {
         this.mProtein = mProtein;
     }
 
-    String getmRecipeURL() {
-        return mRecipeURL;
-    }
-
-    void setmRecipeURL(String mRecipeURL) {
-        this.mRecipeURL = mRecipeURL;
-    }
-
     int getmServings() {
         return mServings;
     }
@@ -220,5 +210,5 @@ class RecipeItem {
 
     void setmCalories(int mCalories) {
         this.mCalories = mCalories;
-    }
+    }*/
 }

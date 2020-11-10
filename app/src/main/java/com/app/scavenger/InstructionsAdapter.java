@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
+import java.util.Locale;
 
 public class InstructionsAdapter extends RecyclerView.Adapter<InstructionsAdapter.ViewHolder> {
 
@@ -29,7 +30,7 @@ public class InstructionsAdapter extends RecyclerView.Adapter<InstructionsAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.stepNumberText.setText("STEP\n" + (position + 1));
+        holder.stepNumberText.setText(String.format(Locale.getDefault(), "STEP\n %d", (position + 1)));
         holder.instructionsText.setText(mData.get(position));
     }
 

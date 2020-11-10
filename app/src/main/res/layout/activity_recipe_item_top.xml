@@ -7,7 +7,6 @@
     tools:context=".RecipeItemScreen">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/bg_gray"
@@ -23,7 +22,6 @@
             app:toolbarId="@+id/toolbar">
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/recipe_image_holder_detail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:transitionName="recipeHolder"

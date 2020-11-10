@@ -1,7 +1,6 @@
 package com.app.scavenger;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,9 +12,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
@@ -474,6 +470,7 @@ public class LikesFragment extends Fragment {
         actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
     }
 
+    // deprecated
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
@@ -490,6 +487,7 @@ public class LikesFragment extends Fragment {
             checkSearchForLikeChange(itemId,liked);
         }
 
+        // deprecated
         super.onActivityResult(requestCode, resultCode, data);
     }
 }

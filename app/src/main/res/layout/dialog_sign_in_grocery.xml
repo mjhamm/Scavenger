@@ -16,7 +16,8 @@
         android:textSize="16sp"
         android:hint="Email Address"
         android:inputType="textEmailAddress"
-        android:textColorHint="@color/dark_gray" />
+        android:textColorHint="@color/dark_gray"
+        android:autofillHints="" />
 
     <EditText
         android:id="@+id/password_editText"
@@ -28,6 +29,7 @@
         android:textSize="16sp"
         android:inputType="textPassword"
         android:hint="Password"
-        android:textColorHint="@color/dark_gray"/>
+        android:textColorHint="@color/dark_gray"
+        android:autofillHints="" />
 
 </LinearLayout>

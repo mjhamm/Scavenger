@@ -23,7 +23,7 @@ import com.google.firebase.auth.FirebaseAuth;
 public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private Context mContext;
-    private Preference signIn, signOut, groceryList ,help, about, diets;
+    private Preference signIn, signOut, help, about; /*diets, groceryList*/
     private SharedPreferences sharedPreferences;
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;

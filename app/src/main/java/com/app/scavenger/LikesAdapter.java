@@ -20,7 +20,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
@@ -29,10 +28,6 @@ import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
@@ -51,8 +46,10 @@ import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
 @SuppressWarnings("unchecked")
 public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> implements Filterable {
 
-    //private static final String TAG = "LOG: ";
-    public static final int LIKE_UPDATED = 104;
+// --Commented out by Inspection START (11/10/2020 10:21 AM):
+//    //private static final String TAG = "LOG: ";
+//    public static final int LIKE_UPDATED = 104;
+// --Commented out by Inspection STOP (11/10/2020 10:21 AM)
 
     // Database variables
     private FirebaseFirestore db;
@@ -212,12 +209,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         // testing
         likesRef.document(String.valueOf(recipeItem.getItemId()))
                 .delete()
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("Likes Adapter", "Successfully removed like");
-                })
-                .addOnFailureListener(e -> {
-                    Log.d("Likes Adapter", "Failed to remove like" + e.toString());
-                });
+                .addOnSuccessListener(aVoid -> Log.d("Likes Adapter", "Successfully removed like"))
+                .addOnFailureListener(e -> Log.d("Likes Adapter", "Failed to remove like" + e.toString()));
     }
 
     // Opens the Recipe in the default web browser
@@ -575,6 +568,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
             //intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
             intent.putExtra("position", getAdapterPosition());
+            // deprecated
             likesFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL);
         }
     }

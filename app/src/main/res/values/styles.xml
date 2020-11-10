@@ -1,13 +1,13 @@
 <resources>
 
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar" >
+        <item name="android:windowLightStatusBar">true</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@android:color/transparent</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="materialAlertDialogTheme">@style/ReminderAlertTheme</item>
         <item name="android:windowAnimationStyle">@style/CustomActivityAnimation</item>
-        <item name="android:windowContentTransitions">true</item>
     </style>
 
     <style name="GrayBackground" parent="AppTheme">
@@ -21,7 +21,7 @@
 
     <style name="RatingBar" parent="AppTheme">
         <item name="colorControlActivated">@android:color/white</item>
-        <item name="colorControlNormal">@color/colorPrimary</item>
+        <item name="colorControlNormal">@color/transparent</item>
     </style>
 
     <!-- Reminder Alert Theme -->
@@ -31,6 +31,7 @@
     </style>
 
     <!-- Animations for opening and closing activities -->
+
     <style name="CustomActivityAnimation" parent="@android:style/Animation.Activity">
         <item name="android:activityOpenEnterAnimation">@anim/slide_in_right</item>
         <item name="android:activityOpenExitAnimation">@anim/slide_out_left</item>
@@ -73,8 +74,8 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="ItemCardScreenTheme" />
 
 </resources>

@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,15 +41,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
-import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -65,7 +61,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -78,20 +74,46 @@ public class RecipeItemScreen extends AppCompatActivity {
 
     public static final int NEW_COMMENT = 201;
 
-    private TextView instructionsMainText, ingredientsMainText, nutritionMainTitle, calMainText, carbMainText, fatMainText, proteinMainText, recipeName, recipeSource, recipeServings, recipeCalories, recipeCarbs, recipeFat, recipeProtein, recipeAttributes, recipeIngredients, viewComments, mCommentsMainTitle, notConnectedText;
-    private ImageView recipeImage;
+    private TextView instructionsMainText;
+    private TextView ingredientsMainText;
+    private TextView nutritionMainTitle;
+    private TextView calMainText;
+    private TextView carbMainText;
+    private TextView fatMainText;
+    private TextView proteinMainText;
+    private TextView recipeName;
+    private TextView recipeSource;
+    private TextView recipeServings;
+    private TextView recipeCalories;
+    private TextView recipeCarbs;
+    private TextView recipeFat;
+    private TextView recipeProtein;
+    private TextView recipeAttributes;
+    private TextView recipeIngredients;
+    private TextView viewComments;
+    private TextView mCommentsMainTitle;
     private ImageButton recipeLike, recipeMore, commentButton;
     private CardView mNutritionCard;
     private RatingBar ratingBar;
-    private MaterialButton viewRecipeButton, mRetryConnection;
+    private MaterialButton viewRecipeButton;
     private RecyclerView mInstructionsRecyclerView, mCommentsRecyclerView;
     private ConstraintLayout mMainConstraintLayout;
     private LinearLayoutManager mLayoutManager;
     private CommentsAdapter commentsAdapter;
     private View nutritionLine, ingredientsLine, instructionsLine, commentsLine;
     private ProgressBar mDetailLoading;
+    private Context mContext;
 
-    private String userId, internalUrl, name, source, /*itemId,*/ image, url, reportReason, servingsText, caloriesText, carbsText, fatText, proteinText, activityId;
+    private String userId/*, internalUrl*/;
+    private String name;
+    private String source; /*itemId,*/ private String image;
+    private String url;
+    private String reportReason;
+    // --Commented out by Inspection (11/10/2020 10:22 AM):private String servingsText;
+    private String caloriesText;
+    private String carbsText;
+    private String fatText;
+    private String proteinText;
     private ArrayList<String> ingredients, attributes, instructions;
     private ArrayList<CommentItem> commentItems;
     private boolean isLiked, logged;
@@ -111,16 +133,6 @@ public class RecipeItemScreen extends AppCompatActivity {
         Call<String> getRecipeData(@Path("itemId") int itemId, @Query("apiKey") String apiKey, @Query("includeNutrition") boolean includeNutr);
         /*@GET("/search?")
         Call<String> getRecipeData(@Query("r") String internalUrl, @Query("app_id") String appId, @Query("app_key") String appKey);*/
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
     }
 
     @Override
@@ -144,6 +156,8 @@ public class RecipeItemScreen extends AppCompatActivity {
 
         setContentView(R.layout.activity_recipe_item_top);
 
+        mContext = this;
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         CollapsingToolbarLayout toolBarLayout = findViewById(R.id.toolbar_layout);
@@ -164,7 +178,7 @@ public class RecipeItemScreen extends AppCompatActivity {
 
         recipeName = findViewById(R.id.recipe_name_detail);
         recipeSource = findViewById(R.id.recipe_source_detail);
-        recipeImage = findViewById(R.id.recipe_image_detail);
+        ImageView recipeImage = findViewById(R.id.recipe_image_detail);
         recipeLike = findViewById(R.id.recipe_like_detail);
         recipeMore = findViewById(R.id.recipe_more_detail);
         ratingBar = findViewById(R.id.ratingBar_detail);
@@ -189,14 +203,14 @@ public class RecipeItemScreen extends AppCompatActivity {
         mMainConstraintLayout = findViewById(R.id.constraint_layout);
         mCommentsMainTitle = findViewById(R.id.comments_main_title);
         mDetailLoading = findViewById(R.id.loading_detail);
-        notConnectedText = findViewById(R.id.not_connected_text_recipeItem);
+        TextView notConnectedText = findViewById(R.id.not_connected_text_recipeItem);
         commentButton = findViewById(R.id.comment_button);
         viewComments = findViewById(R.id.view_comments);
         nutritionLine = findViewById(R.id.nutrition_underline);
         ingredientsLine = findViewById(R.id.ingredients_underline);
         instructionsLine = findViewById(R.id.instructions_underline);
         commentsLine = findViewById(R.id.comments_underline);
-        mRetryConnection = findViewById(R.id.recipe_retry_con_button);
+        MaterialButton mRetryConnection = findViewById(R.id.recipe_retry_con_button);
 
         notConnectedText.setVisibility(View.GONE);
         mRetryConnection.setVisibility(View.GONE);
@@ -230,7 +244,7 @@ public class RecipeItemScreen extends AppCompatActivity {
 
             if (con.connectedToInternet()) {
 
-                activityId = getIntent().getExtras().getString("activity_id");
+                String activityId = getIntent().getExtras().getString("activity_id");
                 if (activityId != null) {
                     //internalUrl = getIntent().getExtras().getString("recipe_uri");
                     if (activityId.equals("search")) {
@@ -252,14 +266,11 @@ public class RecipeItemScreen extends AppCompatActivity {
                 /*for (int i = 0; i < 4; i++) {
                     instructions.add("This is step number " + (i + 1) + ". The following instructions want you to preheat your oven." +
                             " Once you have preheated your oven, continue to the next step which will walk you through the next thing to do.");
-                }
+                }*/
 
-                instructionsAdapter = new InstructionsAdapter(this, instructions);
+                Log.d("RECIPITEMSCREEN", "instructions: " + instructions.toString());
 
-                mInstructionsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-                mInstructionsRecyclerView.setAdapter(instructionsAdapter);*/
-
-                ConstraintSet constraintSet = new ConstraintSet();
+                /*ConstraintSet constraintSet = new ConstraintSet();
                 constraintSet.clone(mMainConstraintLayout);
 
                 // After check for instructions
@@ -272,7 +283,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                     constraintSet.connect(mCommentsMainTitle.getId(), ConstraintSet.TOP, mInstructionsRecyclerView.getId(), ConstraintSet.BOTTOM);
                 }
 
-                constraintSet.applyTo(mMainConstraintLayout);
+                constraintSet.applyTo(mMainConstraintLayout);*/
 
                 if (logged) {
                     commentButton.setVisibility(View.VISIBLE);
@@ -320,6 +331,7 @@ public class RecipeItemScreen extends AppCompatActivity {
             intent.putExtra("recipe_name", name);
             intent.putExtra("recipe_source", source);
             intent.putExtra("recipe_id", itemId);
+            // deprecated
             startActivityForResult(intent, NEW_COMMENT);
         });
 
@@ -329,6 +341,7 @@ public class RecipeItemScreen extends AppCompatActivity {
             intent.putExtra("recipe_name", name);
             intent.putExtra("recipe_source", source);
             intent.putExtra("recipe_id", itemId);
+            // deprecated
             startActivityForResult(intent, NEW_COMMENT);
         });
 
@@ -536,11 +549,11 @@ public class RecipeItemScreen extends AppCompatActivity {
                     }
                     // After check for comments
                     if (commentCount == 0) {
-                        viewComments.setText("No comments");
+                        viewComments.setText(R.string.no_comments);
                     } else if (commentCount == 1) {
-                        viewComments.setText("View " + commentCount + " comment");
+                        viewComments.setText(String.format(Locale.getDefault(), "View %d comment", commentCount));
                     } else {
-                        viewComments.setText("View all " + commentCount + " comments");
+                        viewComments.setText(String.format(Locale.getDefault(),"View all %d comments",commentCount));
                     }
                 });
     }
@@ -586,7 +599,7 @@ public class RecipeItemScreen extends AppCompatActivity {
         // orders those likes by timestamp in descending order to show the most recent like on top
         likeRef.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    internalUrl = queryDocumentSnapshots.getString(Constants.ITEM_INTERNAL_URL);
+                    //internalUrl = queryDocumentSnapshots.getString(Constants.ITEM_INTERNAL_URL);
                     callToApi();
                 });
     }
@@ -633,7 +646,7 @@ public class RecipeItemScreen extends AppCompatActivity {
 
     private void callToApi() {
 
-        Log.d("RecipeItemScreen", "internalUrl: " + internalUrl);
+        //Log.d("RecipeItemScreen", "internalUrl: " + internalUrl);
 
         mDetailLoading.setVisibility(View.VISIBLE);
 
@@ -649,12 +662,12 @@ public class RecipeItemScreen extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
 
-                        Log.d("RECIPEITEMSCREEN", response.body());
+                        //Log.d("RECIPEITEMSCREEN", response.body());
 
                         String result = response.body();
                         getRecipeData(result);
 
-                        recipeServings.setText(servingsText + " Servings");
+                        recipeServings.setText(String.format(Locale.getDefault(), "Servings %d", servingsInt));
                         recipeCalories.setText(caloriesText);
                         recipeCarbs.setText(carbsText);
                         recipeFat.setText(fatText);
@@ -662,6 +675,27 @@ public class RecipeItemScreen extends AppCompatActivity {
                         ratingBar.setRating(rating);
                         recipeAttributes.setText(TextUtils.join("", attributes));
                         recipeIngredients.setText(TextUtils.join("", ingredients));
+
+                        Log.d("RECIPEITEMSCREEN", instructions.toString());
+
+                        ConstraintSet constraintSet = new ConstraintSet();
+                        constraintSet.clone(mMainConstraintLayout);
+
+                        // After check for instructions
+                        if (instructions.size() == 0) {
+                            constraintSet.setVisibility(viewRecipeButton.getId(), ConstraintSet.VISIBLE);
+                            viewRecipeButton.setEnabled(true);
+                        } else {
+                            constraintSet.setVisibility(viewRecipeButton.getId(), ConstraintSet.GONE);
+                            viewRecipeButton.setEnabled(false);
+                            constraintSet.connect(mCommentsMainTitle.getId(), ConstraintSet.TOP, mInstructionsRecyclerView.getId(), ConstraintSet.BOTTOM);
+                        }
+
+                        constraintSet.applyTo(mMainConstraintLayout);
+
+                        instructionsAdapter = new InstructionsAdapter(mContext, instructions);
+                        mInstructionsRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+                        mInstructionsRecyclerView.setAdapter(instructionsAdapter);
 
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");
@@ -681,20 +715,21 @@ public class RecipeItemScreen extends AppCompatActivity {
 
     private void getRecipeData(String response) {
         try {
-            JSONObject nutr, ing;
-            String total_ing;
+            JSONObject nutr, ing, instr;
+            String total_ing, labels, instructionText;
             ArrayList<String> list_ingredients = new ArrayList<>();
-//            JSONObject totalNutrients, carbs, fat, protein;
-//            JSONArray healthLabelsArray;
             ArrayList<String> list_healthLabels = new ArrayList<>();
-            String labels;
+            ArrayList<String> instr_array = new ArrayList<>();
 
             JSONObject hit = new JSONObject(response);
 
             // servings integer
             servingsInt = hit.getInt("servings");
+            if (servingsInt <= 0) {
+                servingsInt = 1;
+            }
             // servings string
-            servingsText = String.valueOf(servingsInt);
+            //servingsText = String.valueOf(servingsInt);
 
             // rating
             rating = itemRating(hit.getDouble("spoonacularScore"));
@@ -777,10 +812,17 @@ public class RecipeItemScreen extends AppCompatActivity {
             }
 
             // instructions
-            /*JSONArray instructionsArray = hit.getJSONArray("analyzedInstructions");
+            JSONArray instructionsArray = hit.getJSONArray("analyzedInstructions");
             for (int m = 0; m < instructionsArray.length(); m++) {
-
-            }*/
+                instr = instructionsArray.getJSONObject(m);
+                JSONArray stepsArray = instr.getJSONArray("steps");
+                for (int n = 0; n < stepsArray.length(); n++) {
+                    JSONObject steps = stepsArray.getJSONObject(n);
+                    instructionText = steps.getString("step");
+                    instr_array.add(instructionText);
+                    instructions = instr_array;
+                }
+            }
 
         } catch (JSONException e) {
             e.printStackTrace();

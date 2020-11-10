@@ -1,7 +1,6 @@
 package com.app.scavenger;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,29 +12,23 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.checkbox.MaterialCheckBox;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class GroceryListAdapter extends RecyclerView.Adapter<GroceryListAdapter.ViewHolder> {
 
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
-    private List<GroceryListItem> mData;
-    private Context mContext;
-    private final String userId;
-    private ArrayList<String> groceryItems;
+    private final List<GroceryListItem> mData;
+    private final Context mContext;
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     GroceryListAdapter(Context context, List<GroceryListItem> data, ArrayList<String> groceryItems, String userId) {
         this.mInflater = LayoutInflater.from(context);
         this.mContext = context;
         this.mData = data;
-        this.userId = userId;
-        this.groceryItems = groceryItems;
     }
 
     @NonNull

@@ -26,33 +26,33 @@ public class DietPreferences extends AppCompatActivity implements DietsAdapter.I
         options.add(new DietHeader("Diets"));
 
         // Diets
-        options.add(new DietItem("Gluten Free", false));
-        options.add(new DietItem("Ketogenic", false));
-        options.add(new DietItem("Vegetarian", false));
-        options.add(new DietItem("Lacto-Vegetarian", false));
-        options.add(new DietItem("Ovo-Vegetarian", false));
-        options.add(new DietItem("Vegan", false));
-        options.add(new DietItem("Pescetarian", false));
-        options.add(new DietItem("Paleo", false));
-        options.add(new DietItem("Primal", false));
-        options.add(new DietItem("Whole30", false));
+        options.add(new DietItem("Gluten Free"));
+        options.add(new DietItem("Ketogenic"));
+        options.add(new DietItem("Vegetarian"));
+        options.add(new DietItem("Lacto-Vegetarian"));
+        options.add(new DietItem("Ovo-Vegetarian"));
+        options.add(new DietItem("Vegan"));
+        options.add(new DietItem("Pescetarian"));
+        options.add(new DietItem("Paleo"));
+        options.add(new DietItem("Primal"));
+        options.add(new DietItem("Whole30"));
 
         // Allergy Header
         options.add(new DietHeader("Allergies"));
 
         // Allergies
-        options.add(new DietItem("Dairy", false));
-        options.add(new DietItem("Egg", false));
-        options.add(new DietItem("Gluten", false));
-        options.add(new DietItem("Grain", false));
-        options.add(new DietItem("Peanut", false));
-        options.add(new DietItem("Seafood", false));
-        options.add(new DietItem("Sesame", false));
-        options.add(new DietItem("Shellfish", false));
-        options.add(new DietItem("Soy", false));
-        options.add(new DietItem("Sulfite", false));
-        options.add(new DietItem("Tree Nut", false));
-        options.add(new DietItem("Wheat", false));
+        options.add(new DietItem("Dairy"));
+        options.add(new DietItem("Egg"));
+        options.add(new DietItem("Gluten"));
+        options.add(new DietItem("Grain"));
+        options.add(new DietItem("Peanut"));
+        options.add(new DietItem("Seafood"));
+        options.add(new DietItem("Sesame"));
+        options.add(new DietItem("Shellfish"));
+        options.add(new DietItem("Soy"));
+        options.add(new DietItem("Sulfite"));
+        options.add(new DietItem("Tree Nut"));
+        options.add(new DietItem("Wheat"));
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, layoutManager.getOrientation());

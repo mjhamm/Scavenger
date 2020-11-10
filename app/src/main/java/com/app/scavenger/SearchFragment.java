@@ -45,7 +45,7 @@ import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
 public class SearchFragment extends Fragment {
 
     private static final String TAG = "SEARCH_FRAGMENT: ";
-    public static final int SEARCH_UPDATED = 104;
+    // --Commented out by Inspection (11/10/2020 10:33 AM):public static final int SEARCH_UPDATED = 104;
 
     private RecyclerView mSearchRecyclerView;
     // testing
@@ -63,16 +63,13 @@ public class SearchFragment extends Fragment {
     private ArrayList<RecipeItem> recipeItemArrayList;
     private String queryString = null;
     private ConnectionDetector con;
-    private int numItemsBefore = 0;
-    private boolean numItemsChanged = true;
-    private SharedPreferences sharedPreferences;
     private EndlessRecyclerViewScrollListener scrollListener;
     private boolean logged = false;
     private DatabaseHelper myDb;
 
     interface ApiService {
         @GET("complexSearch?")
-        Call<String> getRecipeData(@Query("apiKey") String apiKey, @Query("query") String ingredients, @Query("addRecipeInformation") boolean addInfo, @Query("offset") int fromIngr, @Query("number") int toIngr);
+        Call<String> getRecipeData(@Query("apiKey") String apiKey, @Query("query") String ingredients, @Query("addRecipeInformation") boolean addInfo, @Query("instructionsRequired") boolean instrRequired, @Query("offset") int fromIngr, @Query("number") int toIngr);
         // testing
         /*@GET("/search?")
         Call<String> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients, @Query("from") int fromIngr, @Query("to") int toIngr);*/
@@ -102,11 +99,6 @@ public class SearchFragment extends Fragment {
 
         recipeItemArrayList = new ArrayList<>();
         itemIds = new ArrayList<>();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -145,7 +137,7 @@ public class SearchFragment extends Fragment {
             changeBGImage(0);
         }
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         mSearchView.setMaxWidth(Integer.MAX_VALUE);
 
         // check if the user has the match ingredients option on or not
@@ -346,7 +338,7 @@ public class SearchFragment extends Fragment {
             setMessageToRandom();
     }
 
-    private int checkNumIngredients() {
+    /*private int checkNumIngredients() {
 
         int numIngr = 100;
         String[] ingredientsArray;
@@ -361,7 +353,7 @@ public class SearchFragment extends Fragment {
             numIngr = ingredientsArray.length;
         }
         return numIngr;
-    }
+    }*/
 
     private void callToApi() {
 
@@ -373,7 +365,7 @@ public class SearchFragment extends Fragment {
 
         // testing
         //Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
-        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(), true, fromIngr ,toIngr);
+        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(), true, true, fromIngr ,toIngr);
 
         queryString = getIngredientsSearch();
         call.enqueue(new Callback<String>() {
@@ -435,9 +427,11 @@ public class SearchFragment extends Fragment {
         }
     }
 
-    private String randomItemId(RecipeItem item) {
-        return item.getmRecipeURL().replace("/", "");
-    }
+// --Commented out by Inspection START (11/10/2020 10:33 AM):
+//    private String randomItemId(RecipeItem item) {
+//        return item.getmRecipeURL().replace("/", "");
+//    }
+// --Commented out by Inspection STOP (11/10/2020 10:33 AM)
 
     private void writeRecyclerAsync(String response) {
         new Thread(() -> {
@@ -508,7 +502,7 @@ public class SearchFragment extends Fragment {
 
     private void writeRecycler(String response) {
         try {
-            JSONObject hits, recipes;
+            JSONObject hits;
 
             JSONObject obj = new JSONObject(response);
             JSONArray dataArray = obj.getJSONArray("results");
@@ -517,25 +511,24 @@ public class SearchFragment extends Fragment {
 
                 RecipeItem item = new RecipeItem();
                 hits = dataArray.getJSONObject(i);
-                //recipes = results.getJSONObject("recipe");
 
                 // Image
                 item.setmImageUrl(hits.getString("image"));
                 Log.d(TAG, "image: " + hits.get("image"));
                 // Name
-                if (hits.getString("title").equals("null")) {
-                    item.setmRecipeName("Recipe Name Not Found");
-                } else {
+                //if (hits.getString("title").equals("null")) {
+                  //  item.setmRecipeName("Recipe Name Not Found");
+                //} else {
                     item.setmRecipeName(hits.getString("title"));
-                    Log.d(TAG, "title: " + hits.get("title"));
-                }
+                  //  Log.d(TAG, "title: " + hits.get("title"));
+                //}
                 // Source
-                if (hits.getString("sourceName").equals("null")) {
-                    item.setmSourceName("Source Name Not Found");
-                } else {
+                //if (hits.getString("sourceName").equals("null")) {
+                  //  item.setmSourceName("Source Name Not Found");
+                //} else {
                     item.setmSourceName(hits.getString("sourceName"));
-                    Log.d(TAG, "sourceName: " + hits.get("sourceName"));
-                }
+                  //  Log.d(TAG, "sourceName: " + hits.get("sourceName"));
+                //}
                 // URL
                 if (hits.getString("sourceUrl").equals("null") || hits.getString("sourceUrl").isEmpty()) {
                     item.setmRecipeURL("https://www.thescavengerapp.com");
@@ -558,9 +551,12 @@ public class SearchFragment extends Fragment {
                     item.setLiked(true);
                 }
 
+                Log.d(TAG, "RecipeName: " + item.getmRecipeName());
+                Log.d(TAG, "sourceName: " + item.getmSourceName());
+
+                // remove items with null source/title
                 recipeItemArrayList.add(item);
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -620,7 +616,7 @@ public class SearchFragment extends Fragment {
 
         // testing
 //        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
-        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(), true, fromIngr, toIngr);
+        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(), true,true, fromIngr, toIngr);
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
@@ -668,6 +664,7 @@ public class SearchFragment extends Fragment {
 
             updateAdapter(position, liked);
         }
+        // deprecated
         super.onActivityResult(requestCode, resultCode, data);
     }
 }

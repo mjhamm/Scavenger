@@ -2,9 +2,7 @@ package com.app.scavenger;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Build;
 import android.os.Bundle;
-import android.widget.ImageButton;
 
 public class OpenSourceLibraries extends AppCompatActivity {
 

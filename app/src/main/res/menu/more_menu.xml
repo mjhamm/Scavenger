@@ -20,7 +20,6 @@
         android:orderInCategory="20"
         app:showAsAction="collapseActionView"/>
     <item
-        android:id="@+id/menu_report"
         android:title="@string/search_menu_report"
         android:orderInCategory="60"
         app:showAsAction="collapseActionView"/>

@@ -1,6 +1,5 @@
 package com.app.scavenger;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -26,10 +25,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -43,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Locale;
 
 import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
@@ -51,7 +46,7 @@ import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
 public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public static final String TAG = "SEARCH_ADAPTER";
-    public static final int SEARCH_UPDATED = 104;
+    // --Commented out by Inspection (11/10/2020 10:34 AM):public static final int SEARCH_UPDATED = 104;
 
     // variables for constructor
     private final ArrayList<RecipeItem> mRecipeItems;

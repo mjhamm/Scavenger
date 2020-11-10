@@ -44,6 +44,7 @@
         android:src="@drawable/ic_baseline_more_vert_24_black"
         android:background="@color/transparent"
         android:padding="8dp"
+        android:contentDescription="@string/comment_more"
         app:layout_constraintTop_toTopOf="@id/comment_name"
         app:layout_constraintBottom_toBottomOf="@id/comment_detail"
         app:layout_constraintEnd_toEndOf="parent"/>

@@ -1,35 +1,24 @@
 package com.app.scavenger;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.TextPaint;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -65,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -89,18 +77,6 @@ public class SignUpActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private CallbackManager callbackManager;
     private boolean checkVerify = false;
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // Gets the Firebase user
-        /*FirebaseUser currentUser = mAuth.getCurrentUser();
-        // checks if the user isn't null
-        if (currentUser != null) {
-            // update the shared preferences with the user's userId
-            updatePrefInfo(currentUser.getUid());
-        }*/
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

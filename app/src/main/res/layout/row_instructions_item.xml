@@ -17,7 +17,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="start|center_vertical">
 
         <TextView
             android:id="@+id/step_number_textView"
@@ -26,9 +27,9 @@
             android:text="STEP\n1"
             android:gravity="center"
             android:fontFamily="@font/roboto_medium"
-            android:layout_marginStart="8dp"
             android:textSize="16sp"
             android:padding="6dp"
+            android:layout_marginStart="6dp"
             android:textColor="@color/colorPrimaryDark"
             android:layout_gravity="center"/>
 
@@ -44,7 +45,7 @@
             android:fontFamily="@font/roboto_condensed_regular"
             android:textColor="@android:color/black"
             android:gravity="start|center_vertical"
-            android:text="Aenean ante tortor, blandit in tempor quis, eleifend laoreet est. Class aptent taciti sociosqu ad litora torquent per conubia nostra."/>
+            android:text=" torquent per conubia nostra."/>
 
     </LinearLayout>
 

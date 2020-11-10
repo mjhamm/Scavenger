@@ -2,21 +2,23 @@ package com.app.scavenger;
 
 class DietItem {
 
-    DietItem(String itemName, boolean checked) {
+    DietItem(String itemName) {
         this.itemName = itemName;
-        this.checked = checked;
+        this.checked = false;
     }
 
-    private String itemName;
+    private final String itemName;
     private boolean checked;
 
     public String getItemName() {
         return itemName;
     }
 
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
-    }
+// --Commented out by Inspection START (11/10/2020 10:22 AM):
+//    public void setItemName(String itemName) {
+//        this.itemName = itemName;
+//    }
+// --Commented out by Inspection STOP (11/10/2020 10:22 AM)
 
     public boolean isChecked() {
         return checked;
