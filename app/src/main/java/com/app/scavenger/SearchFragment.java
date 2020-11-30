@@ -45,17 +45,18 @@ import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
 public class SearchFragment extends Fragment {
 
     private static final String TAG = "SEARCH_FRAGMENT: ";
-    // --Commented out by Inspection (11/10/2020 10:33 AM):public static final int SEARCH_UPDATED = 104;
+//    public static final int SEARCH_UPDATED = 104;
 
     private RecyclerView mSearchRecyclerView;
     // testing
     //private ArrayList<String> itemIds;
+    private String allergies;
     private ArrayList<Integer> itemIds;
     private SearchAdapter adapter;
     private Context mContext;
     private SearchView mSearchView;
     private ImageView mSearch_mainBG;
-    private TextView startup_message, matchMessage;
+    private TextView startup_message, search_top_text/*, matchMessage*/;
     private ShimmerFrameLayout shimmer;
     private int fromIngr = 0;
     private int toIngr = 10;
@@ -65,14 +66,22 @@ public class SearchFragment extends Fragment {
     private ConnectionDetector con;
     private EndlessRecyclerViewScrollListener scrollListener;
     private boolean logged = false;
+    private boolean loadingRandoms = false;
+    private boolean searchingRecipes = false;
+    private boolean searchingIngredients = false;
     private DatabaseHelper myDb;
+    private SharedPreferences sharedPreferences;
 
     interface ApiService {
+        // getting random recipes
+        @GET("random?")
+        Call<String> getRandomRecipeData(@Query("apiKey") String apiKey, @Query("number") int toIngr);
+        // getting recipes based on recipe search
         @GET("complexSearch?")
         Call<String> getRecipeData(@Query("apiKey") String apiKey, @Query("query") String ingredients, @Query("addRecipeInformation") boolean addInfo, @Query("instructionsRequired") boolean instrRequired, @Query("offset") int fromIngr, @Query("number") int toIngr);
-        // testing
-        /*@GET("/search?")
-        Call<String> getRecipeData(@Query("q") String ingredients, @Query("app_id") String appId, @Query("app_key") String appKey, @Query("ingr") int numIngredients, @Query("from") int fromIngr, @Query("to") int toIngr);*/
+        // getting recipes based on ingredients
+        @GET("complexSearch?")
+        Call<String> getRecipeDataIngr(@Query("apiKey") String apiKey, @Query("query") String ingredients, @Query("includeIngredients") String includeIngr, @Query("addRecipeInformation") boolean addInfo, @Query("instructionsRequired") boolean instrRequired, @Query("offset") int fromIngr, @Query("number") int toIngr);
     }
 
     // Required empty public constructor
@@ -101,6 +110,23 @@ public class SearchFragment extends Fragment {
         itemIds = new ArrayList<>();
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+
+        if (!hidden) {
+            if (!con.connectedToInternet() && recipeItemArrayList.isEmpty()) {
+                changeBGImage(2);
+            }
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("query", queryString);
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -115,7 +141,8 @@ public class SearchFragment extends Fragment {
         startup_message = view.findViewById(R.id.startup_message);
         mSearchView = view.findViewById(R.id.search_searchView);
         shimmer = view.findViewById(R.id.search_shimmerLayout);
-        matchMessage = view.findViewById(R.id.match_message);
+        //matchMessage = view.findViewById(R.id.match_message);
+        //search_top_text = view.findViewById(R.id.search_top_text);
         ProgressBar mProgressBar = view.findViewById(R.id.main_progressBar);
         mSearch_mainBG = view.findViewById(R.id.search_mainBG);
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
@@ -124,6 +151,9 @@ public class SearchFragment extends Fragment {
         mSearchRecyclerView.setLayoutManager(mLayoutManager);
 
         con = new ConnectionDetector(mContext);
+
+        // create instance of shared preferences and editor
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         if (savedInstanceState != null) {
             queryString = savedInstanceState.getString("query");
@@ -137,17 +167,10 @@ public class SearchFragment extends Fragment {
             changeBGImage(0);
         }
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         mSearchView.setMaxWidth(Integer.MAX_VALUE);
 
-        // check if the user has the match ingredients option on or not
-        // if they do -
-        // alert them and let them know
-        if (sharedPreferences.getBoolean("match", false)) {
-            toastMessage("Match ingredients is On");
-        }
-
-        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar, con) {
+        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar, con, loadingRandoms) {
 
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -160,8 +183,12 @@ public class SearchFragment extends Fragment {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                 if (con.connectedToInternet()) {
-                    if (recipeItemArrayList.size() >= 9) {
+                    if (recipeItemArrayList.size() >= 9 && searchingRecipes && !searchingIngredients && !loadingRandoms) {
                         getMoreAsync();
+                    } else if (recipeItemArrayList.size() >= 9 && !searchingRecipes && searchingIngredients && !loadingRandoms) {
+                        getMoreIngrAsync();
+                    } else if (recipeItemArrayList.size() >= 9 && !searchingRecipes && !searchingIngredients && loadingRandoms) {
+                        getMoreRandomAsync();
                     }
                 }
             }
@@ -205,7 +232,7 @@ public class SearchFragment extends Fragment {
                             .show();
                 } else {
                     getIngredients();
-                    callToApi();
+                    callToApiRecipes();
                 }
 
                 return false;
@@ -226,43 +253,26 @@ public class SearchFragment extends Fragment {
         switch (image) {
             // default
             case 0:
-                matchMessage.setVisibility(View.GONE);
+                //matchMessage.setVisibility(View.GONE);
                 startup_message.setVisibility(View.VISIBLE);
                 setMessageToRandom();
                 mSearch_mainBG.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.default_bg_screen));
                 break;
                 // no recipes
             case 1:
-                matchMessage.setVisibility(View.VISIBLE);
+                //matchMessage.setVisibility(View.VISIBLE);
                 startup_message.setVisibility(View.VISIBLE);
                 startup_message.setText(R.string.no_recipes_found);
                 mSearch_mainBG.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.no_recipes_bg_screen));
                 break;
                 // no internet
             case 2:
-                matchMessage.setVisibility(View.GONE);
+                //matchMessage.setVisibility(View.GONE);
                 startup_message.setVisibility(View.VISIBLE);
                 startup_message.setText(R.string.no_internet_connection);
                 mSearch_mainBG.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.no_internet_bg_screen));
                 break;
         }
-    }
-
-    @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-
-        if (!hidden) {
-            if (!con.connectedToInternet() && recipeItemArrayList.isEmpty()) {
-                changeBGImage(2);
-            }
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString("query", queryString);
     }
 
     public void updateSearchFrag() {
@@ -338,24 +348,219 @@ public class SearchFragment extends Fragment {
             setMessageToRandom();
     }
 
-    /*private int checkNumIngredients() {
-
-        int numIngr = 100;
-        String[] ingredientsArray;
-        boolean matchIngr = sharedPreferences.getBoolean("match", false);
-
-        if (matchIngr) {
-            if (mSearchView.getQuery().toString().contains(",")) {
-                ingredientsArray = mSearchView.getQuery().toString().split(",");
-            } else {
-                ingredientsArray = mSearchView.getQuery().toString().split(" ");
+    private void getIngredients() {
+        if (!con.connectedToInternet()) {
+            changeBGImage(2);
+        } else {
+            if (logged) {
+                itemsFromDB();
             }
-            numIngr = ingredientsArray.length;
+            recipeItemArrayList.clear();
+            mSearchRecyclerView.removeAllViews();
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
+            }
+            // Updates Endless Scroll Listener
+            scrollListener.resetState();
+            startup_message.setVisibility(View.GONE);
+            mSearch_mainBG.setVisibility(View.GONE);
+            shimmer.setVisibility(View.VISIBLE);
+            shimmer.startShimmer();
         }
-        return numIngr;
-    }*/
+    }
 
-    private void callToApi() {
+    // Async tasks for writing the recyclerview ---------------------------------------------------------------------------------------------------------------------
+
+    // async task for writing recycler using recipe query
+    private void writeRecyclerRecipeAsync(String response) {
+        new Thread(() -> {
+            writeRecycler(response);
+            try {
+                if (isAdded()) {
+                    getActivity().runOnUiThread(() -> {
+                        if (adapter == null) {
+                            adapter = new SearchAdapter(mContext, this, recipeItemArrayList, logged);
+                        }
+
+                        if (recipeItemArrayList.size() <= 5) {
+                            callToApiIngr();
+                        } else {
+                            mSearchRecyclerView.setAdapter(adapter);
+                            shimmer.stopShimmer();
+                            shimmer.setVisibility(View.GONE);
+                        }
+                    });
+                }
+            } catch (final Exception e) {
+                Log.i(TAG, "Exception in Thread");
+            }
+        }).start();
+    }
+
+    // async task for writing recycler using ingredients query
+    private void writeRecyclerIngrAsync(String response) {
+        new Thread(() -> {
+            writeRecycler(response);
+            try {
+                if (isAdded()) {
+                    getActivity().runOnUiThread(() -> {
+                        if (adapter == null) {
+                            adapter = new SearchAdapter(mContext, this, recipeItemArrayList, logged);
+                        }
+
+                        int randomRecipesInt = 9 - recipeItemArrayList.size();
+                        if (recipeItemArrayList.size() <= 5) {
+                            getRandomRecipes(randomRecipesInt);
+                        } else {
+                            mSearchRecyclerView.setAdapter(adapter);
+                            shimmer.stopShimmer();
+                            shimmer.setVisibility(View.GONE);
+                        }
+                    });
+                }
+            } catch (final Exception e) {
+                Log.i(TAG, "Exception in Thread");
+            }
+        }).start();
+    }
+
+    // async task for writing recycler using random recipes
+    private void writeRecyclerRandomAsync(String response) {
+        new Thread(() -> {
+            writeRecyclerRandom(response);
+            try {
+                if (isAdded()) {
+                    getActivity().runOnUiThread(() -> {
+                        if (adapter == null) {
+                            adapter = new SearchAdapter(mContext, this, recipeItemArrayList, logged);
+                        }
+
+                        mSearchRecyclerView.setAdapter(adapter);
+                        shimmer.stopShimmer();
+                        shimmer.setVisibility(View.GONE);
+                    });
+                }
+            } catch (final Exception e) {
+                Log.i(TAG, "Exception in Thread");
+            }
+        }).start();
+    }
+
+    // Writing items inside the recyclerview - initial api calls --------------------------------------------------------------------------------
+
+    private void writeRecycler(String response) {
+        try {
+            JSONObject hits;
+
+            JSONObject obj = new JSONObject(response);
+            JSONArray dataArray = obj.getJSONArray("results");
+
+            for (int i = 0; i < dataArray.length(); i++) {
+
+                RecipeItem item = new RecipeItem(RecipeItem.TYPE_ITEM);
+                hits = dataArray.getJSONObject(i);
+
+                // Image
+                item.setmImageUrl(hits.getString("image"));
+                Log.d(TAG, "image: " + hits.get("image"));
+                // Name
+                item.setmRecipeName(hits.getString("title"));
+                // Source
+                item.setmSourceName(hits.getString("sourceName"));
+                // URL
+                if (hits.getString("sourceUrl").equals("null") || hits.getString("sourceUrl").isEmpty()) {
+                    item.setmRecipeURL("https://www.thescavengerapp.com/recipe-not-found");
+                } else {
+                    item.setmRecipeURL(hits.getString("sourceUrl"));
+                    Log.d(TAG, "sourceUrl: " + hits.get("sourceUrl"));
+                }
+                // Rating
+                item.setItemRating(itemRating(hits.getDouble("spoonacularScore")));
+                Log.d(TAG, "rating: " + hits.getDouble("spoonacularScore"));
+                Log.d(TAG, "New Rating: " + itemRating(hits.getDouble("spoonacularScore")));
+                // Unique ID
+                item.setItemId(hits.getInt("id"));
+                Log.d(TAG, "id: " + hits.get("id"));
+
+                // checks if item in contained in db liked items to set as liked
+                if (itemIds.contains(item.getItemId())) {
+                    item.setLiked(true);
+                }
+
+                Log.d(TAG, "RecipeName: " + item.getmRecipeName());
+                Log.d(TAG, "sourceName: " + item.getmSourceName());
+
+                // remove items with null source
+                if (!item.getmSourceName().equalsIgnoreCase("null")) {
+                    recipeItemArrayList.add(item);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Writing items inside the recyclerview - random api calls --------------------------------------------------------------------------------
+
+    private void writeRecyclerRandom(String response) {
+        try {
+            JSONObject hits;
+
+            JSONObject obj = new JSONObject(response);
+            JSONArray dataArray = obj.getJSONArray("recipes");
+
+            for (int i = 0; i < dataArray.length(); i++) {
+
+                RecipeItem item = new RecipeItem(RecipeItem.TYPE_ITEM);
+                hits = dataArray.getJSONObject(i);
+
+                // Image
+                item.setmImageUrl(hits.getString("image"));
+                Log.d(TAG, "image: " + hits.get("image"));
+                // Name
+                item.setmRecipeName(hits.getString("title"));
+                // Source
+                item.setmSourceName(hits.getString("sourceName"));
+                // URL
+                if (hits.getString("sourceUrl").equals("null") || hits.getString("sourceUrl").isEmpty()) {
+                    item.setmRecipeURL("https://www.thescavengerapp.com/recipe-not-found");
+                } else {
+                    item.setmRecipeURL(hits.getString("sourceUrl"));
+                    Log.d(TAG, "sourceUrl: " + hits.get("sourceUrl"));
+                }
+                // Rating
+                item.setItemRating(itemRating(hits.getDouble("spoonacularScore")));
+                Log.d(TAG, "rating: " + hits.getDouble("spoonacularScore"));
+                Log.d(TAG, "New Rating: " + itemRating(hits.getDouble("spoonacularScore")));
+                // Unique ID
+                item.setItemId(hits.getInt("id"));
+                Log.d(TAG, "id: " + hits.get("id"));
+
+                // checks if item in contained in db liked items to set as liked
+                if (itemIds.contains(item.getItemId())) {
+                    item.setLiked(true);
+                }
+
+                Log.d(TAG, "RecipeName: " + item.getmRecipeName());
+                Log.d(TAG, "sourceName: " + item.getmSourceName());
+
+                // remove items with null source
+                if (!item.getmSourceName().equalsIgnoreCase("null")) {
+                    recipeItemArrayList.add(item);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // initial api call to spoonacular checking for a recipe query ------------------------------------------------------------------------------------------------
+    private void callToApiRecipes() {
+
+        searchingRecipes = true;
+        searchingIngredients = false;
+        // not loading randoms with initial search
+        loadingRandoms = false;
 
         Retrofit retrofit = NetworkClient.getRetrofitClient();
         ApiService apiService = retrofit.create(ApiService.class);
@@ -363,11 +568,10 @@ public class SearchFragment extends Fragment {
         fromIngr = 0;
         toIngr = 10;
 
-        // testing
-        //Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
-        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(), true, true, fromIngr ,toIngr);
+        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(),true, false, fromIngr ,toIngr);
 
-        queryString = getIngredientsSearch();
+        Log.d(TAG, getIngredientsSearch());
+        queryString = mSearchView.getQuery().toString();
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
@@ -377,9 +581,7 @@ public class SearchFragment extends Fragment {
                     if (response.body() != null) {
                         String result = response.body();
 
-                        //recipeItemArrayList.clear();
-
-                        writeRecyclerAsync(result);
+                        writeRecyclerRecipeAsync(result);
                     } else {
                         Log.i("onEmptyResponse", "Returned Empty Response");
                         Log.d(TAG, "something went wrong. Call: " + response.errorBody());
@@ -404,168 +606,256 @@ public class SearchFragment extends Fragment {
         });
     }
 
-    private void getIngredients() {
-        if (!con.connectedToInternet()) {
-            changeBGImage(2);
-        } else {
-            if (logged) {
-                itemsFromDB();
-            }
-            recipeItemArrayList.clear();
-            mSearchRecyclerView.removeAllViews();
-            if (adapter != null) {
-                adapter.notifyDataSetChanged();
-            }
-            // Updates Endless Scroll Listener
-            scrollListener.resetState();
-            startup_message.setVisibility(View.GONE);
-            matchMessage.setVisibility(View.GONE);
-            mSearch_mainBG.setVisibility(View.GONE);
-            shimmer.setVisibility(View.VISIBLE);
-            shimmer.startShimmer();
+    // initial api call to spoonacular checking for an ingredients query ------------------------------------------------------------------------------------------------
+    private void callToApiIngr() {
 
-        }
-    }
+        searchingRecipes = false;
+        searchingIngredients = true;
+        // not loading randoms with initial search
+        loadingRandoms = false;
 
-// --Commented out by Inspection START (11/10/2020 10:33 AM):
-//    private String randomItemId(RecipeItem item) {
-//        return item.getmRecipeURL().replace("/", "");
-//    }
-// --Commented out by Inspection STOP (11/10/2020 10:33 AM)
+        Retrofit retrofit = NetworkClient.getRetrofitClient();
+        ApiService apiService = retrofit.create(ApiService.class);
 
-    private void writeRecyclerAsync(String response) {
-        new Thread(() -> {
-            writeRecycler(response);
-            try {
-                if (isAdded()) {
-                    getActivity().runOnUiThread(() -> {
-                        if (adapter == null) {
-                            adapter = new SearchAdapter(mContext, this, recipeItemArrayList, logged);
-                        }
+        fromIngr = 0;
+        toIngr = 10;
 
-                        mSearchRecyclerView.setAdapter(adapter);
-                        if (recipeItemArrayList.isEmpty()) {
-                            // sets BG Image to No Recipes Image
-                            changeBGImage(1);
-                        }
+        Call<String> call = apiService.getRecipeDataIngr(Constants.apiKey, getIngredientsSearch(), ingredientsComma(), true, false, fromIngr ,toIngr);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                Log.d(TAG, "response: " + response.code());
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "success: ");
+                    if (response.body() != null) {
+                        String result = response.body();
+
+                        writeRecyclerIngrAsync(result);
+                    } else {
+                        Log.i("onEmptyResponse", "Returned Empty Response");
+                        Log.d(TAG, "something went wrong. Call: " + response.errorBody());
                         shimmer.stopShimmer();
                         shimmer.setVisibility(View.GONE);
-                    });
+                        changeBGImage(0);
+                        toastMessage("Something went wrong. Please try again");
+                    }
+                } else {
+                    Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                    shimmer.stopShimmer();
+                    shimmer.setVisibility(View.GONE);
+                    changeBGImage(0);
+                    toastMessage("Something went wrong. Please try again");
                 }
-            } catch (final Exception e) {
-                Log.i(TAG, "Exception in Thread");
             }
-        }).start();
+
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull Throwable t) {
+                Log.d(TAG, "failure: " + "throwable: " + t.toString() + " call: " + call.toString());
+            }
+        });
     }
 
-    // testing
-//    private void writeRecycler(String response) {
-//        try {
-//            JSONObject hits, recipes;
-//
-//            JSONObject obj = new JSONObject(response);
-//            JSONArray dataArray = obj.getJSONArray("hits");
-//
-//            for (int i = 0; i < dataArray.length(); i++) {
-//
-//                RecipeItem item = new RecipeItem();
-//                hits = dataArray.getJSONObject(i);
-//                recipes = hits.getJSONObject("recipe");
-//
-//                // Image
-//                item.setmImageUrl(recipes.getString("image"));
-//                // Name
-//                item.setmRecipeName(recipes.getString("label"));
-//                // Source
-//                item.setmSourceName(recipes.getString("source"));
-//                // URL
-//                item.setmRecipeURL(recipes.getString("url"));
-//                // Rating
-//                item.setItemRating(randomItemRating());
-//                // Internal URL
-//                item.setItemUri(recipes.getString("uri"));
-//                // Unique ID
-//                item.setItemId(randomItemId(item));
-//
-//                // checks if item in contained in db liked items to set as liked
-//                if (itemIds.contains(item.getItemId())) {
-//                    item.setLiked(true);
-//                }
-//
-//                recipeItemArrayList.add(item);
-//            }
-//
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private void getMoreIngrAsync() {
+        new Thread(this::getMoreRecipesIngr).start();
+    }
 
-    private void writeRecycler(String response) {
-        try {
-            JSONObject hits;
+    private void getMoreRecipesIngr() {
 
-            JSONObject obj = new JSONObject(response);
-            JSONArray dataArray = obj.getJSONArray("results");
+        searchingRecipes = true;
+        searchingIngredients = false;
+        // not loading randoms when getting more recipes
+        loadingRandoms = false;
 
-            for (int i = 0; i < dataArray.length(); i++) {
+        fromIngr = toIngr + 1;
+        toIngr = fromIngr + 10;
+        Retrofit retrofit = NetworkClient.getRetrofitClient();
 
-                RecipeItem item = new RecipeItem();
-                hits = dataArray.getJSONObject(i);
+        ApiService apiService = retrofit.create(ApiService.class);
 
-                // Image
-                item.setmImageUrl(hits.getString("image"));
-                Log.d(TAG, "image: " + hits.get("image"));
-                // Name
-                //if (hits.getString("title").equals("null")) {
-                  //  item.setmRecipeName("Recipe Name Not Found");
-                //} else {
-                    item.setmRecipeName(hits.getString("title"));
-                  //  Log.d(TAG, "title: " + hits.get("title"));
-                //}
-                // Source
-                //if (hits.getString("sourceName").equals("null")) {
-                  //  item.setmSourceName("Source Name Not Found");
-                //} else {
-                    item.setmSourceName(hits.getString("sourceName"));
-                  //  Log.d(TAG, "sourceName: " + hits.get("sourceName"));
-                //}
-                // URL
-                if (hits.getString("sourceUrl").equals("null") || hits.getString("sourceUrl").isEmpty()) {
-                    item.setmRecipeURL("https://www.thescavengerapp.com");
-                } else {
-                    item.setmRecipeURL(hits.getString("sourceUrl"));
-                    Log.d(TAG, "sourceUrl: " + hits.get("sourceUrl"));
+        Call<String> call = apiService.getRecipeDataIngr(Constants.apiKey, getIngredientsSearch(), ingredientsComma(), true, false, fromIngr, toIngr);
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                if (response.isSuccessful()) {
+
+                    if (response.body() != null) {
+                        String result = response.body();
+                        writeRecycler(result);
+                    } else {
+                        Log.i("onEmptyResponse", "Returned Empty Response");
+                        Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                        shimmer.stopShimmer();
+                        shimmer.setVisibility(View.GONE);
+                        changeBGImage(0);
+                        toastMessage("Something went wrong. Please try again");
+                    }
                 }
-                // Rating
-                item.setItemRating(itemRating(hits.getDouble("spoonacularScore")));
-                Log.d(TAG, "rating: " + hits.getDouble("spoonacularScore"));
-                Log.d(TAG, "New Rating: " + itemRating(hits.getDouble("spoonacularScore")));
-                // Internal URL
-                //item.setItemUri(results.getString("uri"));
-                // Unique ID
-                item.setItemId(hits.getInt("id"));
-                Log.d(TAG, "id: " + hits.get("id"));
-
-                // checks if item in contained in db liked items to set as liked
-                if (itemIds.contains(item.getItemId())) {
-                    item.setLiked(true);
-                }
-
-                Log.d(TAG, "RecipeName: " + item.getmRecipeName());
-                Log.d(TAG, "sourceName: " + item.getmSourceName());
-
-                // remove items with null source/title
-                recipeItemArrayList.add(item);
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
+        });
+    }
+
+    // Load more Recipes - Recipe -----------------------------------------------------------------------------------------------------------------------
+    private void getMoreAsync() {
+        new Thread(this::getMoreRecipes).start();
+    }
+
+    private void getMoreRecipes() {
+
+        searchingRecipes = true;
+        searchingIngredients = false;
+        // not loading randoms when getting more recipes
+        loadingRandoms = false;
+
+        fromIngr = toIngr + 1;
+        toIngr = fromIngr + 10;
+        Retrofit retrofit = NetworkClient.getRetrofitClient();
+
+        ApiService apiService = retrofit.create(ApiService.class);
+
+        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(), true, false, fromIngr, toIngr);
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                if (response.isSuccessful()) {
+
+                    if (response.body() != null) {
+                        String result = response.body();
+                        writeRecycler(result);
+                    } else {
+                        Log.i("onEmptyResponse", "Returned Empty Response");
+                        Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                        shimmer.stopShimmer();
+                        shimmer.setVisibility(View.GONE);
+                        changeBGImage(0);
+                        toastMessage("Something went wrong. Please try again");
+                    }
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
+        });
+    }
+
+    // Get random recipes -----------------------------------------------------------------------------------------------
+    private void getRandomRecipes(int randomNumberInt) {
+
+        searchingRecipes = false;
+        searchingIngredients = false;
+        loadingRandoms = true;
+
+        // add new item to arraylist to let recyclerview adapter know to create text header in recycler
+        RecipeItem headerItem = new RecipeItem(RecipeItem.TYPE_HEADER);
+        recipeItemArrayList.add(headerItem);
+
+        // reach out to Spoonacular API to get randomNumberInt random recipes to add into recipeItemArrayList
+
+        Retrofit retrofit = NetworkClient.getRetrofitClient();
+        ApiService apiService = retrofit.create(ApiService.class);
+
+        Call<String> call = apiService.getRandomRecipeData(Constants.apiKey, randomNumberInt);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                Log.d(TAG, "random recipes response: " + response.code());
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "random recipes success: ");
+                    if (response.body() != null) {
+                        String result = response.body();
+
+                        writeRecyclerRandomAsync(result);
+
+                    } else {
+                        recipeItemArrayList.clear();
+                        adapter.notifyDataSetChanged();
+                        Log.i("onEmptyResponse", "Returned Empty Response");
+                        Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                        shimmer.stopShimmer();
+                        shimmer.setVisibility(View.GONE);
+                        changeBGImage(0);
+                        toastMessage("Something went wrong. Please try again");
+                    }
+                } else {
+                    recipeItemArrayList.clear();
+                    adapter.notifyDataSetChanged();
+                    Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                    shimmer.stopShimmer();
+                    shimmer.setVisibility(View.GONE);
+                    changeBGImage(0);
+                    toastMessage("Something went wrong. Please try again");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull Throwable t) {
+                Log.d(TAG, "failure: " + "throwable: " + t.toString() + " call: " + call.toString());
+            }
+        });
+    }
+
+    private void getMoreRandomAsync() {
+        new Thread(this::loadMoreRandomRecipes).start();
+    }
+
+    // Get more random recipes
+    // reach out to Spoonacular API to get 10 more random recipes to add into recipeItemArrayList
+    private void loadMoreRandomRecipes() {
+
+        searchingRecipes = false;
+        searchingIngredients = false;
+        loadingRandoms = true;
+
+        Retrofit retrofit = NetworkClient.getRetrofitClient();
+        ApiService apiService = retrofit.create(ApiService.class);
+
+        Call<String> call = apiService.getRandomRecipeData(Constants.apiKey, 10);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                Log.d(TAG, "random recipes response: " + response.code());
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "random recipes success: ");
+                    if (response.body() != null) {
+                        String result = response.body();
+
+                        writeRecyclerRandom(result);
+
+                        adapter.notifyDataSetChanged();
+                        shimmer.stopShimmer();
+                        shimmer.setVisibility(View.GONE);
+                    } else {
+                        recipeItemArrayList.clear();
+                        adapter.notifyDataSetChanged();
+                        Log.i("onEmptyResponse", "Returned Empty Response");
+                        Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                        shimmer.stopShimmer();
+                        shimmer.setVisibility(View.GONE);
+                        changeBGImage(0);
+                        toastMessage("Something went wrong. Please try again");
+                    }
+                } else {
+                    recipeItemArrayList.clear();
+                    adapter.notifyDataSetChanged();
+                    Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                    shimmer.stopShimmer();
+                    shimmer.setVisibility(View.GONE);
+                    changeBGImage(0);
+                    toastMessage("Something went wrong. Please try again");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull Throwable t) {
+                Log.d(TAG, "failure: " + "throwable: " + t.toString() + " call: " + call.toString());
+            }
+        });
     }
 
     private float itemRating(double rating) {
-        /*int min = 1;
-        int max = 5;
-        return new Random().nextInt((max - min) + 1) + min;*/
         float newRating = (float) rating / 20;
         if (newRating <= 0) {
             return (float) 0.1;
@@ -599,45 +889,11 @@ public class SearchFragment extends Fragment {
 
     //Gets the input from Searchview and returns it as string
     private String getIngredientsSearch() {
-        return mSearchView.getQuery().toString();
+        return mSearchView.getQuery().toString().replace("\u00F1", "n").replace("\u00E3", "a").replace("\u1EBD", "e");
     }
 
-    private void getMoreAsync() {
-        new Thread(this::getMoreRecipes).start();
-    }
-
-    private void getMoreRecipes() {
-
-        fromIngr = toIngr + 1;
-        toIngr = fromIngr + 10;
-        Retrofit retrofit = NetworkClient.getRetrofitClient();
-
-        ApiService apiService = retrofit.create(ApiService.class);
-
-        // testing
-//        Call<String> call = apiService.getRecipeData(getIngredientsSearch(), Constants.appId, Constants.appKey, checkNumIngredients(), fromIngr, toIngr);
-        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(), true,true, fromIngr, toIngr);
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
-                if (response.isSuccessful()) {
-
-                    if (response.body() != null) {
-                        String result = response.body();
-                        writeRecycler(result);
-                    } else {
-                        Log.i("onEmptyResponse", "Returned Empty Response");
-                        Log.d(TAG, "something went wrong. Call: " + response.errorBody());
-                        shimmer.stopShimmer();
-                        shimmer.setVisibility(View.GONE);
-                        changeBGImage(0);
-                        toastMessage("Something went wrong. Please try again");
-                    }
-                }
-            }
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
-        });
+    private String ingredientsComma() {
+        return mSearchView.getQuery().toString().replace(" ", ",").replace("\t", ",");
     }
 
     //method for creating a Toast

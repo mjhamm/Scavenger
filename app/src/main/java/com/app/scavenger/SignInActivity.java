@@ -1,6 +1,7 @@
 package com.app.scavenger;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -62,6 +63,7 @@ public class SignInActivity extends AppCompatActivity {
     private static final String TAG = "SIGN_IN_ACTIVITY: ";
 
     private MaterialButton signInButton;
+    private Context mContext;
     private EditText emailEdit, passEdit;
     private FrameLayout progressHolder;
     private TextView signInTerms, mResendVerificationButton;
@@ -88,7 +90,7 @@ public class SignInActivity extends AppCompatActivity {
         }
 
         if (sharedPreferences.getBoolean("verify", false)) {
-            Toast.makeText(this, "A verification has been sent to your email. Please verify your email in order to Sign In", Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext, "A verification has been sent to your email. Please verify your email in order to Sign In", Toast.LENGTH_LONG).show();
 
             if (mResendVerificationButton != null) {
                 mResendVerificationButton.setVisibility(View.VISIBLE);
@@ -130,6 +132,8 @@ public class SignInActivity extends AppCompatActivity {
         // Facebook Info
         MaterialButton mFacebookSignIn = findViewById(R.id.facebook_signIn);
         callbackManager = CallbackManager.Factory.create();
+
+        mContext = getApplicationContext();
 
         MaterialButton mAppleSignIn = findViewById(R.id.apple_signIn);
 
@@ -293,7 +297,7 @@ public class SignInActivity extends AppCompatActivity {
         if (user != null) {
             HashMap<String, Object> data = new HashMap<>();
             data.put("name", name);
-            data.put("email", email);
+            //data.put("email", email);
             db.collection(Constants.firebaseUser).document(user.getUid()).set(data);
         }
     }

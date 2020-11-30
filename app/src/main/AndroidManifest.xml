@@ -17,7 +17,8 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <!--<activity android:name=".DietPreferences" />-->
+        <activity android:name=".DietPreferences"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".CommentsActivity"
             android:screenOrientation="portrait" />

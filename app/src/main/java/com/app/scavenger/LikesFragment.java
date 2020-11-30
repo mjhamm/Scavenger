@@ -372,7 +372,7 @@ public class LikesFragment extends Fragment {
                         // go through each item in the snapshot from Firebase and set a new recipe item with the information
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                             // creates a new recipe item for each item in the snapshot
-                            RecipeItem item = new RecipeItem();
+                            RecipeItem item = new RecipeItem(RecipeItem.TYPE_ITEM);
                             itemId = documentSnapshot.getLong(Constants.ITEM_ID).intValue();
                             name = documentSnapshot.getString(Constants.ITEM_NAME);
                             source = documentSnapshot.getString(Constants.ITEM_SOURCE);

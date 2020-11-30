@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     //-----------------------------------------
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
-    private boolean match = false;
+    //private boolean match = false;
     private boolean refresh = false;
     //------------------------------------------
 
@@ -96,9 +96,9 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                 // checks the match ingredients option
                 // if it is on -
                 // alert the user
-                if (match) {
+                /*if (match) {
                     toastMessage("Match Ingredients is On");
-                }
+                }*/
                 // make the active fragment Search Fragment
                 active = fragment1;
                 return true;
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
-        match = sharedPreferences.getBoolean("match", false);
+        //match = sharedPreferences.getBoolean("match", false);
         refresh = sharedPreferences.getBoolean("refresh", false);
     }
 

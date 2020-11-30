@@ -1,14 +1,31 @@
 package com.app.scavenger;
 
+import androidx.annotation.IntDef;
+
 import com.google.firebase.firestore.Exclude;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
 class RecipeItem {
 
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({TYPE_HEADER, TYPE_ITEM})
+
+    public @interface ItemType {}
+
+    public static final int TYPE_HEADER = 0;
+    public static final int TYPE_ITEM = 1;
+
     //Empty Constructor
-    RecipeItem() {}
+    RecipeItem(@ItemType int itemType) {
+        this.itemType = itemType;
+    }
+
+    private final int itemType;
 
     // testing
     //private String itemId;
@@ -80,6 +97,8 @@ class RecipeItem {
     void setItemId(int itemId) {
         this.itemId = itemId;
     }
+
+    public int getItemType() { return itemType; }
 
     float getItemRating() {
         return itemRating;

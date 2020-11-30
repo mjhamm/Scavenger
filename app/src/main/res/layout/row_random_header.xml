@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/not_many_recipes_found"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sorry, we didn't find many recipes with that search criteria.\nWe've added some of our favorite's for you to check out!"
+        android:textSize="14sp"
+        android:fontFamily="@font/roboto_condensed_regular"
+        android:textColor="@android:color/black"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="6dp"/>
+
+    <TextView
+        android:id="@+id/randomHeaderText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Others You Might Like"
+        android:textSize="20sp"
+        android:fontFamily="@font/roboto_medium"
+        android:textColor="@android:color/black"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="6dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@android:color/black"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="6dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"/>
+
+</LinearLayout>

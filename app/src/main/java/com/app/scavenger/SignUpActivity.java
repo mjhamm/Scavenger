@@ -342,7 +342,7 @@ public class SignUpActivity extends AppCompatActivity {
         if (user != null) {
             HashMap<String, Object> data = new HashMap<>();
             data.put("name", name);
-            data.put("email", email);
+            //data.put("email", email);
             db.collection(Constants.firebaseUser).document(user.getUid()).set(data);
         }
     }

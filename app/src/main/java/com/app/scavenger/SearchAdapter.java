@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -47,6 +48,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     public static final String TAG = "SEARCH_ADAPTER";
     // --Commented out by Inspection (11/10/2020 10:34 AM):public static final int SEARCH_UPDATED = 104;
+
+    public static final int RANDOM_ITEMS_HEADER = 1;
+    public static final int RECIPE_ITEM = 0;
 
     // variables for constructor
     private final ArrayList<RecipeItem> mRecipeItems;
@@ -91,14 +95,67 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         // set up callback
         mUpdateQuery = (UpdateQuery) mContext;
 
-        View cardItemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_card_item, parent, false);
-        return new ItemViewHolder(cardItemLayoutView);
+        View view;
+        if (viewType == RANDOM_ITEMS_HEADER) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_random_header, parent, false);
+            return new RandomHeaderViewHolder(view);
+        } else {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_card_item, parent, false);
+            return new ItemViewHolder(view);
+        }
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        switch (holder.getItemViewType()) {
+            case RANDOM_ITEMS_HEADER:
+                RandomHeaderViewHolder viewHolder = (RandomHeaderViewHolder) holder;
+                viewHolder.itemView.setTag(position);
+                break;
+            case RECIPE_ITEM:
+                RecipeItem item = (RecipeItem) mRecipeItems.get(position);
+                ItemViewHolder viewHolder1 = (ItemViewHolder) holder;
+
+                // checks if the item at the list position is liked or not
+                // if it is liked
+                if (item.isLiked()) {
+                    // set the image to filled
+                    viewHolder1.like_button.setTag(position);
+                    viewHolder1.like_button.setImageResource(R.drawable.like_filled);
+                    // if item isn't liked
+                } else {
+                    // set the image to outline
+                    viewHolder1.like_button.setTag(position);
+                    viewHolder1.like_button.setImageResource(R.drawable.like_outline);
+                }
+
+                // if the item's image url isn't null
+                // use picasso to load the image into the imageview
+                if (item.getmImageUrl() != null) {
+                    Picasso.get()
+                            .load(item.getmImageUrl())
+                            .fit()
+                            .config(Bitmap.Config.RGB_565)
+                            .into(viewHolder1.recipeImage);
+                    // show nothing if the url is null
+                    // prevents crashes if the url is null
+                } else {
+                    viewHolder1.recipeImage.setImageDrawable(null);
+                }
+
+                // sets the info for each item
+                // name
+                viewHolder1.recipeName.setText(item.getmRecipeName());
+                // source
+                viewHolder1.recipeSource.setText(item.getmSourceName());
+                // rating
+                // testing
+                viewHolder1.mRatingBar.setRating(item.getItemRating());
+//        holder.mRatingBar.setNumStars(item.getItemRating());
+                break;
+        }
         // populate information for the Recipe Item
-        populateItemData((ItemViewHolder) holder, position);
+        //populateItemData(holder, position);
     }
 
     // Returns the total count of items in the list
@@ -111,8 +168,12 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     // has the chance to return multiple view types (ads)
     @Override
     public int getItemViewType(int position) {
-        // Recipe Item View Type
-        return 0;
+        // header view type
+        if (mRecipeItems.get(position).getItemType() == RecipeItem.TYPE_HEADER) {
+            return RANDOM_ITEMS_HEADER;
+        } else {
+            return RECIPE_ITEM;
+        }
     }
 
     // returns the hashcode of the item
@@ -131,8 +192,14 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
      */
 
     // Code for adding Recipe Items inside of the Search Recyclerview
-    private void populateItemData(ItemViewHolder holder, int position) {
+    /*private void populateItemData(@NonNull RecyclerView.ViewHolder holder, int position) {
         // gets the item at the list's position
+
+        if (getItemViewType(position) == RANDOM_ITEMS_HEADER) {
+            ((RandomHeaderItem) holder).setHeaderText("");
+        } else {
+
+        }
         RecipeItem item = mRecipeItems.get(position);
 
         // checks if the item at the list position is liked or not
@@ -171,7 +238,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         // testing
         holder.mRatingBar.setRating(item.getItemRating());
 //        holder.mRatingBar.setNumStars(item.getItemRating());
-    }
+    }*/
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
@@ -285,15 +352,15 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     public void updateItem(int position, boolean liked) {
-        mRecipeItems.get(position).setLiked(liked);
+        ((RecipeItem) mRecipeItems.get(position)).setLiked(liked);
         notifyItemChanged(position);
     }
 
     public void updateItemByItemId(int itemId, boolean liked) {
-        for (RecipeItem item : mRecipeItems) {
+        for (Object item : mRecipeItems) {
             // testing
-            if (item.getItemId() == itemId) {
-                item.setLiked(liked);
+            if (((RecipeItem) item).getItemId() == itemId) {
+                ((RecipeItem) item).setLiked(liked);
             }
         }
         notifyDataSetChanged();
@@ -303,6 +370,23 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     VIEW HOLDERS
     ________________________________________________________________________________________________
     */
+
+    // RANDOM ITEM HEADER HOLDER
+    public class RandomHeaderViewHolder extends RecyclerView.ViewHolder {
+
+        public RandomHeaderViewHolder(@NonNull View itemView) {
+            super(itemView);
+            // views inside randomHeaderItem
+            TextView headerText = itemView.findViewById(R.id.randomHeaderText);
+            TextView notManyItemsText = itemView.findViewById(R.id.not_many_recipes_found);
+
+            if (mRecipeItems.size() <= 5 && mRecipeItems.size() > 0) {
+                notManyItemsText.setText("Sorry, we didn't find many recipes with that search criteria.\nWe've added some of our favorite's for you to check out!");
+            } else {
+                notManyItemsText.setText("Sorry, we didn't find any recipes with that search criteria.\nWe've added some of our favorite's for you to check out!");
+            }
+        }
+    }
 
     // ITEM VIEW HOLDER
     public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -345,13 +429,13 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 } else {
                     Intent intent = new Intent(mContext, RecipeItemScreen.class);
                     intent.putExtra("activity_id", "search");
-                    intent.putExtra("recipe_name", mRecipeItems.get(getAdapterPosition()).getmRecipeName());
-                    intent.putExtra("recipe_source", mRecipeItems.get(getAdapterPosition()).getmSourceName());
-                    intent.putExtra("recipe_liked", mRecipeItems.get(getAdapterPosition()).isLiked());
-                    intent.putExtra("recipe_id", mRecipeItems.get(getAdapterPosition()).getItemId());
-                    intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
-                    intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
-                    intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
+                    intent.putExtra("recipe_name", ((RecipeItem)mRecipeItems.get(getAdapterPosition())).getmRecipeName());
+                    intent.putExtra("recipe_source", ((RecipeItem)mRecipeItems.get(getAdapterPosition())).getmSourceName());
+                    intent.putExtra("recipe_liked", ((RecipeItem)mRecipeItems.get(getAdapterPosition())).isLiked());
+                    intent.putExtra("recipe_id", ((RecipeItem)mRecipeItems.get(getAdapterPosition())).getItemId());
+                    intent.putExtra("recipe_image", ((RecipeItem)mRecipeItems.get(getAdapterPosition())).getmImageUrl());
+                    intent.putExtra("recipe_rating", ((RecipeItem)mRecipeItems.get(getAdapterPosition())).getItemRating());
+                    intent.putExtra("recipe_url", ((RecipeItem)mRecipeItems.get(getAdapterPosition())).getmRecipeURL());
                     //intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
                     intent.putExtra("position", getAdapterPosition());
                     // DEPRECATED
@@ -379,7 +463,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                             .show();
                 } else {
                     getInfoFromSharedPrefs();
-                    item = mRecipeItems.get(getAdapterPosition());
+                    item = (RecipeItem)mRecipeItems.get(getAdapterPosition());
                     v.getTag();
                     if (SystemClock.elapsedRealtime() - mLastClickTime < 1500) {
                         return;
@@ -422,7 +506,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             more_button.setOnClickListener(v -> {
 
-                item = mRecipeItems.get(getAdapterPosition());
+                item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
 
                 PopupMenu popupMenu = new PopupMenu(mContext, more_button);
                 popupMenu.setOnMenuItemClickListener(item -> {
@@ -561,17 +645,17 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
 
         private String retrieveRecipeUrl() {
-            item = mRecipeItems.get(getAdapterPosition());
+            item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
             return item.getmRecipeURL();
         }
 
         private String retrieveRecipeSource() {
-            item = mRecipeItems.get(getAdapterPosition());
+            item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
             return item.getmSourceName();
         }
 
         private String retrieveRecipeName() {
-            item = mRecipeItems.get(getAdapterPosition());
+            item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
             return item.getmRecipeName();
         }
     }

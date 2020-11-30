@@ -73,7 +73,7 @@
     <string name="search_menu_share">Share Recipe</string>
     <string name="search_menu_report">Report…</string>
     <string name="retry_connection">Retry Connection</string>
-    <string name="match_ingredients_on_search">This can occur if Match Ingredients is On</string>
+    <!--<string name="match_ingredients_on_search">This can occur if Match Ingredients is On</string>-->
     <string name="terms_and_conditions">Terms &amp; Conditions</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="help_center">Help Center</string>
