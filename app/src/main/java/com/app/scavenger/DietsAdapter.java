@@ -1,8 +1,6 @@
 package com.app.scavenger;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,12 +9,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 public class DietsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -27,9 +21,6 @@ public class DietsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private final List<Object> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
-
-    // Database
-    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     // data is passed into the constructor
     DietsAdapter(Context context, List<Object> data) {
@@ -61,9 +52,9 @@ public class DietsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 viewHolder.itemView.setTag(position);
 
                 if (item.isChecked()) {
-                    viewHolder.dietCheckImage.setVisibility(View.VISIBLE);
+                    viewHolder.dietText.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_check_24,0,0,0);
                 } else {
-                    viewHolder.dietCheckImage.setVisibility(View.INVISIBLE);
+                    viewHolder.dietText.setCompoundDrawablesWithIntrinsicBounds(0,0,0,0);
                 }
 
                 viewHolder.dietText.setText(item.getItemName());
@@ -116,12 +107,10 @@ public class DietsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     // stores and recycles views as they are scrolled off screen
     public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         final TextView dietText;
-        final ImageView dietCheckImage;
 
         ItemViewHolder(View itemView) {
             super(itemView);
             dietText = itemView.findViewById(R.id.dietText);
-            dietCheckImage = itemView.findViewById(R.id.dietCheckImage);
             itemView.setOnClickListener(this);
 
             dietText.setOnClickListener(v -> {
@@ -129,10 +118,10 @@ public class DietsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
                 if (item.isChecked()) {
                     item.setChecked(false);
-                    dietCheckImage.setVisibility(View.INVISIBLE);
+                    dietText.setCompoundDrawablesWithIntrinsicBounds(0,0,0,0);
                 } else {
                     item.setChecked(true);
-                    dietCheckImage.setVisibility(View.VISIBLE);
+                    dietText.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_check_24,0,0,0);
                 }
             });
         }

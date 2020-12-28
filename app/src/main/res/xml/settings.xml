@@ -33,23 +33,23 @@
             app:iconSpaceReserved="false"/>
     </PreferenceCategory>
 
-    <PreferenceCategory
+    <!--<PreferenceCategory
         android:title="Accessibility"
         app:iconSpaceReserved="false">
 
-        <!--<SwitchPreference
+        <SwitchPreference
             android:key="match"
             android:defaultValue="false"
             android:title="Match Number of Ingredients"
             android:summary="Find recipes with only the number of ingredients you search with or less"
-            app:iconSpaceReserved="false"/>-->
+            app:iconSpaceReserved="false"/>
 
         <Preference
             android:key="diets"
             android:title="Dietary Preferences"
             app:iconSpaceReserved="false"/>
 
-    </PreferenceCategory>
+    </PreferenceCategory>-->
 
     <PreferenceCategory
         android:title="Help"

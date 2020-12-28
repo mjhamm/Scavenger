@@ -1,5 +1,6 @@
 package com.app.scavenger;
 
+import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
@@ -82,7 +85,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
                 PopupMenu popupMenu = new PopupMenu(mContext, mMoreButton);
                 popupMenu.setOnMenuItemClickListener(item -> {
                     if (item.getItemId() == R.id.comment_report) {
-                        reportComment(commentItem.getName(), commentItem.getDetail());
+                        reportComment(commentItem.getUserId(), commentItem.getName(), commentItem.getDetail());
                         return true;
                     }
                     return false;
@@ -93,7 +96,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
             });
         }
 
-        private void reportComment(String name, String detail) {
+        private void reportComment(String userId, String name, String detail) {
             reportReason = "Spam";
             final CharSequence[] listItems = {"Spam","Inappropriate"};
             new MaterialAlertDialogBuilder(mContext)
@@ -117,7 +120,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
                                     .create()
                                     .show();
                         } else {
-                            sendCommentReport(recipeId, name, detail, recipeName, recipeSource);
+                            sendCommentReport(userId, recipeId, name, detail, recipeName, recipeSource);
                         }
                     })
                     .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
@@ -126,14 +129,13 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         }
 
         // Send report to Server under reports with Phone information
-        private void sendCommentReport(int recipeId, String name, String detail, String recipeName, String recipeSource) {
-            String userId;
+        private void sendCommentReport(String commentersId, int recipeId, String name, String detail, String recipeName, String recipeSource) {
+            String reportersId;
 
             if (mAuth.getCurrentUser() != null) {
-                userId = mAuth.getCurrentUser().getUid();
+                reportersId = mAuth.getCurrentUser().getUid();
             } else {
-                userId = "Not Signed In";
-                name = "N/A";
+                reportersId = "Not Signed In";
             }
 
             // Date information
@@ -150,13 +152,15 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
             CollectionReference reportingReference = db.collection(Constants.firebaseCommentReports).document(String.valueOf(recipeId)).collection(Constants.firebaseReports);
 
-            reportCommentInfo.put("Report", reportReason);
             reportCommentInfo.put("Timestamp", timestamp);
-            reportCommentInfo.put("User Id", userId);
+            reportCommentInfo.put("Recipe Id", recipeId);
             reportCommentInfo.put("Recipe Name", recipeName);
             reportCommentInfo.put("Recipe Source", recipeSource);
-            reportCommentInfo.put("name",name);
-            reportCommentInfo.put("detail", detail);
+            reportCommentInfo.put("Report", reportReason);
+            reportCommentInfo.put("Commenter's User Id", commentersId);
+            reportCommentInfo.put("Commenter's Name",name);
+            reportCommentInfo.put("Comment Text", detail);
+            reportCommentInfo.put("Reporter's User Id", reportersId);
 
             reportingReference.document().set(reportCommentInfo)
                     .addOnSuccessListener(aVoid -> {
@@ -169,5 +173,4 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
                     });
         }
     }
-
 }

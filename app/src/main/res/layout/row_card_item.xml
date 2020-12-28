@@ -48,6 +48,7 @@
                 android:isIndicator="true"
                 android:layout_above="@id/recipe_name"
                 android:scaleX=".6"
+                android:stepSize=".1"
                 android:rating="5"
                 android:scaleY=".6"
                 android:layout_marginTop="8dp"

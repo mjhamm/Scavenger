@@ -77,6 +77,7 @@
     <string name="terms_and_conditions">Terms &amp; Conditions</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="help_center">Help Center</string>
+    <string name="scavenger_base_url">Visit Our Website</string>
 
     <!-- Open Source Library String Information -->
     <string name="open_source_libraries">Open Source Libraries</string>

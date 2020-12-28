@@ -148,8 +148,10 @@ public class GroceryListActivity extends AppCompatActivity {
                 Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
                 try {
                     GoogleSignInAccount account = task.getResult(ApiException.class);
-                    Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
-                    firebaseAuthWithGoogle(account.getIdToken());
+                    if (account != null) {
+                        Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
+                        firebaseAuthWithGoogle(account.getIdToken());
+                    }
                 } catch (ApiException e) {
                     Log.d(TAG, "Google sign in failed", e);
                     progressHolder.setVisibility(View.GONE);

@@ -1,5 +1,6 @@
 package com.app.scavenger;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
@@ -20,11 +21,15 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -109,7 +114,13 @@ public class CommentsActivity extends AppCompatActivity {
 
         if (mAuth.getCurrentUser() != null) {
             userId = mAuth.getCurrentUser().getUid();
-            userName = mAuth.getCurrentUser().getDisplayName();
+
+            retrieveNameFromFB(userId);
+            /*if (mAuth.getCurrentUser().getDisplayName().isEmpty() || mAuth.getCurrentUser().getDisplayName() == null) {
+                userName = "Anonymous";
+            } else {
+                userName = mAuth.getCurrentUser().getDisplayName();
+            }*/
         }
 
         if (!logged) {
@@ -168,7 +179,7 @@ public class CommentsActivity extends AppCompatActivity {
 
             if (!mCommentEditText.getText().toString().isEmpty()) {
                 if (con.connectedToInternet()) {
-                    postComment(userName, mCommentEditText.getText().toString());
+                    postComment(userId, userName, mCommentEditText.getText().toString());
                 } else {
                     new MaterialAlertDialogBuilder(this)
                             .setTitle(Constants.noInternetTitle)
@@ -182,7 +193,7 @@ public class CommentsActivity extends AppCompatActivity {
         });
     }
 
-    private void postComment(String name, String detail) {
+    private void postComment(String userId, String name, String detail) {
 
         // clear comment edittext
         mCommentEditText.setText("");
@@ -190,6 +201,7 @@ public class CommentsActivity extends AppCompatActivity {
         // add comment to comment adapter
 
         CommentItem commentItem = new CommentItem();
+        commentItem.setUserId(userId);
         commentItem.setName(name);
         commentItem.setDetail(detail);
 
@@ -200,12 +212,12 @@ public class CommentsActivity extends AppCompatActivity {
         mCommentsRecyclerView.setLayoutManager(mLayoutManager);
         mCommentsRecyclerView.setAdapter(commentsAdapter);
         // send comment to Firebase along with user's name to display
-        sendCommentToFB(recipeId, userId, commentItem);
+        sendCommentToFB(recipeId, commentItem);
         // send refresh to detail view to show comment under comments
 
     }
 
-    private void sendCommentToFB(int recipeId, String userId, CommentItem commentItem) {
+    private void sendCommentToFB(int recipeId, CommentItem commentItem) {
         // Send comment data to FB
 
         Calendar calendar = Calendar.getInstance();
@@ -224,10 +236,10 @@ public class CommentsActivity extends AppCompatActivity {
 
         CollectionReference commentReference = db.collection(Constants.firebaseComments).document(String.valueOf(recipeId)).collection("comments");
 
-        commentInfo.put("Timestamp", timestamp);
-        commentInfo.put("User ID", userId);
-        commentInfo.put("name", commentItem.getName());
-        commentInfo.put("detail", commentItem.getDetail());
+        commentInfo.put(Constants.firebaseTime, timestamp);
+        commentInfo.put(Constants.COMMENT_USERID, commentItem.getUserId());
+        commentInfo.put(Constants.COMMENT_NAME, commentItem.getName());
+        commentInfo.put(Constants.COMMENT_DETAIL, commentItem.getDetail());
 
         commentReference.document().set(commentInfo)
                 .addOnSuccessListener(aVoid -> Log.d("CommentsActivity","Comment saved to Firebase"))
@@ -236,6 +248,28 @@ public class CommentsActivity extends AppCompatActivity {
                     Log.d("CommentsActivity", e.toString());
                 });
 
+    }
+
+    private void retrieveNameFromFB(String userId) {
+
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // reference to the user
+        DocumentReference userRef = db.collection(Constants.firebaseUser).document(userId);
+
+        userRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document != null) {
+                    userName = document.getString("name");
+                } else {
+                    userName = "Anonymous";
+                }
+
+            } else {
+                Log.d("CommentsActivity", "get failed with ", task.getException());
+            }
+        });
     }
 
     private void retrieveCommentsFromFB(int recipeId) {
@@ -249,7 +283,7 @@ public class CommentsActivity extends AppCompatActivity {
         commentsRef.orderBy(Constants.firebaseTime, Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
 
-                    String name, detail;
+                    String name, detail, userId;
 
                     // if the number of likes the user has is 0
                     // set adapter for recycler to null
@@ -263,9 +297,12 @@ public class CommentsActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
 
                             CommentItem commentItem = new CommentItem();
-                            name = documentSnapshot.getString(Constants.COMMENT_ITEM);
+
+                            userId = documentSnapshot.getString(Constants.COMMENT_USERID);
+                            name = documentSnapshot.getString(Constants.COMMENT_NAME);
                             detail = documentSnapshot.getString(Constants.COMMENT_DETAIL);
 
+                            commentItem.setUserId(userId);
                             commentItem.setName(name);
                             commentItem.setDetail(detail);
 
@@ -288,6 +325,7 @@ public class CommentsActivity extends AppCompatActivity {
 
     @Override
     public void finish() {
+
 
         // Send a result back to the recipeitemscreen to let it know to recheck the comments
         Intent returnIntent = new Intent();

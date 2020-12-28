@@ -22,6 +22,7 @@ public class Constants {
     public static final String scavengerTermsURL = "https://www.thescavengerapp.com/terms-and-conditions";
     public static final String scavengerPrivacyURL = "https://www.thescavengerapp.com/privacy-policy";
     public static final String scavengerHelpURL = "https://www.thescavengerapp.com/help";
+    public static final String scavengerBaseURL = "https://www.thescavengerapp.com/";
 
     // Internet Error Messages
     public static final String noInternetTitle = "No Internet connection found";
@@ -51,15 +52,7 @@ public class Constants {
     public static final String ITEM_SOURCE = "source";
     public static final String ITEM_IMAGE = "image";
     public static final String ITEM_URL = "url";
-    public static final String COMMENT_ITEM = "name";
-    public static final String COMMENT_DETAIL = "detail";
-//    public static final String ITEM_INTERNAL_URL = "internalUrl";
-//    public static final String ITEM_YIELD = "servings";
-//    public static final String ITEM_CAL = "calories";
-//    public static final String ITEM_CARB = "carbs";
-//    public static final String ITEM_FAT = "fat";
-//    public static final String ITEM_PROTEIN = "protein";
-//    public static final String ITEM_ATT = "attributes";
-//    public static final String ITEM_INGR = "ingredients";
-//    public static final String ITEM_RATING = "rating";
+    public static final String COMMENT_NAME = "Commenter's Name";
+    public static final String COMMENT_DETAIL = "Comment Text";
+    public static final String COMMENT_USERID = "User Id";
 }

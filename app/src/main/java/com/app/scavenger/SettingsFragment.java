@@ -43,7 +43,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         mContext = getContext();
         signIn = findPreference("signIn");
         signOut = findPreference("signOut");
-        diets = findPreference("diets");
+        //diets = findPreference("diets");
         //groceryList = findPreference("groceryList");
         help = findPreference("help");
         about = findPreference("about");
@@ -108,10 +108,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             return false;
         });
 
-        diets.setOnPreferenceClickListener(v -> {
+        /*diets.setOnPreferenceClickListener(v -> {
             openDiets();
             return false;
-        });
+        });*/
 
         /*groceryList.setOnPreferenceClickListener(v -> {
             openGroceryList();
@@ -146,9 +146,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         startActivity(new Intent(mContext, SignInActivity.class));
     }
 
-    private void openDiets() {
-        startActivity(new Intent(mContext, DietPreferences.class));
-    }
+    //private void openDiets() { startActivity(new Intent(mContext, DietPreferences.class)); }
 
     //private void openGroceryList() { startActivity(new Intent(mContext, GroceryListActivity.class)); }
 

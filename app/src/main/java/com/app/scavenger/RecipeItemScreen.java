@@ -244,17 +244,14 @@ public class RecipeItemScreen extends AppCompatActivity {
 
             if (con.connectedToInternet()) {
 
-                String activityId = getIntent().getExtras().getString("activity_id");
+                callToApi();
+                /*String activityId = getIntent().getExtras().getString("activity_id");
                 if (activityId != null) {
                     //internalUrl = getIntent().getExtras().getString("recipe_uri");
-                    if (activityId.equals("search")) {
-                        callToApi();
-                    } else {
-                        getRecipeInfoFB();
-                    }
+                    callToApi();
                 } else {
                     callToApi();
-                }
+                }*/
 
                 mLayoutManager = new LinearLayoutManager(this);
                 DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, mLayoutManager.getOrientation());
@@ -515,7 +512,7 @@ public class RecipeItemScreen extends AppCompatActivity {
         commentsRef.orderBy(Constants.firebaseTime, com.google.firebase.firestore.Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
 
-                    String name, detail;
+                    String userId, name, detail;
 
                     // if the number of likes the user has is 0
                     // set adapter for recycler to null
@@ -529,9 +526,11 @@ public class RecipeItemScreen extends AppCompatActivity {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
 
                             CommentItem commentItem = new CommentItem();
-                            name = documentSnapshot.getString(Constants.COMMENT_ITEM);
+                            userId = documentSnapshot.getString(Constants.COMMENT_USERID);
+                            name = documentSnapshot.getString(Constants.COMMENT_NAME);
                             detail = documentSnapshot.getString(Constants.COMMENT_DETAIL);
 
+                            commentItem.setUserId(userId);
                             commentItem.setName(name);
                             commentItem.setDetail(detail);
 
@@ -592,7 +591,8 @@ public class RecipeItemScreen extends AppCompatActivity {
     // Retrieves the user's likes from Firebase using their userId
     private void retrieveLikesFromFirebase(int itemId) {
 
-        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        callToApi();
+        /*final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // reference to the users likes
         DocumentReference likeRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes).document(String.valueOf(itemId));
@@ -601,7 +601,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     //internalUrl = queryDocumentSnapshots.getString(Constants.ITEM_INTERNAL_URL);
                     callToApi();
-                });
+                });*/
     }
 
     // saves an item to Firebase
@@ -829,100 +829,6 @@ public class RecipeItemScreen extends AppCompatActivity {
         }
     }
 
-    /*private void getRecipeData(String response) {
-        try {
-            JSONObject ing, totalNutrients, carbs, fat, protein;
-            JSONArray dietLabelsArray, healthLabelsArray, ingredientsArray;
-            ArrayList<String> list_healthLabels, list_ingredients;
-            String labels, total_ing;
-
-            JSONArray hit = new JSONArray(response);
-
-            for (int i = 0; i < hit.length(); i++) {
-                JSONObject obj = hit.getJSONObject(i);
-
-                servingsInt = obj.getInt("yield");
-
-                Log.d("RECIPEITEMSCREEN", "Servings: " + servingsInt);
-
-                servingsText = String.valueOf(servingsInt);
-
-                //Ingredients
-                ingredientsArray = obj.getJSONArray("ingredients");
-                list_ingredients = new ArrayList<>();
-
-                for (int m = 0; m < ingredientsArray.length(); m++) {
-                    ing = ingredientsArray.getJSONObject(m);
-                    total_ing = ing.getString("text");
-
-                    // UPDATE - 1.0.1
-                    // Replaces huge spaces in between ingredients
-                    total_ing = total_ing.replace("\n", "");
-
-                    // Gets rid of duplicate ingredients in recipe
-                    if (!list_ingredients.contains("\n\u2022 " + total_ing + "\n")) {
-                        list_ingredients.add("\n\u2022 " + total_ing + "\n");
-                    }
-                    ingredients = list_ingredients;
-
-                }
-
-                caloriesInt = obj.getInt("calories");
-
-                dietLabelsArray = obj.getJSONArray("dietLabels");
-                list_healthLabels = new ArrayList<>();
-                for (int j = 0; j < dietLabelsArray.length(); j++) {
-                    String diets = dietLabelsArray.getString(j);
-                    list_healthLabels.add("\n\u2022 " + diets + "\n");
-                }
-
-                healthLabelsArray = obj.getJSONArray("healthLabels");
-                for (int k = 0; k < healthLabelsArray.length(); k++) {
-                    if (healthLabelsArray.length() <= 3) {
-                        labels = healthLabelsArray.getString(k);
-                        list_healthLabels.add("\n\u2022 " + labels + "\n");
-                    }
-                }
-
-                attributes = list_healthLabels;
-
-                totalNutrients = obj.getJSONObject("totalNutrients");
-                //Carbs
-                carbs = totalNutrients.getJSONObject("CHOCDF");
-                if (carbs.getInt("quantity") >= 0 && carbs.getInt("quantity") < 1) {
-                    carbsInt = 1;
-                } else {
-                    carbsInt = carbs.getInt("quantity");
-                }
-
-                //Fat
-                fat = totalNutrients.getJSONObject("FAT");
-                if (fat.getInt("quantity") >= 0 && fat.getInt("quantity") < 1) {
-                    fatInt = 1;
-                } else {
-                    fatInt = fat.getInt("quantity");
-                }
-
-                //Protein
-                protein = totalNutrients.getJSONObject("PROCNT");
-                if (protein.getInt("quantity") >= 0 && protein.getInt("quantity") < 1) {
-                    proteinInt = 1;
-                } else {
-                    proteinInt = protein.getInt("quantity");
-                }
-
-                caloriesText = String.valueOf(caloriesInt);
-                carbsText = carbsInt + "g";
-                fatText = fatInt + "g";
-                proteinText = proteinInt + "g";
-
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }*/
-
     private void copyRecipe() {
         ClipboardManager clipboardManager = (ClipboardManager) this.getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clipData = ClipData.newPlainText("Copy URL", url);
@@ -1035,6 +941,13 @@ public class RecipeItemScreen extends AppCompatActivity {
     public void onBackPressed() {
         ratingBar.setVisibility(View.GONE);
         super.onBackPressed();
+    }
+
+    @Override
+    protected void onDestroy() {
+        instructionsAdapter = null;
+        commentsAdapter = null;
+        super.onDestroy();
     }
 
     @Override

@@ -20,19 +20,16 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
     private boolean loading = true;
     // Sets the starting page index
     private static final int startingPageIndex = 0;
-    // false if random recipes have never been called to be looked up
-    private boolean loadingRandoms = false;
 
     private final ProgressBar mProgressBar;
     private final ConnectionDetector con;
     
     final RecyclerView.LayoutManager mLayoutManager;
 
-    public EndlessRecyclerViewScrollListener(LinearLayoutManager layoutManager, ProgressBar progressBar, ConnectionDetector con, boolean loadingRandoms) {
+    public EndlessRecyclerViewScrollListener(LinearLayoutManager layoutManager, ProgressBar progressBar, ConnectionDetector con) {
         this.mLayoutManager = layoutManager;
         this.mProgressBar = progressBar;
         this.con = con;
-        this.loadingRandoms = loadingRandoms;
     }
 
     public int getLastVisibleItem(int[] lastVisibleItemPositions) {
@@ -55,7 +52,6 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
     public void onScrolled(@NonNull RecyclerView view, int dx, int dy) {
         int lastVisibleItemPosition = 0;
         int totalItemCount = mLayoutManager.getItemCount();
-        boolean loadingRandom = loadingRandoms;
 
         if (con.connectedToInternet()) {
             if (mLayoutManager instanceof StaggeredGridLayoutManager) {
@@ -94,7 +90,7 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
             // The minimum amount of items to have below your current scroll position
             // before loading more.
             int visibleThreshold = 4;
-            if (!loading && (lastVisibleItemPosition + visibleThreshold) > totalItemCount && totalItemCount >= 9 && !loadingRandom/* && currentPage < 5*/) {
+            if (!loading && (lastVisibleItemPosition + visibleThreshold) > totalItemCount && totalItemCount >= 9/* && currentPage < 5*/) {
                 currentPage++;
                 mProgressBar.setVisibility(View.VISIBLE);
                 onLoadMore(currentPage, totalItemCount, view);

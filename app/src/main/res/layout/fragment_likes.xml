@@ -19,6 +19,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:queryHint="Search Likes"
+        android:inputType="text"
         android:elevation="12dp"
         android:translationZ="12dp"
         app:iconifiedByDefault="false"

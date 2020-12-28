@@ -170,7 +170,7 @@ public class SearchFragment extends Fragment {
         //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         mSearchView.setMaxWidth(Integer.MAX_VALUE);
 
-        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar, con, loadingRandoms) {
+        scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager, mProgressBar, con) {
 
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -189,6 +189,10 @@ public class SearchFragment extends Fragment {
                         getMoreIngrAsync();
                     } else if (recipeItemArrayList.size() >= 9 && !searchingRecipes && !searchingIngredients && loadingRandoms) {
                         getMoreRandomAsync();
+                    } else {
+                        searchingRecipes = false;
+                        searchingIngredients = false;
+                        loadingRandoms = false;
                     }
                 }
             }

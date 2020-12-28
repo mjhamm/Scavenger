@@ -2,7 +2,7 @@ package com.app.scavenger;
 
 public class CommentItem {
 
-    private String name, detail;
+    private String name, detail, userId;
 
     CommentItem() {}
 
@@ -20,5 +20,13 @@ public class CommentItem {
 
     public void setDetail(String detail) {
         this.detail = detail;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

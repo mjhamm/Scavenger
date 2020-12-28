@@ -24,8 +24,10 @@ class ConnectionDetector {
             for (Network mNetwork : networks) {
                 networkInfo = connectivity.getNetworkInfo(mNetwork);
                 // If connected to Internet through Network or Wifi - return true
-                if (networkInfo.getState().equals(NetworkInfo.State.CONNECTED)) {
-                    return true;
+                if (networkInfo != null) {
+                    if (networkInfo.getState().equals(NetworkInfo.State.CONNECTED)) {
+                        return true;
+                    }
                 }
             }
         }

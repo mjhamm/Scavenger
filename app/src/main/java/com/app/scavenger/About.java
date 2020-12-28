@@ -39,8 +39,8 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
         options.add(getResources().getString(R.string.terms_and_conditions));
         options.add(getResources().getString(R.string.privacy_policy));
         options.add(getResources().getString(R.string.open_source_libraries));
+        options.add(getResources().getString(R.string.scavenger_base_url));
 
-        //aboutRecycler.setLayoutManager(new LinearLayoutManager(this));
         AboutAdapter adapter = new AboutAdapter(this, options);
         adapter.setClickListener(this);
         aboutRecycler.setAdapter(adapter);
@@ -76,6 +76,13 @@ public class About extends AppCompatActivity implements AboutAdapter.ItemClickLi
                 // Open Source Libraries
             case 2:
                 openOSL();
+                break;
+            case 3:
+                if (inAppBrowsingOn) {
+                    openURLInChromeCustomTab(this, Constants.scavengerBaseURL);
+                } else {
+                    openInDefaultBrowser(this, Constants.scavengerBaseURL);
+                }
                 break;
         }
     }

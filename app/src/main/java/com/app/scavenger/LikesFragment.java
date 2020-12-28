@@ -476,15 +476,17 @@ public class LikesFragment extends Fragment {
 
         if (requestCode == RECIPEITEMSCREENCALL && resultCode == RESULT_OK) {
             Log.d("LikesFragment", "onActivityResult");
-            int position = data.getIntExtra("position", 0);
-            boolean liked = data.getBooleanExtra("liked", false);
-            int itemId = data.getIntExtra("itemId", 0);
+            if (data != null) {
+                int position = data.getIntExtra("position", 0);
+                boolean liked = data.getBooleanExtra("liked", false);
+                int itemId = data.getIntExtra("itemId", 0);
 
-            if (!liked) {
-                updateRecycler(position);
+                if (!liked) {
+                    updateRecycler(position);
+                }
+
+                checkSearchForLikeChange(itemId,liked);
             }
-
-            checkSearchForLikeChange(itemId,liked);
         }
 
         // deprecated

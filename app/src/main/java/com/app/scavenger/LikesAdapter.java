@@ -558,7 +558,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
 
         private void openRecipeDetail(View v) {
             Intent intent = new Intent(mContext, RecipeItemScreen.class);
-            intent.putExtra("activity_id", "like");
+            //intent.putExtra("activity_id", "like");
             intent.putExtra("recipe_name", mRecipeItems.get(getAdapterPosition()).getmRecipeName());
             intent.putExtra("recipe_source", mRecipeItems.get(getAdapterPosition()).getmSourceName());
             intent.putExtra("recipe_liked", mRecipeItems.get(getAdapterPosition()).isLiked());
