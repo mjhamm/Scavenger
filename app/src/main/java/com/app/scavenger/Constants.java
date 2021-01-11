@@ -3,7 +3,7 @@ package com.app.scavenger;
 public class Constants {
 
 
-    public static final String apiKey = "1e479374e15a4bf2981d5a78098381b1";
+    public static final String apiKey = "XXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 
     // Common String Information
     public static final String firebaseUser = "Users";
