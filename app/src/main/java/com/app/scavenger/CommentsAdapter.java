@@ -1,6 +1,5 @@
 package com.app.scavenger;
 
-import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
@@ -157,10 +155,10 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
             reportCommentInfo.put("Recipe Name", recipeName);
             reportCommentInfo.put("Recipe Source", recipeSource);
             reportCommentInfo.put("Report", reportReason);
-            reportCommentInfo.put("Commenter's User Id", commentersId);
-            reportCommentInfo.put("Commenter's Name",name);
+            reportCommentInfo.put("Comment User Id", commentersId);
+            reportCommentInfo.put("Comment Name",name);
             reportCommentInfo.put("Comment Text", detail);
-            reportCommentInfo.put("Reporter's User Id", reportersId);
+            reportCommentInfo.put("Report User Id", reportersId);
 
             reportingReference.document().set(reportCommentInfo)
                     .addOnSuccessListener(aVoid -> {

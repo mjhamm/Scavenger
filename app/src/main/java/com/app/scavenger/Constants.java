@@ -52,7 +52,7 @@ public class Constants {
     public static final String ITEM_SOURCE = "source";
     public static final String ITEM_IMAGE = "image";
     public static final String ITEM_URL = "url";
-    public static final String COMMENT_NAME = "Commenter's Name";
+    public static final String COMMENT_NAME = "Comment Name";
     public static final String COMMENT_DETAIL = "Comment Text";
     public static final String COMMENT_USERID = "User Id";
 }

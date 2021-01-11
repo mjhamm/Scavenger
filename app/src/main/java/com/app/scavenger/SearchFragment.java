@@ -3,7 +3,6 @@ package com.app.scavenger;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
@@ -11,7 +10,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
@@ -70,7 +68,6 @@ public class SearchFragment extends Fragment {
     private boolean searchingRecipes = false;
     private boolean searchingIngredients = false;
     private DatabaseHelper myDb;
-    private SharedPreferences sharedPreferences;
 
     interface ApiService {
         // getting random recipes
@@ -153,7 +150,7 @@ public class SearchFragment extends Fragment {
         con = new ConnectionDetector(mContext);
 
         // create instance of shared preferences and editor
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         if (savedInstanceState != null) {
             queryString = savedInstanceState.getString("query");

@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -279,11 +280,18 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private void openURLInChromeCustomTab(Context context, String url) {
         try {
             CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
+            CustomTabColorSchemeParams params = new CustomTabColorSchemeParams.Builder()
+                    .setNavigationBarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
+                    .setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
+                    .build();
+            builder1.setColorSchemeParams(CustomTabsIntent.COLOR_SCHEME_DARK, params);
+            builder1.setStartAnimations(context, R.anim.slide_in_right, R.anim.slide_out_left);
+            builder1.setExitAnimations(context, R.anim.slide_in_left, R.anim.slide_out_right);
             CustomTabsIntent customTabsIntent = builder1.build();
             customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             builder1.setInstantAppsEnabled(true);
             customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
-            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
+            //builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
             customTabsIntent.launchUrl(context, Uri.parse(url));
         } catch (ActivityNotFoundException e) {
             e.printStackTrace();

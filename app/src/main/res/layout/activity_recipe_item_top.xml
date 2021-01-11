@@ -107,7 +107,7 @@
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
+                android:layout_height="170dp"
                 android:gravity="top"
                 android:minHeight="80dp"
                 android:layout_marginStart="8dp"

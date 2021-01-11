@@ -1,6 +1,5 @@
 package com.app.scavenger;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
@@ -21,8 +20,6 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
@@ -116,11 +113,6 @@ public class CommentsActivity extends AppCompatActivity {
             userId = mAuth.getCurrentUser().getUid();
 
             retrieveNameFromFB(userId);
-            /*if (mAuth.getCurrentUser().getDisplayName().isEmpty() || mAuth.getCurrentUser().getDisplayName() == null) {
-                userName = "Anonymous";
-            } else {
-                userName = mAuth.getCurrentUser().getDisplayName();
-            }*/
         }
 
         if (!logged) {
