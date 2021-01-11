@@ -2,15 +2,19 @@ package com.app.scavenger;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,9 +30,13 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 
+import static android.app.Activity.RESULT_OK;
+import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
+
 public class LikesFragment extends Fragment {
 
     //private static final String TAG = "Likes Fragment: ";
+    /*public static final int LIKE_UPDATED = 104;*/
 
     // Shared Preferences Data
     //-----------------------------------------
@@ -47,6 +55,7 @@ public class LikesFragment extends Fragment {
     private ImageView mLikes_BG;
     //--------------------------------------------
 
+    private CheckSearch mCheckSearch;
     private LikesAdapter adapter;
     private Context mContext;
     private SharedPreferences sharedPreferences;
@@ -59,6 +68,10 @@ public class LikesFragment extends Fragment {
     // Required empty public constructor
     public LikesFragment() {}
 
+    interface CheckSearch {
+        void checkSearch(int itemId, boolean liked);
+    }
+
     // Create a new instance of Likes Fragment
     // Add a bundle if you want to pass through variables on creation
     static LikesFragment newInstance() {
@@ -69,6 +82,26 @@ public class LikesFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getContext();
+        mCheckSearch = (CheckSearch) mContext;
+
+        /*registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        // There are no request code
+                        Intent data = result.getData();
+                        Log.d("LikesFragment", "onActivityResult");
+                        int position = data.getIntExtra("position", 0);
+                        boolean liked = data.getBooleanExtra("liked", false);
+                        String itemId = data.getStringExtra("itemId");
+
+                        if (!liked) {
+                            updateRecycler(position);
+                        }
+
+                        checkSearchForLikeChange(itemId,liked);
+                    }
+                });*/
     }
 
     @Override
@@ -109,7 +142,7 @@ public class LikesFragment extends Fragment {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         con = new ConnectionDetector(mContext);
-        adapter = new LikesAdapter(mContext, recipeItemList, userId);
+        adapter = new LikesAdapter(mContext, this, recipeItemList, userId);
 
         // sets the width of the SearchView to be the width of the screen
         mLikeSearch.setMaxWidth(Integer.MAX_VALUE);
@@ -117,7 +150,7 @@ public class LikesFragment extends Fragment {
         mLikesRecyclerView.setHasFixedSize(true);
         mLikesRecyclerView.setItemViewCacheSize(10);
         mLikesRecyclerView.setLayoutManager(mLayoutManager);
-        mLikesRecyclerView.addItemDecoration(new RecyclerViewVerticalSpacing(24,16));
+        //mLikesRecyclerView.addItemDecoration(new RecyclerViewVerticalSpacing(24,16));
 
         RecyclerView.ItemAnimator animator = mLikesRecyclerView.getItemAnimator();
         if (animator instanceof SimpleItemAnimator) {
@@ -179,21 +212,21 @@ public class LikesFragment extends Fragment {
                 likes_message.setVisibility(View.VISIBLE);
                 likes_message.setText(R.string.not_signed_in);
                 retryConButton.setVisibility(View.GONE);
-                mLikes_BG.setImageDrawable(getResources().getDrawable(R.drawable.not_signedin_bg_screen));
+                mLikes_BG.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.not_signedin_bg_screen));
                 break;
             // no likes
             case 1:
                 likes_message.setVisibility(View.VISIBLE);
                 likes_message.setText(R.string.no_likes);
                 retryConButton.setVisibility(View.GONE);
-                mLikes_BG.setImageDrawable(getResources().getDrawable(R.drawable.no_likes_bg_screen));
+                mLikes_BG.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.no_likes_bg_screen));
                 break;
             // no internet
             case 2:
                 likes_message.setVisibility(View.VISIBLE);
                 likes_message.setText(R.string.likes_not_connected);
                 retryConButton.setVisibility(View.VISIBLE);
-                mLikes_BG.setImageDrawable(getResources().getDrawable(R.drawable.no_internet_bg_screen));
+                mLikes_BG.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.no_internet_bg_screen));
                 break;
         }
     }
@@ -204,7 +237,6 @@ public class LikesFragment extends Fragment {
             mLikeSearch.setQuery("", false);
             mLikeSearch.clearFocus();
         }
-
     }
 
     // method that refreshes the fragment when the user is reconnected to the internet
@@ -304,14 +336,16 @@ public class LikesFragment extends Fragment {
         likesRef.orderBy(Constants.firebaseTime, Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
 
-                    String itemId, name, source, image, url;
-                    int serves = 0;
+                    String name, source, image, url;
+                    int itemId;
+                    /*int serves = 0;
                     int cals = 0;
                     int carb = 1;
                     int fat = 1;
                     int protein = 1;
+                    int rating = 0;
                     ArrayList<String> att = new ArrayList<>();
-                    ArrayList<String> ingr = new ArrayList<>();
+                    ArrayList<String> ingr = new ArrayList<>();*/
 
                     // if the number of likes the user has is 0
                     // display likes message and let user know they have 0 likes
@@ -338,30 +372,28 @@ public class LikesFragment extends Fragment {
                         // go through each item in the snapshot from Firebase and set a new recipe item with the information
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                             // creates a new recipe item for each item in the snapshot
-                            RecipeItem item = new RecipeItem();
-                            itemId = documentSnapshot.getString(Constants.ITEM_ID);
+                            RecipeItem item = new RecipeItem(RecipeItem.TYPE_ITEM);
+                            itemId = documentSnapshot.getLong(Constants.ITEM_ID).intValue();
                             name = documentSnapshot.getString(Constants.ITEM_NAME);
                             source = documentSnapshot.getString(Constants.ITEM_SOURCE);
                             image = documentSnapshot.getString(Constants.ITEM_IMAGE);
                             url = documentSnapshot.getString(Constants.ITEM_URL);
+                            /*if (documentSnapshot.getLong(Constants.ITEM_RATING) != null) {
+                                rating = documentSnapshot.getLong(Constants.ITEM_RATING).intValue();
+                            }
                             if (documentSnapshot.getLong(Constants.ITEM_YIELD) != null) {
-                                //noinspection ConstantConditions
                                 serves = documentSnapshot.getLong(Constants.ITEM_YIELD).intValue();
                             }
                             if (documentSnapshot.getLong(Constants.ITEM_CAL) != null) {
-                                //noinspection ConstantConditions
                                 cals = documentSnapshot.getLong(Constants.ITEM_CAL).intValue();
                             }
                             if (documentSnapshot.getLong(Constants.ITEM_CARB) != null) {
-                                //noinspection ConstantConditions
                                 carb = documentSnapshot.getLong(Constants.ITEM_CARB).intValue();
                             }
                             if (documentSnapshot.getLong(Constants.ITEM_FAT) != null) {
-                                //noinspection ConstantConditions
                                 fat = documentSnapshot.getLong(Constants.ITEM_FAT).intValue();
                             }
                             if (documentSnapshot.getLong(Constants.ITEM_PROTEIN) != null) {
-                                //noinspection ConstantConditions
                                 protein = documentSnapshot.getLong(Constants.ITEM_PROTEIN).intValue();
                             }
                             if (documentSnapshot.exists()) {
@@ -369,19 +401,20 @@ public class LikesFragment extends Fragment {
                                 att = (ArrayList<String>) documentSnapshot.get(Constants.ITEM_ATT);
                                 //noinspection unchecked
                                 ingr = (ArrayList<String>) documentSnapshot.get(Constants.ITEM_INGR);
-                            }
+                            }*/
                             item.setItemId(itemId);
                             item.setmRecipeName(name);
                             item.setmSourceName(source);
                             item.setmImageUrl(image);
                             item.setmRecipeURL(url);
-                            item.setmServings(serves);
-                            item.setmCalories(cals);
-                            item.setmCarbs(carb);
-                            item.setmFat(fat);
-                            item.setmProtein(protein);
-                            item.setmRecipeAttributes(att);
-                            item.setmIngredients(ingr);
+                            //item.setItemRating(rating);
+                            //item.setmServings(serves);
+                            //item.setmCalories(cals);
+                            //item.setmCarbs(carb);
+                            //item.setmFat(fat);
+                            //item.setmProtein(protein);
+                            //item.setmRecipeAttributes(att);
+                            //item.setmIngredients(ingr);
 
                             // in order to make sure there is no doubles of items in the user's list
                             // if the list already contains the exact item, it won't add it
@@ -390,7 +423,7 @@ public class LikesFragment extends Fragment {
                             }
                         }
                         // create the adapter with the new list
-                        adapter = new LikesAdapter(mContext, recipeItemList, userId);
+                        adapter = new LikesAdapter(mContext, this, recipeItemList, userId);
                         // set adapter
                         mLikesRecyclerView.setAdapter(adapter);
                     }
@@ -412,11 +445,51 @@ public class LikesFragment extends Fragment {
                 });
     }
 
+    private void updateRecycler(int position) {
+
+        if (adapter != null) {
+            recipeItemList.remove(position);
+            adapter.notifyItemRemoved(position);
+
+            if (adapter.getItemCount() == 0) {
+                adapter = null;
+                changeBGImage(1);
+            }
+        }
+    }
+
+    public void checkSearchForLikeChange(int itemId, boolean liked) {
+        mCheckSearch.checkSearch(itemId, liked);
+    }
+
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
         logged = sharedPreferences.getBoolean("logged", false);
         userId = sharedPreferences.getString("userId", "");
         numLikes = sharedPreferences.getInt("numLikes", 0);
         actualNumLikes = sharedPreferences.getInt("actualNumLikes", 0);
+    }
+
+    // deprecated
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+
+        if (requestCode == RECIPEITEMSCREENCALL && resultCode == RESULT_OK) {
+            Log.d("LikesFragment", "onActivityResult");
+            if (data != null) {
+                int position = data.getIntExtra("position", 0);
+                boolean liked = data.getBooleanExtra("liked", false);
+                int itemId = data.getIntExtra("itemId", 0);
+
+                if (!liked) {
+                    updateRecycler(position);
+                }
+
+                checkSearchForLikeChange(itemId,liked);
+            }
+        }
+
+        // deprecated
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

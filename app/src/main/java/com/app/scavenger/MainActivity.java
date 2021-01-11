@@ -1,22 +1,23 @@
 package com.app.scavenger;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
 import android.widget.Toast;
-
-//import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, LikesAdapter.UpdateSearch, LikesAdapter.CheckZeroLikes, SearchAdapter.UpdateQuery {
+public class MainActivity extends AppCompatActivity implements SettingsFragment.RefreshFragments, LikesAdapter.UpdateSearch, LikesAdapter.CheckZeroLikes, SearchAdapter.UpdateQuery, LikesFragment.CheckSearch {
 
     //public static final String TAG = "Main Activity";
+    //public static final int SEARCH_UPDATED = 104;
+    public static final int RECIPEITEMSCREENCALL = 104;
 
     // Fragment variables
     private Fragment fragment1 = null;
@@ -41,25 +42,13 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     //-----------------------------------------
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
-    private boolean match = false;
+    //private boolean match = false;
     private boolean refresh = false;
     //------------------------------------------
 
     @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
-
         setContentView(R.layout.activity_main);
 
         // create instance of shared preferences and editor
@@ -85,59 +74,54 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         // select listener for the bottom nav view
         mNavView.setOnNavigationItemSelectedListener(item -> {
             // checks each menu item's id name
-            switch(item.getItemId()) {
-                // search fragment
-                case R.id.action_search:
-                    // get the search preferences when the user selects the search fragment
-                    getInfoFromSharedPrefs();
-                    // if refresh is true -
-                    // if the fragment isn't null -
-                    // refresh the search fragment
-                    // this will make it so when the user signs in and signs out, it doesn't have
-                    // a problem telling whether or not the user has things liked or not
-                    if (refresh) {
-                        if (fragment1 != null) {
-                            SearchFragment searchFragment = (SearchFragment) fragment1;
-                            searchFragment.refreshFrag();
-                        }
-                        // put false in the refresh shared preference
-                        editor.putBoolean("refresh", false);
-                        editor.apply();
+            if (item.getItemId() == R.id.action_search) {
+                // get the search preferences when the user selects the search fragment
+                getInfoFromSharedPrefs();
+                // if refresh is true -
+                // if the fragment isn't null -
+                // refresh the search fragment
+                // this will make it so when the user signs in and signs out, it doesn't have
+                // a problem telling whether or not the user has things liked or not
+                if (refresh) {
+                    if (fragment1 != null) {
+                        SearchFragment searchFragment = (SearchFragment) fragment1;
+                        searchFragment.refreshFrag();
                     }
-                    // hide whatever fragment is active and show the search fragment
-                    fm.beginTransaction().hide(active).show(fragment1).commit();
-                    // checks the match ingredients option
-                    // if it is on -
-                    // alert the user
-                    if (match) {
-                        toastMessage("Match Ingredients is On");
-                    }
-                    // make the active fragment Search Fragment
-                    active = fragment1;
-                    return true;
-                    // Likes Fragment
-                case R.id.action_likes:
-                    // if the active fragment isn't the Likes Fragment
-                    // hide the active fragment and show the Likes Fragment
-                    fm.beginTransaction().hide(active).show(fragment2).commit();
-                    // Make the Likes fragment the active fragment
-                    active = fragment2;
-                    return true;
-                    // Settings fragment
-                case R.id.action_settings:
-                    // hide the active fragment and show the Settings Fragment
-                    fm.beginTransaction().hide(active).show(fragment3).commit();
-                    // make the Settings fragment the active fragment
-                    active = fragment3;
-                    return true;
+                    // put false in the refresh shared preference
+                    editor.putBoolean("refresh", false);
+                    editor.apply();
+                }
+                // hide whatever fragment is active and show the search fragment
+                fm.beginTransaction().hide(active).show(fragment1).commit();
+                // checks the match ingredients option
+                // if it is on -
+                // alert the user
+                /*if (match) {
+                    toastMessage("Match Ingredients is On");
+                }*/
+                // make the active fragment Search Fragment
+                active = fragment1;
+                return true;
+            } else if (item.getItemId() == R.id.action_likes) {
+                // if the active fragment isn't the Likes Fragment
+                // hide the active fragment and show the Likes Fragment
+                fm.beginTransaction().hide(active).show(fragment2).commit();
+                // Make the Likes fragment the active fragment
+                active = fragment2;
+                return true;
+            } else {
+                // hide the active fragment and show the Settings Fragment
+                fm.beginTransaction().hide(active).show(fragment3).commit();
+                // make the Settings fragment the active fragment
+                active = fragment3;
+                return true;
             }
-            return false;
         });
     }
 
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
-        match = sharedPreferences.getBoolean("match", false);
+        //match = sharedPreferences.getBoolean("match", false);
         refresh = sharedPreferences.getBoolean("refresh", false);
     }
 
@@ -232,6 +216,20 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         if (fragment2 != null) {
             LikesFragment likeFrag = (LikesFragment) fragment2;
             likeFrag.clearFilter();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+    }
+
+    @Override
+    public void checkSearch(int itemId, boolean liked) {
+        if (fragment1 != null) {
+            SearchFragment searchFragment = (SearchFragment) fragment1;
+            searchFragment.checkSearchForLikeChange(itemId, liked);
         }
     }
 }

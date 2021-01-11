@@ -7,13 +7,19 @@
         android:title="@string/search_menu_copy"
         android:orderInCategory="10"
         app:showAsAction="collapseActionView"/>
+
+    <item
+        android:id="@+id/menu_view"
+        android:title="@string/view_recipe"
+        android:orderInCategory="15"
+        app:showAsAction="collapseActionView"/>
+
     <item
         android:id="@+id/menu_share"
         android:title="@string/search_menu_share"
         android:orderInCategory="20"
         app:showAsAction="collapseActionView"/>
     <item
-        android:id="@+id/menu_report"
         android:title="@string/search_menu_report"
         android:orderInCategory="60"
         app:showAsAction="collapseActionView"/>

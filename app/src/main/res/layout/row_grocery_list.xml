@@ -45,6 +45,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginEnd="8dp"
+        android:contentDescription="@string/remove_item_from_list"
         android:padding="24dp"
         android:visibility="gone"
         android:background="@drawable/ic_baseline_remove_circle_outline_24"/>

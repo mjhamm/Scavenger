@@ -38,11 +38,19 @@ class DatabaseHelper extends SQLiteOpenHelper {
 
     // Create Likes Table
     private static final String CREATE_TABLE_LIKES = "CREATE TABLE IF NOT EXISTS " + TABLE_LIKES + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ITEM_ID +
+            " INTEGER)";
+
+    // Create Removed Likes Table
+    private static final String CREATE_TABLE_REMOVED = "CREATE TABLE IF NOT EXISTS " + TABLE_REMOVED + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ITEM_ID +
+            " INTEGER)";
+
+    /*// Create Likes Table
+    private static final String CREATE_TABLE_LIKES = "CREATE TABLE IF NOT EXISTS " + TABLE_LIKES + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ITEM_ID +
             " TEXT)";
 
     // Create Removed Likes Table
     private static final String CREATE_TABLE_REMOVED = "CREATE TABLE IF NOT EXISTS " + TABLE_REMOVED + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ITEM_ID +
-            " TEXT)";
+            " TEXT)";*/
 
     //------------------------------ ALL TABLES -------------------------------------------------------------------------------------------
 
@@ -81,17 +89,31 @@ class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     //Add data to Likes Table
-    void addDataToView(String itemId) {
+//    void addDataToView(String itemId) {
+//        SQLiteDatabase db = this.getWritableDatabase();
+//        ContentValues contentValues = new ContentValues();
+//        contentValues.put(KEY_ITEM_ID, itemId);
+//        db.insert(TABLE_LIKES, null, contentValues);
+//    }
+
+    //Add data to Likes Table
+    void addDataToView(int itemId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(KEY_ITEM_ID, itemId);
         db.insert(TABLE_LIKES, null, contentValues);
     }
 
+    // testing
     //Remove item from Likes Table when item is removed from Likes on Firebase
-    void removeDataFromView(String itemId) {
+//    void removeDataFromView(String itemId) {
+//        SQLiteDatabase db = this.getWritableDatabase();
+//        db.delete(TABLE_LIKES, KEY_ITEM_ID + "=?", new String[]{itemId});
+//    }
+
+    void removeDataFromView(int itemId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_LIKES, KEY_ITEM_ID + "=?", new String[]{itemId});
+        db.delete(TABLE_LIKES, KEY_ITEM_ID + "=?", new String[]{String.valueOf(itemId)});
     }
 
     //------------------------------ REMOVED TABLE -------------------------------------------------------------------------------------------
@@ -103,7 +125,14 @@ class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     //Add data to Removed Table
-    void addRemovedItem(String itemId) {
+//    void addRemovedItem(String itemId) {
+//        SQLiteDatabase db = this.getWritableDatabase();
+//        ContentValues contentValues = new ContentValues();
+//        contentValues.put(KEY_ITEM_ID, itemId);
+//        db.insert(TABLE_REMOVED, null, contentValues);
+//    }
+
+    void addRemovedItem(int itemId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(KEY_ITEM_ID, itemId);
@@ -111,9 +140,14 @@ class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     //Remove item from Removed Table when item is removed from Likes on Firebase
-    void removeRemovedItem(String itemId) {
+//    void removeRemovedItem(String itemId) {
+//        SQLiteDatabase db = this.getWritableDatabase();
+//        db.delete(TABLE_REMOVED, KEY_ITEM_ID + "=?", new String[]{itemId});
+//    }
+
+    void removeRemovedItem(int itemId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_REMOVED, KEY_ITEM_ID + "=?", new String[]{itemId});
+        db.delete(TABLE_REMOVED, KEY_ITEM_ID + "=?", new String[]{String.valueOf(itemId)});
     }
 
     // Removes all items from the Removed Table

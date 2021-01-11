@@ -7,10 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -21,37 +19,43 @@ import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
 import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
+
+import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
 
 public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public static final String TAG = "SEARCH_ADAPTER";
+    // --Commented out by Inspection (11/10/2020 10:34 AM):public static final int SEARCH_UPDATED = 104;
+
+    public static final int RANDOM_ITEMS_HEADER = 1;
+    public static final int RECIPE_ITEM = 0;
 
     // variables for constructor
-    private final ArrayList<Object> mRecipeItems;
+    private final ArrayList<RecipeItem> mRecipeItems;
     private final Context mContext;
+    private final Fragment searchFragment;
     private String userId;
     private boolean logged;
 
@@ -70,11 +74,11 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     // Constructor
-    SearchAdapter(Context context, ArrayList<Object> recipeItems, boolean logged) {
-        //this.userId = userId;
+    SearchAdapter(Context context, Fragment searchFragment, ArrayList<RecipeItem> recipeItems, boolean logged) {
         this.mContext = context;
         this.mRecipeItems = recipeItems;
         this.logged = logged;
+        this.searchFragment = searchFragment;
         // sets stableIds to true for better scrolling
         this.setHasStableIds(true);
     }
@@ -91,14 +95,67 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         // set up callback
         mUpdateQuery = (UpdateQuery) mContext;
 
-        View cardItemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_card_item, parent, false);
-        return new ItemViewHolder(cardItemLayoutView);
+        View view;
+        if (viewType == RANDOM_ITEMS_HEADER) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_random_header, parent, false);
+            return new RandomHeaderViewHolder(view);
+        } else {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_card_item, parent, false);
+            return new ItemViewHolder(view);
+        }
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        switch (holder.getItemViewType()) {
+            case RANDOM_ITEMS_HEADER:
+                RandomHeaderViewHolder viewHolder = (RandomHeaderViewHolder) holder;
+                viewHolder.itemView.setTag(position);
+                break;
+            case RECIPE_ITEM:
+                RecipeItem item = mRecipeItems.get(position);
+                ItemViewHolder viewHolder1 = (ItemViewHolder) holder;
+
+                // checks if the item at the list position is liked or not
+                // if it is liked
+                if (item.isLiked()) {
+                    // set the image to filled
+                    viewHolder1.like_button.setTag(position);
+                    viewHolder1.like_button.setImageResource(R.drawable.like_filled);
+                    // if item isn't liked
+                } else {
+                    // set the image to outline
+                    viewHolder1.like_button.setTag(position);
+                    viewHolder1.like_button.setImageResource(R.drawable.like_outline);
+                }
+
+                // if the item's image url isn't null
+                // use picasso to load the image into the imageview
+                if (item.getmImageUrl() != null) {
+                    Picasso.get()
+                            .load(item.getmImageUrl())
+                            .fit()
+                            .config(Bitmap.Config.RGB_565)
+                            .into(viewHolder1.recipeImage);
+                    // show nothing if the url is null
+                    // prevents crashes if the url is null
+                } else {
+                    viewHolder1.recipeImage.setImageDrawable(null);
+                }
+
+                // sets the info for each item
+                // name
+                viewHolder1.recipeName.setText(item.getmRecipeName());
+                // source
+                viewHolder1.recipeSource.setText(item.getmSourceName());
+                // rating
+                // testing
+                viewHolder1.mRatingBar.setRating(item.getItemRating());
+//        holder.mRatingBar.setNumStars(item.getItemRating());
+                break;
+        }
         // populate information for the Recipe Item
-        populateItemData((ItemViewHolder) holder, position);
+        //populateItemData(holder, position);
     }
 
     // Returns the total count of items in the list
@@ -111,8 +168,12 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     // has the chance to return multiple view types (ads)
     @Override
     public int getItemViewType(int position) {
-        // Recipe Item View Type
-        return 0;
+        // header view type
+        if (mRecipeItems.get(position).getItemType() == RecipeItem.TYPE_HEADER) {
+            return RANDOM_ITEMS_HEADER;
+        } else {
+            return RECIPE_ITEM;
+        }
     }
 
     // returns the hashcode of the item
@@ -130,67 +191,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     ________________________________________________________________________________________________________________________________________
      */
 
-    // Code for adding Recipe Items inside of the Search Recyclerview
-    private void populateItemData(ItemViewHolder holder, int position) {
-        // gets the item at the list's position
-        RecipeItem item = (RecipeItem) mRecipeItems.get(position);
-
-        // boolean for whether or not the item at the list position is expanded or not
-        boolean isExpanded = ((RecipeItem) mRecipeItems.get(position)).isClicked();
-        // if the isExpanded boolean is true -
-        // Show the bottom card
-        // else
-        // hide the bottom card
-        holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
-
-        // checks if the item at the list position is liked or not
-        // if it is liked
-        if (item.isLiked()) {
-            // set the image to filled
-            holder.like_button.setTag(position);
-            holder.like_button.setImageResource(R.drawable.like_filled);
-            // if item isn't liked
-        } else {
-            // set the image to outline
-            holder.like_button.setTag(position);
-            holder.like_button.setImageResource(R.drawable.like_outline);
-        }
-
-        // if the item's image url isn't null
-        // use picasso to load the image into the imageview
-        if (item.getmImageUrl() != null) {
-            Picasso.get()
-                    .load(item.getmImageUrl())
-                    .fit()
-                    .config(Bitmap.Config.RGB_565)
-                    .into(holder.recipeImage);
-            // show nothing if the url is null
-            // prevents crashes if the url is null
-        } else {
-            holder.recipeImage.setImageDrawable(null);
-        }
-
-        // sets the info for each item
-        // name
-        holder.recipeName.setText(item.getmRecipeName());
-        // source
-        holder.recipeSource.setText(item.getmSourceName());
-        // servings
-        holder.recipeServings.setText(String.format(mContext.getString(R.string.servings_text),item.getmServings()));
-        // calories
-        holder.recipeCalories.setText(String.valueOf(item.getmCalories()));
-        // carbs
-        holder.recipeCarbs.setText(String.valueOf(item.getmCarbs()));
-        // fat
-        holder.recipeFat.setText(String.valueOf(item.getmFat()));
-        // protein
-        holder.recipeProtein.setText(String.valueOf(item.getmProtein()));
-        // ingredients
-        holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
-        // attributes
-        holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
-    }
-
     // Sets all variables related to logged status and user info
     private void getInfoFromSharedPrefs() {
         logged = sharedPreferences.getBoolean("logged", false);
@@ -198,7 +198,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     // saves an item to Firebase
-    private void saveDataToFirebase(String itemId, String name, String source, String image, String url, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients) {
+    private void saveDataToFirebase(RecipeItem item) {/*String itemId, String internalUrl, String name, String source, String image, String url*//*, int servings, int calories, int carbs, int fat, int protein, ArrayList<String> attributes, ArrayList<String> ingredients*//*) {*/
         // create new hashmap that holds the item information that will be saved to Firebase
         HashMap<String, Object> itemMap = new HashMap<>();
         // reference to the likes on Firebase
@@ -209,22 +209,18 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         Timestamp timestamp = new Timestamp(now);
 
         // each part of the recipe item to be put into the hashmap for Firebase
-        itemMap.put(Constants.ITEM_ID, itemId);
-        itemMap.put(Constants.ITEM_NAME, name);
-        itemMap.put(Constants.ITEM_SOURCE, source);
-        itemMap.put(Constants.ITEM_IMAGE, image);
-        itemMap.put(Constants.ITEM_URL, url);
-        itemMap.put(Constants.ITEM_YIELD, servings);
-        itemMap.put(Constants.ITEM_CAL, calories);
-        itemMap.put(Constants.ITEM_CARB, carbs);
-        itemMap.put(Constants.ITEM_FAT, fat);
-        itemMap.put(Constants.ITEM_PROTEIN, protein);
-        itemMap.put(Constants.ITEM_ATT, attributes);
-        itemMap.put(Constants.ITEM_INGR, ingredients);
+        itemMap.put(Constants.ITEM_ID, item.getItemId());
+        //itemMap.put(Constants.ITEM_INTERNAL_URL, item.getItemUri());
+        itemMap.put(Constants.ITEM_NAME, item.getmRecipeName());
+        itemMap.put(Constants.ITEM_SOURCE, item.getmSourceName());
+        itemMap.put(Constants.ITEM_IMAGE, item.getmImageUrl());
+        itemMap.put(Constants.ITEM_URL, item.getmRecipeURL());
+        //itemMap.put(Constants.ITEM_RATING, item.getItemRating());
         itemMap.put("Timestamp", timestamp);
 
         // sets the data in Firebase
-        likesRef.document(itemId).set(itemMap)
+        // testing
+        likesRef.document(String.valueOf(item.getItemId())).set(itemMap)
                 .addOnSuccessListener(aVoid -> {
                     // clears the query inside of the likes fragment and clears focus
                     // this avoids problems with potential filtering of the likes fragment when adding a new item to likes
@@ -250,7 +246,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
 
         // deletes the document in firebase with the matching item id
-        likesRef.document(recipeItem.getItemId())
+        // testing
+        likesRef.document(String.valueOf(recipeItem.getItemId()))
                 .delete()
                 .addOnSuccessListener(aVoid -> {
                     // updates the query inside of likes fragment
@@ -283,11 +280,18 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private void openURLInChromeCustomTab(Context context, String url) {
         try {
             CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
+            CustomTabColorSchemeParams params = new CustomTabColorSchemeParams.Builder()
+                    .setNavigationBarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
+                    .setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
+                    .build();
+            builder1.setColorSchemeParams(CustomTabsIntent.COLOR_SCHEME_DARK, params);
+            builder1.setStartAnimations(context, R.anim.slide_in_right, R.anim.slide_out_left);
+            builder1.setExitAnimations(context, R.anim.slide_in_left, R.anim.slide_out_right);
             CustomTabsIntent customTabsIntent = builder1.build();
             customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             builder1.setInstantAppsEnabled(true);
             customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
-            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
+            //builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
             customTabsIntent.launchUrl(context, Uri.parse(url));
         } catch (ActivityNotFoundException e) {
             e.printStackTrace();
@@ -305,19 +309,47 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         mUpdateQuery.updateQuery();
     }
 
+    public void updateItem(int position, boolean liked) {
+        mRecipeItems.get(position).setLiked(liked);
+        notifyItemChanged(position);
+    }
+
+    public void updateItemByItemId(int itemId, boolean liked) {
+        for (RecipeItem item : mRecipeItems) {
+            // testing
+            if (item.getItemId() == itemId) {
+                item.setLiked(liked);
+            }
+        }
+        notifyDataSetChanged();
+    }
+
     /*
     VIEW HOLDERS
     ________________________________________________________________________________________________
     */
 
+    // RANDOM ITEM HEADER HOLDER
+    public static class RandomHeaderViewHolder extends RecyclerView.ViewHolder {
+
+        public RandomHeaderViewHolder(@NonNull View itemView) {
+            super(itemView);
+            // views inside randomHeaderItem
+            TextView headerText = itemView.findViewById(R.id.randomHeaderText);
+            TextView notManyItemsText = itemView.findViewById(R.id.not_many_recipes_found);
+
+            notManyItemsText.setText("Sorry, we didn't find many recipes with that search criteria.\nWe've added some of our favorite's for you to check out!");
+        }
+    }
+
     // ITEM VIEW HOLDER
     public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         // views inside recipeCardItem
-        private final TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
+        private final TextView recipeName, recipeSource;
         private final ImageView recipeImage;
         private final ImageButton more_button, like_button;
-        private final CardView mBottomCard;
+        private final RatingBar mRatingBar;
 
         // recipe item
         private RecipeItem item;
@@ -334,32 +366,35 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             recipeImage = itemView.findViewById(R.id.recipe_image);
             like_button = itemView.findViewById(R.id.recipe_like);
             more_button = itemView.findViewById(R.id.more_button);
-            CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
-            //CardView mAddToList = itemView.findViewById(R.id.addToList_button);
-            ImageView edamamBranding = itemView.findViewById(R.id.edamam_branding);
-            mBottomCard = itemView.findViewById(R.id.bottomCardView);
-            recipeServings = itemView.findViewById(R.id.servings_total);
-            recipeCalories = itemView.findViewById(R.id.calories_amount);
-            recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
-            recipeCarbs = itemView.findViewById(R.id.carbs_amount);
-            recipeFat = itemView.findViewById(R.id.fat_amount);
-            recipeProtein = itemView.findViewById(R.id.protein_amount);
-            CardView mNutritionCard = itemView.findViewById(R.id.nutritionCard);
-            recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
+            mRatingBar = itemView.findViewById(R.id.ratingBar);
 
             // sets the click listener for the recipe item
             itemView.setOnClickListener(this);
 
             // Recipe Image Click Listener
             recipeImage.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                // Adapter Position
-                // Gets the item at the position
-                item = (RecipeItem) mRecipeItems.get(position);
-                // Checks if the item is clicked
-                // Sets the layout visible/gone
-                item.setClicked(!item.isClicked());
-                notifyItemChanged(position);
+                if (!con.connectedToInternet()) {
+                    new MaterialAlertDialogBuilder(mContext)
+                            .setTitle(Constants.noInternetTitle)
+                            .setMessage("Please reconnect to the Internet in order to view recipe information.")
+                            .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                            .create()
+                            .show();
+                } else {
+                    Intent intent = new Intent(mContext, RecipeItemScreen.class);
+                    //intent.putExtra("activity_id", "search");
+                    intent.putExtra("recipe_name", mRecipeItems.get(getAdapterPosition()).getmRecipeName());
+                    intent.putExtra("recipe_source", mRecipeItems.get(getAdapterPosition()).getmSourceName());
+                    intent.putExtra("recipe_liked", mRecipeItems.get(getAdapterPosition()).isLiked());
+                    intent.putExtra("recipe_id", mRecipeItems.get(getAdapterPosition()).getItemId());
+                    intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
+                    intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
+                    intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
+                    //intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
+                    intent.putExtra("position", getAdapterPosition());
+                    // DEPRECATED
+                    searchFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL);
+                }
             });
 
             // Creates animation for Like button - Animation to grow and shrink heart when clicked
@@ -382,29 +417,31 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                             .show();
                 } else {
                     getInfoFromSharedPrefs();
-                    item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
+                    item = mRecipeItems.get(getAdapterPosition());
                     v.getTag();
                     if (SystemClock.elapsedRealtime() - mLastClickTime < 1500) {
                         return;
                     }
                     mLastClickTime = SystemClock.elapsedRealtime();
                     if (logged) {
-                        v.startAnimation(scaleAnimation_Like);
                         if (item.isLiked()) {
-                            like_button.setImageResource(R.drawable.like_outline);
-                            item.setLiked(false);
-                            try {
-                                removeDataFromFirebase(item);
-                                myDb.removeDataFromView(item.getItemId());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                                        v.startAnimation(scaleAnimation_Like);
+                                        like_button.setImageResource(R.drawable.like_outline);
+                                        item.setLiked(false);
+                                        try {
+                                            removeDataFromFirebase(item);
+                                            // testing
+                                            myDb.removeDataFromView(item.getItemId());
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
                         } else {
+                            v.startAnimation(scaleAnimation_Like);
                             like_button.setImageResource(R.drawable.like_filled);
                             item.setLiked(true);
                             try {
-                                saveDataToFirebase(item.getItemId(), item.getmRecipeName(), item.getmSourceName(), item.getmImageUrl(), item.getmRecipeURL(), item.getmServings(),
-                                        item.getmCalories(), item.getmCarbs(), item.getmFat(), item.getmProtein(), item.getmRecipeAttributes(), item.getmIngredients());
+                                saveDataToFirebase(item);
+                                // testing
                                 myDb.addDataToView(item.getItemId());
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -423,20 +460,18 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             more_button.setOnClickListener(v -> {
 
-                item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
+                item = mRecipeItems.get(getAdapterPosition());
 
                 PopupMenu popupMenu = new PopupMenu(mContext, more_button);
                 popupMenu.setOnMenuItemClickListener(item -> {
-                    switch (item.getItemId()) {
-                        case R.id.menu_copy:
-                            copyRecipe();
-                            return true;
-                        case R.id.menu_share:
-                            shareRecipe();
-                            return true;
-                        case R.id.menu_report:
-                            reportRecipe();
-                            return true;
+                    if (item.getItemId() == R.id.menu_copy) {
+                        copyRecipe();
+                    } else if (item.getItemId() == R.id.menu_view) {
+                        viewRecipe();
+                    } else if (item.getItemId() == R.id.menu_share) {
+                        shareRecipe();
+                    } else {
+                        reportRecipe();
                     }
                     return false;
                 });
@@ -444,22 +479,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
                 popupMenu.show();
             });
-
-            mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle(Constants.nutritionInformationTitle)
-                    .setMessage(Constants.nutritionInformation)
-                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
-                    .show());
-
-            mViewRecipe.setOnClickListener(v -> {
-                boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
-                if (inAppBrowsingOn) {
-                    openURLInChromeCustomTab(mContext, retrieveRecipeUrl());
-                } else {
-                    openInDefaultBrowser(mContext, retrieveRecipeUrl());
-                }
-            });
-
         }
 
         private void reportRecipe() {
@@ -502,6 +521,15 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                         .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
                         .create()
                         .show();
+            }
+        }
+
+        private void viewRecipe() {
+            boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
+            if (inAppBrowsingOn) {
+                openURLInChromeCustomTab(mContext, retrieveRecipeUrl());
+            } else {
+                openInDefaultBrowser(mContext, retrieveRecipeUrl());
             }
         }
 
@@ -571,17 +599,17 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
 
         private String retrieveRecipeUrl() {
-            item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
+            item = mRecipeItems.get(getAdapterPosition());
             return item.getmRecipeURL();
         }
 
         private String retrieveRecipeSource() {
-            item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
+            item = mRecipeItems.get(getAdapterPosition());
             return item.getmSourceName();
         }
 
         private String retrieveRecipeName() {
-            item = (RecipeItem) mRecipeItems.get(getAdapterPosition());
+            item = mRecipeItems.get(getAdapterPosition());
             return item.getmRecipeName();
         }
     }

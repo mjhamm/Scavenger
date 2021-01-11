@@ -5,12 +5,8 @@
     <string name="menu_search">Search</string>
     <string name="menu_likes">Likes</string>
     <string name="menu_settings">Settings</string>
-    <string name="about">About</string>
-    <string name="help">Help</string>
-    <string name="forgot_password">Forgot Password</string>
 
     <!-- Sign In / Sign Up String Information -->
-    <string name="sign_in">Sign In</string>
     <string name="sign_up">Sign Up</string>
     <string name="full_name_text_view">Full Name</string>
     <string name="email_address">Email Address</string>
@@ -47,15 +43,13 @@
     <string name="recipe_image_content_descr">Recipe Image</string>
     <string name="more_button_content_descr">More</string>
     <string name="recipe_like_button_content_descr">Recipe Like</string>
-    <string name="servings_text">Serves %1$d</string>
     <string name="calories">Calories</string>
     <string name="carbs">Carbs</string>
     <string name="fat">Fat</string>
     <string name="protein">Protein</string>
     <string name="ingredients">Ingredients</string>
     <string name="nutrition_facts">Nutrition Facts</string>
-    <string name="view_recipe">View Recipe</string>
-    <string name="edamam_branding">Edamam Branding</string>
+    <string name="view_recipe">View Recipe Website</string>
 
     <!-- Forgot Password Information -->
     <string name="password_instructions_text">Please enter your email address. Reset instructions will be sent to you.</string>
@@ -67,7 +61,6 @@
     <string name="report_problem_edittext">What went wrong?</string>
     <string name="report_a_problem">Report a Problem</string>
     <string name="submit">Submit</string>
-    <string name="send_feedback">Send Feedback</string>
     <string name="feedback_edittext">What would you like us to improve?</string>
 
     <!-- ID String Information -->
@@ -80,10 +73,11 @@
     <string name="search_menu_share">Share Recipe</string>
     <string name="search_menu_report">Report…</string>
     <string name="retry_connection">Retry Connection</string>
-    <string name="match_ingredients_on_search">This can occur if Match Ingredients is On</string>
+    <!--<string name="match_ingredients_on_search">This can occur if Match Ingredients is On</string>-->
     <string name="terms_and_conditions">Terms &amp; Conditions</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="help_center">Help Center</string>
+    <string name="scavenger_base_url">Visit Our Website</string>
 
     <!-- Open Source Library String Information -->
     <string name="open_source_libraries">Open Source Libraries</string>
@@ -126,7 +120,7 @@
         \n\n<a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a>
         \n\nUnless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</string>-->
     <string name="main_search_background">Main Search Background</string>
-    <string name="grocery_list_text1">In order to create and save your grocery list, you must Sign In or Sign Up. By Signing Up for Scavenger, you get access to not only saving your most liked recipes but you can also...</string>
+    <string name="grocery_list_text1">In order to create and save your grocery list, you must Sign In or Sign Up. By Signing Up for Scavenger, you get access to not only saving your most liked recipes but you can also</string>
     <string name="grocery_list_text2">- Add ingredients from any recipe</string>
     <string name="grocery_list_text3">- Sync your grocery list across all of your devices</string>
     <string name="grocery_list_text4">The best part is that Signing Up is Free!</string>
@@ -135,7 +129,12 @@
     <string name="search_recyclerview_content_descr">Search List View</string>
     <string name="likes_recyclerview_content_descr">Likes List View</string>
     <string name="nutrition_card_information">Nutrition Information</string>
-    <string name="password_for_sign_in">Password for Sign in</string>
-    <string name="add_item_button">add item</string>
+    <string name="title_activity_recipe_item_screen">ScrollingActivity</string>
+    <string name="recipe_instructions">Instructions</string>
+    <string name="delete_item_from_list">delete item from list</string>
+    <string name="comment_more">comment more</string>
+    <string name="remove_item_from_list">remove item from list</string>
+    <string name="no_comments">No comments</string>
+
 
 </resources>

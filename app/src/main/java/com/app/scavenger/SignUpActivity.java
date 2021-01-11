@@ -1,35 +1,24 @@
 package com.app.scavenger;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.TextPaint;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,18 +39,21 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.OAuthProvider;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -84,29 +76,11 @@ public class SignUpActivity extends AppCompatActivity {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
     private CallbackManager callbackManager;
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // Gets the Firebase user
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        // checks if the user isn't null
-        if (currentUser != null) {
-            // update the shared preferences with the user's userId
-            updatePrefInfo(currentUser.getUid());
-        }
-    }
+    private boolean checkVerify = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
-
         setContentView(R.layout.activity_sign_up);
 
         // get the instance of Firebase
@@ -145,10 +119,9 @@ public class SignUpActivity extends AppCompatActivity {
         signUpButton = findViewById(R.id.signUp_Button);
 
         progressHolder = findViewById(R.id.signUp_progressHolder);
-        ImageButton backButton = findViewById(R.id.signUp_back);
 
-        // button to finish the activity
-        backButton.setOnClickListener(v -> finish());
+        TopToolbar topToolbar = findViewById(R.id.signUp_toolbar);
+        topToolbar.setTitle("Sign Up");
 
         // check box for terms
         termsCheck.setOnCheckedChangeListener((buttonView, isChecked) -> checkFieldsForEmpty());
@@ -223,21 +196,27 @@ public class SignUpActivity extends AppCompatActivity {
             } else {
                 progressHolder.setVisibility(View.VISIBLE);
                 name = fullName.getText().toString();
+                Log.d(TAG, "name: " + name);
                 email = emailEdit.getText().toString();
                 pass = passEdit.getText().toString();
                 mAuth.createUserWithEmailAndPassword(email, pass)
                         .addOnCompleteListener(this, task -> {
                             if (task.isSuccessful()) {
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                toastMessage("Signed up successfully.");
+                                //toastMessage("Signed up successfully.");
                                 if (user != null) {
-                                    myDb.clearData();
-                                    retrieveLikesFromFirebase(user);
-                                    updatePrefInfo(user.getUid());
+                                    user.sendEmailVerification();
+                                    checkVerify = true;
                                     sendDataToFirebase(user);
+                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                    editor.putBoolean("verify", checkVerify);
+                                    editor.apply();
+                                    //myDb.clearData();
+                                    //retrieveLikesFromFirebase(user);
+                                    //updatePrefInfo(user.getUid());
                                 }
-                                finish();
                                 progressHolder.setVisibility(View.GONE);
+                                finish();
                                 // Sign in success
                             } else {
                                 // Sign in failed
@@ -273,23 +252,106 @@ public class SignUpActivity extends AppCompatActivity {
                         .create()
                         .show();
             } else {
-                appleSignUp();
+                if (termsCheck.isChecked()) {
+                    appleSignUp();
+                } else {
+                    toastMessage("Please accept the Terms & Conditions");
+                }
             }
         });
     }
 
+    // Apple Sign In information and Methods ------------------------------------------------------------------------------------------------------------------
+
+    private void appleSignUp() {
+        progressHolder.setVisibility(View.VISIBLE);
+        OAuthProvider.Builder provider = OAuthProvider.newBuilder("apple.com");
+        List<String> scopes = new ArrayList<String>() {
+            {
+                add("email");
+                add("name");
+            }
+        };
+        provider.setScopes(scopes);
+
+        mAuth = FirebaseAuth.getInstance();
+        Task<AuthResult> pending = mAuth.getPendingAuthResult();
+        if (pending != null) {
+            pending.addOnSuccessListener(authResult -> {
+                // Get the user profile with authResult.getUser() and
+                // authResult.getAdditionalUserInfo(), and the ID
+                // token from Apple with authResult.getCredential().
+                FirebaseUser user = authResult.getUser();
+                //toastMessage("Signed up successfully");
+                if (user != null) {
+                    if (user.getDisplayName() == null) {
+                        name = "Anonymous";
+                    } else {
+                        name = user.getDisplayName();
+                    }
+                    email = user.getEmail();
+                    retrieveLikesFromFirebase(user);
+                    updatePrefInfo(user.getUid());
+                    sendDataToFirebase(user);
+                }
+                progressHolder.setVisibility(View.GONE);
+                finish();
+            }).addOnFailureListener(e -> {
+                toastMessage("Issue Signing up. Please try again");
+                Log.w(TAG, "checkPending:onFailure", e);
+                progressHolder.setVisibility(View.GONE);
+            });
+        } else {
+            startSignInWithApple(provider);
+            Log.d(TAG, "pending: null");
+        }
+        //Log.d(TAG, "Apple Sign In");
+    }
+
+    private void startSignInWithApple(OAuthProvider.Builder provider) {
+        mAuth.startActivityForSignInWithProvider(this, provider.build())
+                .addOnSuccessListener(authResult -> {
+                    Log.d(TAG, "activitySignIn:onSuccess:" + authResult.getUser());
+                    FirebaseUser user = authResult.getUser();
+                    //toastMessage("Signed up successfully");
+                    if (user != null) {
+                        if (user.getDisplayName() == null) {
+                            name = "Anonymous";
+                        } else {
+                            name = user.getDisplayName();
+                        }
+                        email = user.getEmail();
+                        retrieveLikesFromFirebase(user);
+                        updatePrefInfo(user.getUid());
+                        sendDataToFirebase(user);
+                    }
+                    progressHolder.setVisibility(View.GONE);
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    toastMessage("Issue Signing up. Please try again");
+                    Log.w(TAG, "activitySignIn:onFailure", e);
+                    progressHolder.setVisibility(View.GONE);
+                });
+    }
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------
+
     // Sends user information to Firebase
     private void sendDataToFirebase(FirebaseUser user) {
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("name", name);
-        data.put("email", email);
-        db.collection("Users").document(user.getUid()).set(data);
+        if (user != null) {
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("name", name);
+            //data.put("email", email);
+            db.collection(Constants.firebaseUser).document(user.getUid()).set(data);
+        }
     }
 
     // Google Sign Up information and Methods -----------------------------------------------------------------------------------------------------------------
 
     private void googleSignUp() {
         Intent signInIntent = mGoogleSignUpClient.getSignInIntent();
+        // DEPRECATED
         startActivityForResult(signInIntent, RC_SIGN_UP);
     }
 
@@ -311,14 +373,13 @@ public class SignUpActivity extends AppCompatActivity {
                             updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
                         }
+                        progressHolder.setVisibility(View.GONE);
+                        finish();
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signUpWithCredential:failure", task.getException());
                         toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                     }
-
-                    finish();
-                    progressHolder.setVisibility(View.GONE);
                 });
     }
 
@@ -367,24 +428,18 @@ public class SignUpActivity extends AppCompatActivity {
                             updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
                         }
+                        progressHolder.setVisibility(View.GONE);
+                        finish();
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
                         toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                     }
-                    finish();
-                    progressHolder.setVisibility(View.GONE);
+                    /*finish();
+                    progressHolder.setVisibility(View.GONE);*/
                 });
     }
 
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    // Apple Sign Up Information and Methods ------------------------------------------------------------------------------------------------------------------
-
-    private void appleSignUp() {
-        Log.d(TAG, "Apple Sign Up");
-    }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -398,7 +453,6 @@ public class SignUpActivity extends AppCompatActivity {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
-                //noinspection ConstantConditions
                 Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
                 firebaseAuthWithGoogle(account.getIdToken());
             } catch (ApiException e) {
@@ -430,6 +484,7 @@ public class SignUpActivity extends AppCompatActivity {
         editor.putBoolean("logged", true);
         editor.putString("userId", userId);
         editor.putBoolean("refresh", true);
+        editor.putBoolean("verify", checkVerify);
         editor.apply();
     }
 
@@ -465,11 +520,11 @@ public class SignUpActivity extends AppCompatActivity {
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(user.getUid()).collection(Constants.firebaseLikes);
         likesRef.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    String itemId;
+                    int itemId;
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            itemId = documentSnapshot.getString("itemId");
+                            itemId = documentSnapshot.getLong("itemId").intValue();
                             myDb.addDataToView(itemId);
                         }
                     }

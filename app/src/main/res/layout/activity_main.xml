@@ -25,6 +25,7 @@
         app:itemIconSize="32dp"
         android:elevation="12dp"
         android:translationZ="12dp"
+        app:itemIconTint="@color/bottom_nav_bar_colors"
         app:menu="@menu/bnv_menu"
         app:labelVisibilityMode="unlabeled"/>
 

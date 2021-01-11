@@ -1,6 +1,7 @@
 package com.app.scavenger;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
@@ -13,11 +14,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
@@ -29,17 +29,12 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
-
         setContentView(R.layout.activity_help);
 
         RecyclerView helpRecycler = findViewById(R.id.help_list);
-        ImageButton backButton = findViewById(R.id.help_back);
+
+        TopToolbar topToolbar = findViewById(R.id.help_toolbar);
+        topToolbar.setTitle("Help");
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -57,9 +52,6 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, layoutManager.getOrientation());
         helpRecycler.addItemDecoration(dividerItemDecoration);
         helpRecycler.setLayoutManager(layoutManager);
-
-        // Close activity on button click
-        backButton.setOnClickListener(v -> finish());
     }
 
     @Override
@@ -93,24 +85,31 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
                 // Open help center
             case 1:
                 if (sharedPreferences.getBoolean("inAppBrowser", true)) {
-                    openURLInChromeCustomTab(this, Constants.scavengerHelpURL);
+                    openURLInChromeCustomTab(this);
                 } else {
-                    openInDefaultBrowser(this, Constants.scavengerHelpURL);
+                    openInDefaultBrowser(this);
                 }
                 break;
         }
     }
 
     // opens the recipe in the users default browser
-    private void openURLInChromeCustomTab(Context context, String url) {
+    private void openURLInChromeCustomTab(Context context) {
         try {
             CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
+            CustomTabColorSchemeParams params = new CustomTabColorSchemeParams.Builder()
+                    .setNavigationBarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
+                    .setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
+                    .build();
+            builder1.setColorSchemeParams(CustomTabsIntent.COLOR_SCHEME_DARK, params);
+            builder1.setStartAnimations(context, R.anim.slide_in_right, R.anim.slide_out_left);
+            builder1.setExitAnimations(context, R.anim.slide_in_left, R.anim.slide_out_right);
             CustomTabsIntent customTabsIntent = builder1.build();
             customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             builder1.setInstantAppsEnabled(true);
             customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
-            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
-            customTabsIntent.launchUrl(context, Uri.parse(url));
+            //builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
+            customTabsIntent.launchUrl(context, Uri.parse(Constants.scavengerHelpURL));
         } catch (ActivityNotFoundException e) {
             e.printStackTrace();
             Log.e("ChromeCustomTabError: ", "Activity Error");
@@ -118,9 +117,9 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
     }
 
     // open the recipe in the App Browser
-    private void openInDefaultBrowser(Context context, String url) {
+    private void openInDefaultBrowser(Context context) {
         try {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.scavengerHelpURL));
             context.startActivity(browserIntent);
         } catch (ActivityNotFoundException e) {
             e.printStackTrace();

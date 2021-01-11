@@ -11,6 +11,8 @@
         android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:hint="Custom Grocery Item"/>
+        android:inputType="text"
+        android:hint="Custom Grocery Item"
+        android:importantForAutofill="no" />
 
 </LinearLayout>

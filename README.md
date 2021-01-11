@@ -16,7 +16,7 @@ Recipes that include your ingredients will appear and give you information relat
       
       ► Fat
       
-      ► Carbs
+      ► Carbohydrates
       
       ► Protein
       

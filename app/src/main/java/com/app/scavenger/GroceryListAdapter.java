@@ -1,7 +1,6 @@
 package com.app.scavenger;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,32 +8,27 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.checkbox.MaterialCheckBox;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class GroceryListAdapter extends RecyclerView.Adapter<GroceryListAdapter.ViewHolder> {
 
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
-    private List<GroceryListItem> mData;
-    private Context mContext;
-    private final String userId;
-    private ArrayList<String> groceryItems;
+    private final List<GroceryListItem> mData;
+    private final Context mContext;
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     GroceryListAdapter(Context context, List<GroceryListItem> data, ArrayList<String> groceryItems, String userId) {
         this.mInflater = LayoutInflater.from(context);
         this.mContext = context;
         this.mData = data;
-        this.userId = userId;
-        this.groceryItems = groceryItems;
     }
 
     @NonNull
@@ -55,7 +49,9 @@ public class GroceryListAdapter extends RecyclerView.Adapter<GroceryListAdapter.
         holder.groceryRemoveButton.setVisibility(isTapped ? View.VISIBLE : View.GONE);
 
         holder.grocerySelectButton.setVisibility(showSelectItem ? View.VISIBLE : View.GONE);
-        holder.grocerySelectButton.setBackground(isSelected ? mContext.getResources().getDrawable(R.drawable.ic_baseline_check_circle_24) : mContext.getResources().getDrawable(R.drawable.circle));
+        if (isSelected)
+            holder.grocerySelectButton.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_check_circle_24));
+        else holder.grocerySelectButton.setBackground(ContextCompat.getDrawable(mContext, R.drawable.circle));
 
         holder.groceryTextView.setText(groceryItem.getGroceryItemName());
     }
@@ -71,10 +67,6 @@ public class GroceryListAdapter extends RecyclerView.Adapter<GroceryListAdapter.
 
     public interface ItemClickListener {
         void onItemClick(View view, int position);
-    }
-
-    private void removeGroceryItemFromFirebase(String item) {
-
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

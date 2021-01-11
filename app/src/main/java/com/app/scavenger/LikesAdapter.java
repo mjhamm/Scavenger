@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -20,27 +19,21 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
 import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.squareup.picasso.Picasso;
-
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -49,11 +42,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
 
 @SuppressWarnings("unchecked")
 public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> implements Filterable {
 
-    //private static final String TAG = "LOG: ";
+// --Commented out by Inspection START (11/10/2020 10:21 AM):
+//    //private static final String TAG = "LOG: ";
+//    public static final int LIKE_UPDATED = 104;
+// --Commented out by Inspection STOP (11/10/2020 10:21 AM)
 
     // Database variables
     private FirebaseFirestore db;
@@ -62,6 +59,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     // Interface variables
     private UpdateSearch mCallback;
     private CheckZeroLikes mZeroLikes;
+    private final Fragment likesFragment;
 
     private final String userId;
     private final ArrayList<RecipeItem> mRecipeItemsFull;
@@ -81,12 +79,13 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         void checkZeroLikes();
     }
 
-    LikesAdapter(Context context, ArrayList<RecipeItem> recipeItems, String userId) {
+    LikesAdapter(Context context, Fragment likesFragment, ArrayList<RecipeItem> recipeItems, String userId) {
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
         this.mRecipeItems = recipeItems;
         this.userId = userId;
         this.mRecipeItemsFull = recipeItems;
+        this.likesFragment = likesFragment;
         mRecipeItemsFull.size();
         this.setHasStableIds(true);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -95,7 +94,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     @NonNull
     @Override
     public LikesAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.row_card_item, parent, false);
+        View view = mInflater.inflate(R.layout.row_card_item_likes, parent, false);
         con = new ConnectionDetector(mContext);
         myDb = DatabaseHelper.getInstance(mContext);
 
@@ -148,7 +147,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     // Returns the total count of items in the list
     @Override
     public int getItemCount() {
-        return mRecipeItems.size();
+        return mRecipeItems == null ? 0 : mRecipeItems.size();
     }
 
     // Returns the hashcode of the item at the adapters position
@@ -173,12 +172,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     private void populateItemData(ViewHolder holder, int position) {
         // Gets the item at the position
         RecipeItem item = mRecipeItems.get(position);
-
-        // variable for checking whether the item is expanded or not
-        boolean isExpanded = mRecipeItems.get(position).isClicked();
-        // if the variable for isExpanded is true - mBottomCard is Visible
-        // else - mBottomCard is Gone
-        holder.mBottomCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
 
         // For the Likes fragment, all items are in the state of being liked
         // Set each item to liked
@@ -205,20 +198,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         holder.recipeName.setText(item.getmRecipeName());
         // Recipe Source Name
         holder.recipeSource.setText(item.getmSourceName());
-        // # of Servings
-        holder.recipeServings.setText(String.format(mContext.getString(R.string.servings_text),item.getmServings()));
-        // # of Calories
-        holder.recipeCalories.setText(String.valueOf(item.getmCalories()));
-        // # of Carbs
-        holder.recipeCarbs.setText(String.valueOf(item.getmCarbs()));
-        // # of Fat
-        holder.recipeFat.setText(String.valueOf(item.getmFat()));
-        // # of Protein
-        holder.recipeProtein.setText(String.valueOf(item.getmProtein()));
-        // Recipe Ingredients
-        holder.recipeIngredients.setText(TextUtils.join("", item.getmIngredients()));
-        // Recipe Attributes
-        holder.recipeAttributes.setText(TextUtils.join("", item.getmRecipeAttributes()));
+        // Recipe Rating
+        //holder.mRatingBar.setNumStars(item.getItemRating());
     }
 
     // Gets the Recipe Item's ID
@@ -226,14 +207,11 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     private void removeDataFromFirebase(RecipeItem recipeItem) {
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(userId).collection(Constants.firebaseLikes);
 
-        likesRef.document(recipeItem.getItemId())
+        // testing
+        likesRef.document(String.valueOf(recipeItem.getItemId()))
                 .delete()
-                .addOnSuccessListener(aVoid -> {
-                    //Log.d(TAG, "Successfully removed like");
-                })
-                .addOnFailureListener(e -> {
-                    //Log.d(TAG, "Failed to remove like" + e.toString());
-                });
+                .addOnSuccessListener(aVoid -> Log.d("Likes Adapter", "Successfully removed like"))
+                .addOnFailureListener(e -> Log.d("Likes Adapter", "Failed to remove like" + e.toString()));
     }
 
     // Opens the Recipe in the default web browser
@@ -247,15 +225,22 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
         }
     }
 
-    // Opens the Recipe in Google Chrome
+    // opens the recipe in the users default browser
     private void openURLInChromeCustomTab(Context context, String url) {
         try {
             CustomTabsIntent.Builder builder1 = new CustomTabsIntent.Builder();
+            CustomTabColorSchemeParams params = new CustomTabColorSchemeParams.Builder()
+                    .setNavigationBarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
+                    .setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
+                    .build();
+            builder1.setColorSchemeParams(CustomTabsIntent.COLOR_SCHEME_DARK, params);
+            builder1.setStartAnimations(context, R.anim.slide_in_right, R.anim.slide_out_left);
+            builder1.setExitAnimations(context, R.anim.slide_in_left, R.anim.slide_out_right);
             CustomTabsIntent customTabsIntent = builder1.build();
             customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             builder1.setInstantAppsEnabled(true);
             customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
-            builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
+            //builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
             customTabsIntent.launchUrl(context, Uri.parse(url));
         } catch (ActivityNotFoundException e) {
             e.printStackTrace();
@@ -293,10 +278,10 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         // View Holder Recipe Card
-        private final TextView recipeName, recipeSource, recipeServings, recipeCalories, recipeIngredients, recipeCarbs, recipeFat, recipeProtein, recipeAttributes;
+        private final TextView recipeName, recipeSource;
         private final ImageView recipeImage;
         private final ImageButton more_button, like_button;
-        private final CardView mBottomCard;
+        //private final RatingBar mRatingBar;
 
         // View Holder variables
         private RecipeItem recipeItem;
@@ -307,34 +292,15 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
             recipeName = itemView.findViewById(R.id.recipe_name);
             recipeSource = itemView.findViewById(R.id.recipe_source);
             recipeImage = itemView.findViewById(R.id.recipe_image);
+            //CardView recipeHolder = itemView.findViewById(R.id.image_holder);
             like_button = itemView.findViewById(R.id.recipe_like);
             more_button = itemView.findViewById(R.id.more_button);
-            recipeServings = itemView.findViewById(R.id.servings_total);
-            recipeCalories = itemView.findViewById(R.id.calories_amount);
-            ImageView edamamBranding = itemView.findViewById(R.id.edamam_branding);
-            recipeIngredients = itemView.findViewById(R.id.list_of_ingredients);
-            recipeCarbs = itemView.findViewById(R.id.carbs_amount);
-            recipeFat = itemView.findViewById(R.id.fat_amount);
-            mBottomCard = itemView.findViewById(R.id.bottomCardView);
-            recipeProtein = itemView.findViewById(R.id.protein_amount);
-            CardView mNutritionCard = itemView.findViewById(R.id.nutritionCard);
-            recipeAttributes = itemView.findViewById(R.id.recipe_attributes);
-            CardView mViewRecipe = itemView.findViewById(R.id.viewRecipe_button);
-            //CardView mAddToList = itemView.findViewById(R.id.addToList_button);
+            //mRatingBar = itemView.findViewById(R.id.ratingBar);
 
             itemView.setOnClickListener(this);
 
             // Recipe Image Click Listener
-            recipeImage.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                // Adapter Position
-                // Gets the item at the position
-                recipeItem = mRecipeItems.get(position);
-                // Checks if the item is clicked
-                // Sets the layout visible/gone
-                recipeItem.setClicked(!recipeItem.isClicked());
-                notifyItemChanged(position);
-            });
+            recipeImage.setOnClickListener(this::openRecipeDetail);
 
             // Like Button Click Listener
             like_button.setOnClickListener(v -> {
@@ -353,12 +319,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                     // else - ask user if they want to remove the recipe from their likes
                 } else {
                     recipeItem = mRecipeItems.get(position);
-                    new MaterialAlertDialogBuilder(mContext)
-                            .setTitle("Remove this recipe from your Likes?")
-                            .setMessage("This removes this recipe from your Likes. You will need to go and locate it again.")
-                            .setCancelable(false)
-                            // Positive button - Remove the item from Firebase
-                            .setPositiveButton("Remove", (dialog, which) -> {
                                 try {
                                     removeDataFromFirebase(recipeItem);
                                 } catch (Exception e) {
@@ -366,9 +326,11 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                 }
 
                                 // remove the item from the like item list in Database
-                                myDb.removeDataFromView(recipeItem.getItemId());
+                    // testing
+                     myDb.removeDataFromView(recipeItem.getItemId());
                                 // add the item to the removed table in Database
-                                myDb.addRemovedItem(recipeItem.getItemId());
+                    // testing
+                     myDb.addRemovedItem(recipeItem.getItemId());
 
                                 // Let search adapter know that something has changed
                                 update();
@@ -377,7 +339,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                 Iterator<RecipeItem> i = mRecipeItems.iterator();
                                 while (i.hasNext()) {
                                     RecipeItem item = i.next();
-                                    if (item.getItemId().equals(recipeItem.getItemId())) {
+                                    // testing
+                                    if (item.getItemId() == recipeItem.getItemId()) {
                                         i.remove();
                                     }
                                 }
@@ -386,7 +349,8 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                 Iterator<RecipeItem> fullIterator = mRecipeItemsFull.iterator();
                                 while (fullIterator.hasNext()) {
                                     RecipeItem item = fullIterator.next();
-                                    if (item.getItemId().equals(recipeItem.getItemId())) {
+                                    // testing
+                                    if (item.getItemId() == recipeItem.getItemId()) {
                                         fullIterator.remove();
                                     }
                                 }
@@ -410,12 +374,6 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                                 editor.putInt("actualNumLikes", actualNumLikes);
                                 editor.putInt("numLikes", actualNumLikes);
                                 editor.apply();
-
-                            })
-                            // dismiss the alert if cancel button is clicked
-                            .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                            .create()
-                            .show();
                 }
             });
 
@@ -429,19 +387,14 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 // create a menu with options (copy, share, report)
                 PopupMenu popupMenu = new PopupMenu(mContext, more_button);
                 popupMenu.setOnMenuItemClickListener(item -> {
-                    switch (item.getItemId()) {
-                        // copy the recipe url
-                        case R.id.menu_copy:
-                            copyRecipe();
-                            return true;
-                            // share the recipe through text, email, facebook
-                        case R.id.menu_share:
-                            shareRecipe();
-                            return true;
-                            // report the recipe for profanity, nudity, or website
-                        case R.id.menu_report:
-                            reportRecipe();
-                            return true;
+                    if (item.getItemId() == R.id.menu_copy) {
+                        copyRecipe();
+                    } else if (item.getItemId() == R.id.menu_view) {
+                        viewRecipe();
+                    } else if (item.getItemId() == R.id.menu_share) {
+                        shareRecipe();
+                    } else {
+                        reportRecipe();
                     }
                     return false;
                 });
@@ -449,62 +402,7 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                 inflater.inflate(R.menu.more_menu, popupMenu.getMenu());
                 popupMenu.show();
             });
-
-            // Nutrition Card Click Listener
-            // shows information about how we get our data
-            mNutritionCard.setOnClickListener(v -> new MaterialAlertDialogBuilder(mContext)
-                    .setTitle(Constants.nutritionInformationTitle)
-                    .setMessage(Constants.nutritionInformation)
-                    .setPositiveButton("Got It!", (dialog, which) -> dialog.dismiss()).create()
-                    .show());
-
-            // View Recipe Click Listener
-            mViewRecipe.setOnClickListener(v -> {
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-                boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
-                // checks if the default browser is on or off
-                // if in app browsing is on
-                // open in custom chrome tabs
-                if (inAppBrowsingOn) {
-                    openURLInChromeCustomTab(mContext, retrieveRecipeUrl());
-                    // else - open in the users default browser
-                } else {
-                    openInDefaultBrowser(mContext, retrieveRecipeUrl());
-                }
-            });
-
-            /*mAddToList.setOnClickListener(v -> {
-                // get adapter position of the item in the list
-                int position = getAdapterPosition();
-                // get the recipe item at the position
-                recipeItem = mRecipeItems.get(position);
-
-                compareIngredientsToFirebase(recipeItem.getmIngredients());
-            });*/
         }
-
-        /*private void compareIngredientsToFirebase(ArrayList<String> mRecipeIngredients) {
-
-            //DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("IngredientList").child(Constants.firebaseIngrListId);
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("IngredientList").child(Constants.firebaseIngrListId);
-            ArrayList<String> testArray = new ArrayList<>();
-
-            for (String ingredient : mRecipeIngredients) {
-                ref.equalTo(ingredient).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists()) {
-                            testArray.add(ref.toString());
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {}
-                });
-            }
-            Log.d("LIKESADAPTER: ", "Array size :" + testArray.size());
-            testArray.clear();
-        }*/
 
         // Method for reporting a recipe
         private void reportRecipe() {
@@ -553,6 +451,21 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
                         .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
                         .create()
                         .show();
+            }
+        }
+
+        // View the recipe on the recipe's website
+        private void viewRecipe() {
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+            boolean inAppBrowsingOn = sharedPreferences.getBoolean("inAppBrowser", true);
+            // checks if the default browser is on or off
+            // if in app browsing is on
+            // open in custom chrome tabs
+            if (inAppBrowsingOn) {
+                openURLInChromeCustomTab(mContext, retrieveRecipeUrl());
+                // else - open in the users default browser
+            } else {
+                openInDefaultBrowser(mContext, retrieveRecipeUrl());
             }
         }
 
@@ -650,5 +563,21 @@ public class LikesAdapter extends RecyclerView.Adapter<LikesAdapter.ViewHolder> 
 
         @Override
         public void onClick(View v) {}
+
+        private void openRecipeDetail(View v) {
+            Intent intent = new Intent(mContext, RecipeItemScreen.class);
+            //intent.putExtra("activity_id", "like");
+            intent.putExtra("recipe_name", mRecipeItems.get(getAdapterPosition()).getmRecipeName());
+            intent.putExtra("recipe_source", mRecipeItems.get(getAdapterPosition()).getmSourceName());
+            intent.putExtra("recipe_liked", mRecipeItems.get(getAdapterPosition()).isLiked());
+            intent.putExtra("recipe_id", mRecipeItems.get(getAdapterPosition()).getItemId());
+            intent.putExtra("recipe_image", mRecipeItems.get(getAdapterPosition()).getmImageUrl());
+            //intent.putExtra("recipe_rating", mRecipeItems.get(getAdapterPosition()).getItemRating());
+            intent.putExtra("recipe_url", mRecipeItems.get(getAdapterPosition()).getmRecipeURL());
+            //intent.putExtra("recipe_uri", mRecipeItems.get(getAdapterPosition()).getItemUri());
+            intent.putExtra("position", getAdapterPosition());
+            // deprecated
+            likesFragment.startActivityForResult(intent, RECIPEITEMSCREENCALL);
+        }
     }
 }

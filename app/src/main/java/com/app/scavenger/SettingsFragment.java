@@ -23,7 +23,7 @@ import com.google.firebase.auth.FirebaseAuth;
 public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private Context mContext;
-    private Preference signIn, signOut, groceryList ,help, about;
+    private Preference signIn, signOut, help, about, diets; //,groceryList
     private SharedPreferences sharedPreferences;
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
@@ -43,6 +43,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         mContext = getContext();
         signIn = findPreference("signIn");
         signOut = findPreference("signOut");
+        //diets = findPreference("diets");
         //groceryList = findPreference("groceryList");
         help = findPreference("help");
         about = findPreference("about");
@@ -87,16 +88,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         accessToken = AccessToken.getCurrentAccessToken();
 
         // -------------------------------------------------------------------------
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
 
         signIn.setOnPreferenceClickListener(v -> {
             openSignIn();
@@ -117,6 +108,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             return false;
         });
 
+        /*diets.setOnPreferenceClickListener(v -> {
+            openDiets();
+            return false;
+        });*/
+
         /*groceryList.setOnPreferenceClickListener(v -> {
             openGroceryList();
             return false;
@@ -133,6 +129,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         });
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+    }
+
     private void openHelp() {
         startActivity(new Intent(mContext, Help.class));
     }
@@ -144,6 +145,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     private void openSignIn() {
         startActivity(new Intent(mContext, SignInActivity.class));
     }
+
+    //private void openDiets() { startActivity(new Intent(mContext, DietPreferences.class)); }
 
     //private void openGroceryList() { startActivity(new Intent(mContext, GroceryListActivity.class)); }
 

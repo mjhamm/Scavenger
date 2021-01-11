@@ -17,10 +17,22 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".GroceryListActivity"
+        <activity android:name=".DietPreferences"
             android:screenOrientation="portrait"/>
         <activity
+            android:name=".CommentsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".RecipeItemScreen"
+            android:label="@string/title_activity_recipe_item_screen"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".GroceryListActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".SplashActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -34,7 +46,7 @@
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan"
-            tools:ignore="LockedOrientationActivity"/>
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".SendFeedback"
             android:screenOrientation="portrait" />

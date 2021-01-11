@@ -1,20 +1,48 @@
 package com.app.scavenger;
 
+import androidx.annotation.IntDef;
+
 import com.google.firebase.firestore.Exclude;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
 class RecipeItem {
 
-    //Empty Constructor
-    RecipeItem() {}
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({TYPE_HEADER, TYPE_ITEM})
 
-    private String itemId;
+    public @interface ItemType {}
+
+    public static final int TYPE_HEADER = 0;
+    public static final int TYPE_ITEM = 1;
+
+    //Empty Constructor
+    RecipeItem(@ItemType int itemType) {
+        this.itemType = itemType;
+    }
+
+    private final int itemType;
+
+    // testing
+    //private String itemId;
+    @Expose
+    @SerializedName("id")
+    private int itemId;
+
+    private float itemRating;
+    //private int itemRating;
+
+    /*@Expose
+    @SerializedName("uri")
+    private String mRecipeUri;
 
     @Expose
     @SerializedName("dietLabels")
-    private ArrayList<String> mRecipeAttributes;
+    private ArrayList<String> mRecipeAttributes;*/
 
     @Expose
     @SerializedName("ingredients")
@@ -25,14 +53,16 @@ class RecipeItem {
     private String mImageUrl;
 
     @Expose
-    @SerializedName("label")
+//    @SerializedName("label")
+    @SerializedName("title")
     private String mRecipeName;
 
     @Expose
-    @SerializedName("source")
+    @SerializedName("sourceName")
+//    @SerializedName("source")
     private String mSourceName;
 
-    @Expose
+    /*@Expose
     @SerializedName("CHOCDF")
     private int mCarbs;
 
@@ -42,30 +72,40 @@ class RecipeItem {
 
     @Expose
     @SerializedName("PROCNT")
-    private int mProtein;
+    private int mProtein;*/
 
     @Expose
-    @SerializedName("url")
+//    @SerializedName("url")
+    @SerializedName("sourceUrl")
     private String mRecipeURL;
 
-    @Expose
+    /*@Expose
     @SerializedName("yield")
     private int mServings;
 
     @Expose
     @SerializedName("calories")
-    private int mCalories;
+    private int mCalories;*/
 
-    private boolean clicked;
     private boolean liked;
 
     @Exclude
-    String getItemId() {
+    int getItemId() {
         return itemId;
     }
 
-    void setItemId(String itemId) {
+    void setItemId(int itemId) {
         this.itemId = itemId;
+    }
+
+    public int getItemType() { return itemType; }
+
+    float getItemRating() {
+        return itemRating;
+    }
+
+    void setItemRating(float itemRating) {
+        this.itemRating = itemRating;
     }
 
     void setmImageUrl(String mImageUrl) {
@@ -92,14 +132,6 @@ class RecipeItem {
         return mSourceName;
     }
 
-    boolean isClicked() {
-        return clicked;
-    }
-
-    void setClicked(boolean clicked) {
-        this.clicked = clicked;
-    }
-
     boolean isLiked() {
         return liked;
     }
@@ -108,14 +140,51 @@ class RecipeItem {
         this.liked = liked;
     }
 
+    ArrayList<String> getmIngredients() {
+        return mIngredients;
+    }
+
+    String getmRecipeURL() {
+        return mRecipeURL;
+    }
+
+    void setmRecipeURL(String mRecipeURL) {
+        this.mRecipeURL = mRecipeURL;
+    }
+
+    // testing
+    /*@Exclude
+    String getItemId() {
+        return itemId;
+    }
+
+    void setItemId(String itemId) {
+        this.itemId = itemId;
+    }
+
+    // testing
+    int getItemRating() {
+        return itemRating;
+    }
+
+    void setItemRating(int itemRating) {
+        this.itemRating = itemRating;
+    }
+
+    void setItemUri(String mRecipeUri) {
+        this.mRecipeUri = mRecipeUri;
+    }
+
+    String getItemUri() {
+        return mRecipeUri;
+    }
+
     ArrayList<String> getmRecipeAttributes() {
         return mRecipeAttributes;
     }
 
-    void setmRecipeAttributes(ArrayList<String> mRecipeAttributes) { this.mRecipeAttributes = mRecipeAttributes; }
-
-    ArrayList<String> getmIngredients() {
-        return mIngredients;
+    void setmRecipeAttributes(ArrayList<String> mRecipeAttributes) {
+        this.mRecipeAttributes = mRecipeAttributes;
     }
 
     void setmIngredients(ArrayList<String> mIngredients) {
@@ -146,14 +215,6 @@ class RecipeItem {
         this.mProtein = mProtein;
     }
 
-    String getmRecipeURL() {
-        return mRecipeURL;
-    }
-
-    void setmRecipeURL(String mRecipeURL) {
-        this.mRecipeURL = mRecipeURL;
-    }
-
     int getmServings() {
         return mServings;
     }
@@ -168,5 +229,5 @@ class RecipeItem {
 
     void setmCalories(int mCalories) {
         this.mCalories = mCalories;
-    }
+    }*/
 }

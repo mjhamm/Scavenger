@@ -1,34 +1,28 @@
 package com.app.scavenger;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
+
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.TextPaint;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.AccessToken;
@@ -47,17 +41,21 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.OAuthProvider;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class SignInActivity extends AppCompatActivity {
 
@@ -65,18 +63,20 @@ public class SignInActivity extends AppCompatActivity {
     private static final String TAG = "SIGN_IN_ACTIVITY: ";
 
     private MaterialButton signInButton;
+    private Context mContext;
     private EditText emailEdit, passEdit;
     private FrameLayout progressHolder;
-    private TextView signInTerms;
+    private TextView signInTerms, mResendVerificationButton;
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth;
     private SharedPreferences sharedPreferences;
-    private String email = null, pass = null;
+    private String name = null, email = null, pass = null;
     private DatabaseHelper myDb;
     private GoogleSignInClient mGoogleSignInClient;
     private CallbackManager callbackManager;
     private ConnectionDetector con;
+    private long mLastClickTime = 0;
 
     // Required empty public constructor
     public SignInActivity() {}
@@ -87,6 +87,18 @@ public class SignInActivity extends AppCompatActivity {
 
         if (sharedPreferences.getBoolean("logged", false)) {
             finish();
+        }
+
+        if (sharedPreferences.getBoolean("verify", false)) {
+            Toast.makeText(mContext, "A verification has been sent to your email. Please verify your email in order to Sign In", Toast.LENGTH_LONG).show();
+
+            if (mResendVerificationButton != null) {
+                mResendVerificationButton.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (mResendVerificationButton != null) {
+                mResendVerificationButton.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -106,12 +118,6 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Update to the status bar on lower SDK's
-        // Makes bar on lower SDK's black with white icons
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            this.getWindow().setStatusBarColor(getResources().getColor(android.R.color.black));
-        }
         setContentView(R.layout.activity_sign_in);
 
         // Google Info
@@ -127,7 +133,12 @@ public class SignInActivity extends AppCompatActivity {
         MaterialButton mFacebookSignIn = findViewById(R.id.facebook_signIn);
         callbackManager = CallbackManager.Factory.create();
 
+        mContext = getApplicationContext();
+
         MaterialButton mAppleSignIn = findViewById(R.id.apple_signIn);
+
+        TopToolbar topToolbar = findViewById(R.id.signIn_toolbar);
+        topToolbar.setTitle("Sign In");
 
         con = new ConnectionDetector(this);
 
@@ -136,6 +147,7 @@ public class SignInActivity extends AppCompatActivity {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+        mResendVerificationButton = findViewById(R.id.verify_text);
         signInButton = findViewById(R.id.signIn_Button);
         // Views from Sign In activity
         TextView signUpText = findViewById(R.id.signUp_text);
@@ -144,13 +156,23 @@ public class SignInActivity extends AppCompatActivity {
         passEdit = findViewById(R.id.password_editText);
         signInTerms = findViewById(R.id.accept_terms_signin);
         progressHolder = findViewById(R.id.signIn_progressHolder);
-        ImageButton backButton = findViewById(R.id.signIn_back);
 
-        backButton.setOnClickListener(v -> finish());
+        mResendVerificationButton.setOnClickListener(v -> {
+            hideKeyboard(this);
+            if (SystemClock.elapsedRealtime() - mLastClickTime < 5000) {
+                return;
+            }
+            mLastClickTime = SystemClock.elapsedRealtime();
+            if (mAuth.getCurrentUser() != null) {
+                Log.d(TAG, "current user: " + mAuth.getCurrentUser());
+                mAuth.getCurrentUser().sendEmailVerification();
+                Toast.makeText(this, "A verification has been sent to your email. Please verify your email in order to Sign In", Toast.LENGTH_LONG).show();
+            }
+        });
 
         // Sign in with email button ---------------------------------------------------------------
         signInButton.setOnClickListener(v -> {
-            hideKeyboard(SignInActivity.this);
+            hideKeyboard(this);
             if (!con.connectedToInternet()) {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle(Constants.noInternetTitle)
@@ -166,18 +188,28 @@ public class SignInActivity extends AppCompatActivity {
                         .addOnCompleteListener(this, task -> {
                             if (task.isSuccessful()) {
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                toastMessage("Signed in successfully");
                                 if (user != null) {
-                                    retrieveLikesFromFirebase(user);
-                                    updatePrefInfo(user.getUid());
-                                    sendDataToFirebase(user);
+                                    if (user.isEmailVerified()) {
+                                        retrieveLikesFromFirebase(user);
+                                        updatePrefInfo(user.getUid());
+                                        //sendDataToFirebase(user);
+                                    } else {
+                                        new MaterialAlertDialogBuilder(SignInActivity.this)
+                                                .setTitle("Email Address not Verified")
+                                                .setMessage("The Email Address that you have entered has not been verified. Please check your email and verify in order to Sign In. If you continue to have issues, please reach out to Scavenger Support at support@thescavengerapp.com.")
+                                                .setPositiveButton("OK", (dialog, which) -> {
+                                                    dialog.dismiss();
+                                                    progressHolder.setVisibility(View.GONE);
+                                                    emailEdit.requestFocus();
+                                                })
+                                                .create()
+                                                .show();
+                                    }
                                 }
-                                finish();
-                                progressHolder.setVisibility(View.GONE);
                             } else {
                                 Log.w(TAG, "SignInWithEmail:failure", task.getException());
                                 new MaterialAlertDialogBuilder(SignInActivity.this)
-                                        .setTitle("Invalid Email or Password.")
+                                        .setTitle("Invalid Email or Password")
                                         .setMessage("The Email Address or Password that you have used is invalid. Please check typing and try again. If you continue to have issues, please reach out to Scavenger Support at support@thescavengerapp.com.")
                                         .setPositiveButton("OK", (dialog, which) -> {
                                             dialog.dismiss();
@@ -264,8 +296,8 @@ public class SignInActivity extends AppCompatActivity {
     private void sendDataToFirebase(FirebaseUser user) {
         if (user != null) {
             HashMap<String, Object> data = new HashMap<>();
-            data.put("name", user.getDisplayName());
-            data.put("email", user.getEmail());
+            data.put("name", name);
+            //data.put("email", email);
             db.collection(Constants.firebaseUser).document(user.getUid()).set(data);
         }
     }
@@ -305,19 +337,23 @@ public class SignInActivity extends AppCompatActivity {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "signInWithCredential:success");
                         FirebaseUser user = mAuth.getCurrentUser();
-                        toastMessage("Signed in successfully");
+                        //toastMessage("Signed in successfully");
                         if (user != null) {
+                            name = user.getDisplayName();
+                            email = user.getEmail();
                             retrieveLikesFromFirebase(user);
-                            updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
+                            updatePrefInfo(user.getUid());
                         }
+                        //finish();
+                        //progressHolder.setVisibility(View.GONE);
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
                         toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                     }
-                    finish();
-                    progressHolder.setVisibility(View.GONE);
+                    /*finish();
+                    progressHolder.setVisibility(View.GONE);*/
                 });
     }
 
@@ -328,6 +364,7 @@ public class SignInActivity extends AppCompatActivity {
 
     private void googleSignIn() {
         Intent intent = mGoogleSignInClient.getSignInIntent();
+        // DEPRECATED
         startActivityForResult(intent, RC_SIGN_IN);
     }
 
@@ -340,19 +377,23 @@ public class SignInActivity extends AppCompatActivity {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "signInWithCredential:success");
                         FirebaseUser user = mAuth.getCurrentUser();
-                        toastMessage("Signed in successfully");
+                        //toastMessage("Signed in successfully");
                         if (user != null) {
+                            name = user.getDisplayName();
+                            email = user.getEmail();
                             retrieveLikesFromFirebase(user);
-                            updatePrefInfo(user.getUid());
                             sendDataToFirebase(user);
+                            updatePrefInfo(user.getUid());
                         }
+                        //finish();
+                        //progressHolder.setVisibility(View.GONE);
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
                         toastMessage("Authentication Failed. Please try again or reach out to support@theScavengerApp.com for assistance");
                     }
-                    finish();
-                    progressHolder.setVisibility(View.GONE);
+                    /*finish();
+                    progressHolder.setVisibility(View.GONE);*/
                 });
     }
 
@@ -361,7 +402,76 @@ public class SignInActivity extends AppCompatActivity {
     // Apple Sign In information and Methods ------------------------------------------------------------------------------------------------------------------
 
     private void appleSignIn() {
-        Log.d(TAG, "Apple Sign In");
+        progressHolder.setVisibility(View.VISIBLE);
+        OAuthProvider.Builder provider = OAuthProvider.newBuilder("apple.com");
+        List<String> scopes = new ArrayList<String>() {
+            {
+                add("email");
+                add("name");
+            }
+        };
+        provider.setScopes(scopes);
+
+        mAuth = FirebaseAuth.getInstance();
+        Task<AuthResult> pending = mAuth.getPendingAuthResult();
+        if (pending != null) {
+            pending.addOnSuccessListener(authResult -> {
+                // Get the user profile with authResult.getUser() and
+                // authResult.getAdditionalUserInfo(), and the ID
+                // token from Apple with authResult.getCredential().
+                Log.d(TAG, "appleSignIn");
+                FirebaseUser user = authResult.getUser();
+                //toastMessage("Signed in successfully");
+                if (user != null) {
+                    if (user.getDisplayName() == null) {
+                        name = "Anonymous";
+                    } else {
+                        name = user.getDisplayName();
+                    }
+                    email = user.getEmail();
+                    retrieveLikesFromFirebase(user);
+                    sendDataToFirebase(user);
+                    updatePrefInfo(user.getUid());
+                }
+                //finish();
+                //progressHolder.setVisibility(View.GONE);
+            }).addOnFailureListener(e -> {
+                toastMessage("Issue Signing in. Please try again");
+                Log.w(TAG, "checkPending:onFailure", e);
+                progressHolder.setVisibility(View.GONE);
+            });
+        } else {
+            startSignInWithApple(provider);
+            Log.d(TAG, "pending: null");
+        }
+        //Log.d(TAG, "Apple Sign In");
+    }
+
+    private void startSignInWithApple(OAuthProvider.Builder provider) {
+        mAuth.startActivityForSignInWithProvider(this, provider.build())
+                .addOnSuccessListener(authResult -> {
+                    Log.d(TAG, "activitySignIn:onSuccess:" + authResult.getUser());
+                    FirebaseUser user = authResult.getUser();
+                    //toastMessage("Signed in successfully");
+                    if (user != null) {
+                        if (user.getDisplayName() == null) {
+                            name = "Anonymous";
+                        } else {
+                            name = user.getDisplayName();
+                        }
+                        email = user.getEmail();
+                        retrieveLikesFromFirebase(user);
+                        sendDataToFirebase(user);
+                        updatePrefInfo(user.getUid());
+                    }
+                    //finish();
+                    //progressHolder.setVisibility(View.GONE);
+                })
+                .addOnFailureListener(e -> {
+                    toastMessage("Issue Signing up. Please try again");
+                    Log.w(TAG, "activitySignIn:onFailure", e);
+                    progressHolder.setVisibility(View.GONE);
+                });
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -377,7 +487,6 @@ public class SignInActivity extends AppCompatActivity {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
-                //noinspection ConstantConditions
                 Log.d(TAG, "firebaseAuthWithGoogle: " + account.getId());
                 firebaseAuthWithGoogle(account.getIdToken());
             } catch (ApiException e) {
@@ -392,18 +501,22 @@ public class SignInActivity extends AppCompatActivity {
         editor.putBoolean("logged", true);
         editor.putString("userId", userId);
         editor.putBoolean("refresh", true);
+        editor.putBoolean("verify", false);
         editor.apply();
+
+        progressHolder.setVisibility(View.GONE);
+        finish();
     }
 
     private void retrieveLikesFromFirebase(FirebaseUser user) {
         CollectionReference likesRef = db.collection(Constants.firebaseUser).document(user.getUid()).collection(Constants.firebaseLikes);
         likesRef.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    String itemId;
+                    int itemId;
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            itemId = documentSnapshot.getString("itemId");
+                            itemId = documentSnapshot.getLong("itemId").intValue();
                             myDb.addDataToView(itemId);
                         }
                     }
@@ -420,11 +533,7 @@ public class SignInActivity extends AppCompatActivity {
             signInButton.setEnabled(false);
         } else {
             if (emailEdit.getText().toString().trim().contains("@")) {
-                if (!passEdit.getText().toString().trim().isEmpty()) {
-                    signInButton.setEnabled(true);
-                } else {
-                    signInButton.setEnabled(false);
-                }
+                signInButton.setEnabled(!passEdit.getText().toString().trim().isEmpty());
             } else {
                 signInButton.setEnabled(false);
             }
@@ -460,13 +569,13 @@ public class SignInActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-
         signInTerms.setText("");
         signInTerms.setMovementMethod(null);
 
         if (callbackManager != null) {
             callbackManager = null;
         }
+
+        super.onDestroy();
     }
 }
