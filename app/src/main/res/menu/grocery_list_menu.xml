@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/action_sendlist"
-        android:title="Send List"/>
+        android:title="@string/grocery_list_send_list"/>
 
     <item android:id="@+id/action_selectitems"
-        android:title="Select Items"/>
+        android:title="@string/grocery_list_select_items"/>
 
-    <item android:title="Clear All"/>
+    <item android:title="@string/grocery_list_clear_all"/>
 
 </menu>

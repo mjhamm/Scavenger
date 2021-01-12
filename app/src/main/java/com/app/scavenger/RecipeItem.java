@@ -1,5 +1,8 @@
 package com.app.scavenger;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.IntDef;
 
 import com.google.firebase.firestore.Exclude;
@@ -10,7 +13,49 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
-class RecipeItem {
+class RecipeItem implements Parcelable {
+
+    protected RecipeItem(Parcel in) {
+        itemType = in.readInt();
+        itemId = in.readInt();
+        itemRating = in.readFloat();
+        mIngredients = in.createStringArrayList();
+        mImageUrl = in.readString();
+        mRecipeName = in.readString();
+        mSourceName = in.readString();
+        mRecipeURL = in.readString();
+        liked = in.readByte() != 0;
+    }
+
+    public static final Creator<RecipeItem> CREATOR = new Creator<RecipeItem>() {
+        @Override
+        public RecipeItem createFromParcel(Parcel in) {
+            return new RecipeItem(in);
+        }
+
+        @Override
+        public RecipeItem[] newArray(int size) {
+            return new RecipeItem[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(itemType);
+        dest.writeInt(itemId);
+        dest.writeFloat(itemRating);
+        dest.writeStringList(mIngredients);
+        dest.writeString(mImageUrl);
+        dest.writeString(mRecipeName);
+        dest.writeString(mSourceName);
+        dest.writeString(mRecipeURL);
+        dest.writeByte((byte) (liked ? 1 : 0));
+    }
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({TYPE_HEADER, TYPE_ITEM})

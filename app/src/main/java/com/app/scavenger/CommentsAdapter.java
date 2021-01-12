@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
@@ -163,10 +164,10 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
             reportingReference.document().set(reportCommentInfo)
                     .addOnSuccessListener(aVoid -> {
                         Log.d("COMMENTSADAPTER","Report saved to Firebase");
-                        //toastMessage("Thank you for your report");
+                        Toast.makeText(mContext.getApplicationContext(), "Thank you for your report", Toast.LENGTH_SHORT).show();
                     })
                     .addOnFailureListener(e -> {
-                        //toastMessage("Error sending report");
+                        Toast.makeText(mContext.getApplicationContext(), "Error sending report. Please check your connection and try again", Toast.LENGTH_SHORT).show();
                         Log.d("COMMENTSADAPTER", e.toString());
                     });
         }

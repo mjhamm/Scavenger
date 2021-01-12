@@ -58,7 +58,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -173,6 +175,8 @@ public class RecipeItemScreen extends AppCompatActivity {
         attributes = new ArrayList<>();
 
         commentItems = new ArrayList<>();
+
+        reportReason = "Inappropriate Image";
 
         getInfoFromSharedPrefs();
 
@@ -313,7 +317,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                 recipeImage.setImageDrawable(null);
             }
         } else {
-            Toast.makeText(this, "Something went wrong while retrieving data. Please try again", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Something went wrong while retrieving data. Please try again", Toast.LENGTH_SHORT).show();
         }
         
         ImageButton mBackButton = findViewById(R.id.item_screen_back);
@@ -413,10 +417,11 @@ public class RecipeItemScreen extends AppCompatActivity {
                         isLiked = false;
                         try {
                             removeDataFromFirebase(itemId);
+                            myDb.removeDataFromView(itemId);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        myDb.removeDataFromView(itemId);
+                        //myDb.removeDataFromView(itemId);
                     } else {
                         v.startAnimation(scaleAnimation_Like);
                         recipeLike.setImageResource(R.drawable.like_filled);
@@ -584,7 +589,7 @@ public class RecipeItemScreen extends AppCompatActivity {
             builder1.setStartAnimations(context, R.anim.slide_in_right, R.anim.slide_out_left);
             builder1.setExitAnimations(context, R.anim.slide_in_left, R.anim.slide_out_right);
             CustomTabsIntent customTabsIntent = builder1.build();
-            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             builder1.setInstantAppsEnabled(true);
             customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
             //builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
@@ -646,7 +651,7 @@ public class RecipeItemScreen extends AppCompatActivity {
                     editor.apply();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error saving Like. Please try again", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Error saving Like. Please try again", Toast.LENGTH_SHORT).show();
                     Log.d("LOG: ", e.toString());
                 });
     }
@@ -890,8 +895,8 @@ public class RecipeItemScreen extends AppCompatActivity {
                                     .create()
                                     .show();
                         } else {
-                            Log.d("Recipe Item Screen", reportReason);
-                            //sendReportToDb(reportReason, item);
+                            //Log.d("Recipe Item Screen", reportReason);
+                            sendReportToDb(reportReason);
                         }
                     })
                     .setNegativeButton("Cancel", ((dialog, which) -> dialog.cancel()))
@@ -906,6 +911,44 @@ public class RecipeItemScreen extends AppCompatActivity {
             new Instrumentation().callActivityOnSaveInstanceState(this, new Bundle());
         }
         super.onStop();
+    }
+
+    private void sendReportToDb(String reason) {
+        // Send report to Server under reports with Phone information
+
+        Calendar calendar = Calendar.getInstance();
+
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int year = calendar.get(Calendar.YEAR);
+
+        calendar.clear();
+        calendar.set(year, month, day);
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+        String strDate = simpleDateFormat.format(calendar.getTime());
+
+        Date now = new Date();
+        Timestamp timestamp = new Timestamp(now);
+
+        HashMap<String, Object> reportInfo = new HashMap<>();
+
+        CollectionReference reportingReference = db.collection("RecipeReports").document(strDate).collection("reports");
+
+        reportInfo.put("Recipe Report Reason", reason);
+        reportInfo.put("Timestamp", timestamp);
+        reportInfo.put("Recipe Image", image);
+        reportInfo.put("Recipe Name", name);
+        reportInfo.put("Recipe Source", source);
+        reportInfo.put("Recipe URL", url);
+
+        reportingReference.document().set(reportInfo)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getApplicationContext(), "Thank you for your report", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getApplicationContext(), "Error sending report. Please check your connection and try again", Toast.LENGTH_SHORT).show();
+                });
     }
 
     // Gets the Recipe Item's ID

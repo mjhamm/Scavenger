@@ -135,6 +135,44 @@
     <string name="comment_more">comment more</string>
     <string name="remove_item_from_list">remove item from list</string>
     <string name="no_comments">No comments</string>
-
+    <string name="grocery_list_send_list">Send List</string>
+    <string name="grocery_list_select_items">Select Items</string>
+    <string name="grocery_list_clear_all">Clear All</string>
+    <string name="comments_recipe_name">Recipe Name</string>
+    <string name="comments_recipe_source">Recipe Source</string>
+    <string name="comments_not_load_comments">Couldn\'t load comments. Please connect to the Internet in order to load comments.</string>
+    <string name="comments_reload_comments">Reload Comments</string>
+    <string name="comments_add_a_comment">Add a comment…</string>
+    <string name="comments_post">Post</string>
+    <string name="comments_need_to_be_signed_in">You need to be Signed In to Post a Comment.</string>
+    <string name="diet_preferences_will_change">These preferences will change your search results.</string>
+    <string name="diet_dietary_change">*Before starting a dietary change, please consult with a medical professional to make sure that it is right for you.</string>
+    <string name="grocery_list_back">list back</string>
+    <string name="grocery_add_custom_item">Add Custom Item</string>
+    <string name="recipe_detail_must_be_connected_to_the_internet">In order to retrieve the information for this recipe, you must be connected to the internet.</string>
+    <string name="recipe_detail_retry_connection">Retry Connection</string>
+    <string name="recipe_detail_servings">0 Servings</string>
+    <string name="recipe_detail_calories">0</string>
+    <string name="recipe_detail_carbs">0g</string>
+    <string name="recipe_detail_fat">0g</string>
+    <string name="recipe_detail_protein">0g</string>
+    <string name="recipe_detail_view_instructions">View Instructions</string>
+    <string name="recipe_detail_comments">Comments</string>
+    <string name="recipe_detail_add_comment">add_comment</string>
+    <string name="sign_in_resend_verification_email">Resend Verification Email?</string>
+    <string name="sign_in_sign_in_with_apple">Sign In with Apple</string>
+    <string name="sign_up_sign_up_with_apple">Sign Up with Apple</string>
+    <string name="grocery_item_custom_grocery_item">Custom Grocery Item</string>
+    <string name="grocery_email_address">Email Address</string>
+    <string name="grocery_password">Password</string>
+    <string name="comment_user_name">User Name</string>
+    <string name="comment_comment_detail">Comment Detail</string>
+    <string name="diet_diets">Diets</string>
+    <string name="diet_ketogenic">Ketogenic</string>
+    <string name="grocery_butter">Butter</string>
+    <string name="instructions_step_n1">STEP\n1</string>
+    <string name="instructions_detail_text">torquent per conubia nostra.</string>
+    <string name="item_header_not_many_recipes">Sorry, we didn\'t find many recipes with that search criteria. We\'ve added some of our favorite\'s for you to check out!</string>
+    <string name="item_header_others">Others You Might Like</string>
 
 </resources>

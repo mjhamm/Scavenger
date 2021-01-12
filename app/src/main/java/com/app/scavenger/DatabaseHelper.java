@@ -80,6 +80,11 @@ class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + TABLE_REMOVED);
     }
 
+    public void clearRemoved() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM " + TABLE_REMOVED);
+    }
+
     //------------------------------ LIST TABLE -------------------------------------------------------------------------------------------
 
     //Retrieve data from Likes Table

@@ -288,7 +288,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             builder1.setStartAnimations(context, R.anim.slide_in_right, R.anim.slide_out_left);
             builder1.setExitAnimations(context, R.anim.slide_in_left, R.anim.slide_out_right);
             CustomTabsIntent customTabsIntent = builder1.build();
-            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             builder1.setInstantAppsEnabled(true);
             customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
             //builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
@@ -301,7 +301,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     //method for creating a Toast
     private void toastMessage(String message) {
-        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(mContext.getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     // callback for clear the query in the likes fragment
@@ -355,7 +355,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         private RecipeItem item;
 
         // reason for report from user
-        private String reportReason = null;
+        private String reportReason = "Inappropriate Image";
         // variable that checks whether or not the like button has been clicked in the last 1 second
         private long mLastClickTime = 0;
 
@@ -560,13 +560,12 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             reportInfo.put("Recipe Image", item.getmImageUrl());
             reportInfo.put("Recipe Name", item.getmRecipeName());
             reportInfo.put("Recipe Source", item.getmSourceName());
-            reportInfo.put("Recipe Ingredients", item.getmIngredients());
             reportInfo.put("Recipe URL", item.getmRecipeURL());
 
             reportingReference.document().set(reportInfo)
                     .addOnSuccessListener(aVoid -> {
                         Log.d(TAG,"Report saved to Firebase");
-                        toastMessage("Reported for " + reason + ". Thank you");
+                        toastMessage("Thank you for your report");
                     })
                     .addOnFailureListener(e -> {
                         toastMessage("Error sending report");

@@ -21,7 +21,7 @@
         android:id="@+id/comment_recipeName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Recipe Name"
+        android:text="@string/comments_recipe_name"
         android:textColor="@android:color/black"
         android:fontFamily="@font/roboto_medium"
         android:textSize="18sp"
@@ -37,7 +37,7 @@
         android:id="@+id/comment_recipeSource"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Recipe Source"
+        android:text="@string/comments_recipe_source"
         android:layout_marginTop="4dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
@@ -70,7 +70,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:textSize="14sp"
-        android:text="Couldn't load comments. Please connect to the Internet in order to load comments."
+        android:text="@string/comments_not_load_comments"
         app:layout_constraintTop_toBottomOf="@id/comment_underline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -83,7 +83,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/not_connected_text_comments"
-        android:text="Reload Comments"
+        android:text="@string/comments_reload_comments"
         android:textColor="@android:color/white"
         android:textAllCaps="false"
         android:textSize="14sp"
@@ -131,7 +131,7 @@
                 android:paddingStart="24dp"
                 android:paddingEnd="12dp"
                 android:layout_gravity="start|center_vertical"
-                android:hint="Add a comment..."
+                android:hint="@string/comments_add_a_comment"
                 android:textColor="@color/item_bg"
                 android:visibility="visible"
                 android:importantForAutofill="no" />
@@ -140,7 +140,7 @@
                 android:id="@+id/post_textButton"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:text="Post"
+                android:text="@string/comments_post"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:fontFamily="@font/roboto_medium"
@@ -158,7 +158,7 @@
                 android:fontFamily="@font/roboto_medium"
                 android:textColor="@color/dark_gray"
                 android:visibility="gone"
-                android:text="You need to be Signed In to Post a Comment."/>
+                android:text="@string/comments_need_to_be_signed_in"/>
 
         </LinearLayout>
 

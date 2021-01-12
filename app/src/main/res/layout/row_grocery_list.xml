@@ -22,7 +22,7 @@
         android:id="@+id/grocerylist_row_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Butter"
+        android:text="@string/grocery_butter"
         android:fontFamily="@font/roboto_condensed_regular"
         android:textSize="20sp"
         android:textColor="@android:color/black"

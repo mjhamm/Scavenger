@@ -14,7 +14,7 @@
         android:layout_marginStart="16dp"
         android:fontFamily="@font/roboto_condensed_regular"
         android:textSize="16sp"
-        android:hint="Email Address"
+        android:hint="@string/grocery_email_address"
         android:inputType="textEmailAddress"
         android:textColorHint="@color/dark_gray"
         android:autofillHints="" />
@@ -28,7 +28,7 @@
         android:fontFamily="@font/roboto_condensed_regular"
         android:textSize="16sp"
         android:inputType="textPassword"
-        android:hint="Password"
+        android:hint="@string/grocery_password"
         android:textColorHint="@color/dark_gray"
         android:autofillHints="" />
 

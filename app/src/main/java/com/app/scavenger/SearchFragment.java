@@ -92,19 +92,20 @@ public class SearchFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
         mContext = getContext();
         myDb = DatabaseHelper.getInstance(mContext);
+        recipeItemArrayList = new ArrayList<>();
+        itemIds = new ArrayList<>();
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        Log.d(TAG, "onStart");
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         logged = currentUser != null;
-
-        recipeItemArrayList = new ArrayList<>();
-        itemIds = new ArrayList<>();
     }
 
     @Override
@@ -127,6 +128,8 @@ public class SearchFragment extends Fragment {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        Log.d(TAG, "onCreateView");
         View view;
         try {
             view = inflater.inflate(R.layout.fragment_search, container, false);
@@ -277,13 +280,18 @@ public class SearchFragment extends Fragment {
     }
 
     public void updateSearchFrag() {
-        if (!recipeItemArrayList.isEmpty()) {
+        Log.d(TAG, "updateSearchFrag");
+        Log.d(TAG, "recipeItemSize: " + recipeItemArrayList.size());
+        if (recipeItemArrayList != null && !recipeItemArrayList.isEmpty()) {
+            Log.d(TAG, "recipeItemArrayList not empty");
             Cursor removedItems = myDb.getRemovedItems();
+            Log.d(TAG, "num removed items" + removedItems.getCount());
             while (removedItems.moveToNext()) {
                 for (RecipeItem item : recipeItemArrayList) {
                     if (item != null) {
                         // testing
                         if (item.getItemId() == removedItems.getInt(1)) {
+                            Log.d(TAG, "Item ID: " + item.getItemId());
                             item.setLiked(false);
                             myDb.removeRemovedItem(item.getItemId());
                         }
@@ -463,7 +471,7 @@ public class SearchFragment extends Fragment {
 
                 // Image
                 item.setmImageUrl(hits.getString("image"));
-                Log.d(TAG, "image: " + hits.get("image"));
+                //Log.d(TAG, "image: " + hits.get("image"));
                 // Name
                 item.setmRecipeName(hits.getString("title"));
                 // Source
@@ -473,23 +481,23 @@ public class SearchFragment extends Fragment {
                     item.setmRecipeURL("https://www.thescavengerapp.com/recipe-not-found");
                 } else {
                     item.setmRecipeURL(hits.getString("sourceUrl"));
-                    Log.d(TAG, "sourceUrl: " + hits.get("sourceUrl"));
+                    //Log.d(TAG, "sourceUrl: " + hits.get("sourceUrl"));
                 }
                 // Rating
                 item.setItemRating(itemRating(hits.getDouble("spoonacularScore")));
-                Log.d(TAG, "rating: " + hits.getDouble("spoonacularScore"));
-                Log.d(TAG, "New Rating: " + itemRating(hits.getDouble("spoonacularScore")));
+                //Log.d(TAG, "rating: " + hits.getDouble("spoonacularScore"));
+                //Log.d(TAG, "New Rating: " + itemRating(hits.getDouble("spoonacularScore")));
                 // Unique ID
                 item.setItemId(hits.getInt("id"));
-                Log.d(TAG, "id: " + hits.get("id"));
+                //Log.d(TAG, "id: " + hits.get("id"));
 
                 // checks if item in contained in db liked items to set as liked
                 if (itemIds.contains(item.getItemId())) {
                     item.setLiked(true);
                 }
 
-                Log.d(TAG, "RecipeName: " + item.getmRecipeName());
-                Log.d(TAG, "sourceName: " + item.getmSourceName());
+                //Log.d(TAG, "RecipeName: " + item.getmRecipeName());
+                //Log.d(TAG, "sourceName: " + item.getmSourceName());
 
                 // remove items with null source
                 if (!item.getmSourceName().equalsIgnoreCase("null")) {
@@ -517,7 +525,7 @@ public class SearchFragment extends Fragment {
 
                 // Image
                 item.setmImageUrl(hits.getString("image"));
-                Log.d(TAG, "image: " + hits.get("image"));
+                //Log.d(TAG, "image: " + hits.get("image"));
                 // Name
                 item.setmRecipeName(hits.getString("title"));
                 // Source
@@ -527,23 +535,23 @@ public class SearchFragment extends Fragment {
                     item.setmRecipeURL("https://www.thescavengerapp.com/recipe-not-found");
                 } else {
                     item.setmRecipeURL(hits.getString("sourceUrl"));
-                    Log.d(TAG, "sourceUrl: " + hits.get("sourceUrl"));
+                    //Log.d(TAG, "sourceUrl: " + hits.get("sourceUrl"));
                 }
                 // Rating
                 item.setItemRating(itemRating(hits.getDouble("spoonacularScore")));
-                Log.d(TAG, "rating: " + hits.getDouble("spoonacularScore"));
-                Log.d(TAG, "New Rating: " + itemRating(hits.getDouble("spoonacularScore")));
+                //Log.d(TAG, "rating: " + hits.getDouble("spoonacularScore"));
+                //Log.d(TAG, "New Rating: " + itemRating(hits.getDouble("spoonacularScore")));
                 // Unique ID
                 item.setItemId(hits.getInt("id"));
-                Log.d(TAG, "id: " + hits.get("id"));
+                //Log.d(TAG, "id: " + hits.get("id"));
 
                 // checks if item in contained in db liked items to set as liked
                 if (itemIds.contains(item.getItemId())) {
                     item.setLiked(true);
                 }
 
-                Log.d(TAG, "RecipeName: " + item.getmRecipeName());
-                Log.d(TAG, "sourceName: " + item.getmSourceName());
+                //Log.d(TAG, "RecipeName: " + item.getmRecipeName());
+                //Log.d(TAG, "sourceName: " + item.getmSourceName());
 
                 // remove items with null source
                 if (!item.getmSourceName().equalsIgnoreCase("null")) {
@@ -761,7 +769,7 @@ public class SearchFragment extends Fragment {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
-                Log.d(TAG, "random recipes response: " + response.code());
+                //Log.d(TAG, "random recipes response: " + response.code());
                 if (response.isSuccessful()) {
                     Log.d(TAG, "random recipes success: ");
                     if (response.body() != null) {
@@ -817,7 +825,7 @@ public class SearchFragment extends Fragment {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
-                Log.d(TAG, "random recipes response: " + response.code());
+                //Log.d(TAG, "random recipes response: " + response.code());
                 if (response.isSuccessful()) {
                     Log.d(TAG, "random recipes success: ");
                     if (response.body() != null) {

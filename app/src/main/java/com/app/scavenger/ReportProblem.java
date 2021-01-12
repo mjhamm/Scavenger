@@ -166,7 +166,7 @@ public class ReportProblem extends AppCompatActivity {
 
     //method for creating a Toast
     private void toastMessage(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this.getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     // Gets report text

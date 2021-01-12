@@ -24,7 +24,7 @@
             android:id="@+id/step_number_textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="STEP\n1"
+            android:text="@string/instructions_step_n1"
             android:gravity="center"
             android:fontFamily="@font/roboto_medium"
             android:textSize="16sp"
@@ -45,7 +45,7 @@
             android:fontFamily="@font/roboto_condensed_regular"
             android:textColor="@android:color/black"
             android:gravity="start|center_vertical"
-            android:text=" torquent per conubia nostra."/>
+            android:text="@string/instructions_detail_text"/>
 
     </LinearLayout>
 

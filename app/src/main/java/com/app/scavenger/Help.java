@@ -105,7 +105,7 @@ public class Help extends AppCompatActivity implements HelpAdapter.ItemClickList
             builder1.setStartAnimations(context, R.anim.slide_in_right, R.anim.slide_out_left);
             builder1.setExitAnimations(context, R.anim.slide_in_left, R.anim.slide_out_right);
             CustomTabsIntent customTabsIntent = builder1.build();
-            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             builder1.setInstantAppsEnabled(true);
             customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
             //builder1.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));

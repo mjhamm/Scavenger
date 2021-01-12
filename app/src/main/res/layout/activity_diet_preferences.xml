@@ -28,7 +28,7 @@
         android:layout_marginEnd="24dp"
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
-        android:text="These preferences will change your search results."/>
+        android:text="@string/diet_preferences_will_change"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/diet_recyclerView"
@@ -47,7 +47,7 @@
         android:id="@+id/diets_text2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="*Before starting a dietary change, please consult with a medical professional to make sure that it is right for you."
+        android:text="@string/diet_dietary_change"
         android:textColor="@android:color/black"
         android:fontFamily="@font/roboto_condensed_regular"
         android:textSize="12sp"

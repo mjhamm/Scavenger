@@ -13,7 +13,7 @@
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
         android:textColor="@android:color/white"
-        android:text="Diets"
+        android:text="@string/diet_diets"
         android:textSize="22sp"
         android:fontFamily="@font/roboto_medium"
         android:background="@color/colorPrimaryDark"

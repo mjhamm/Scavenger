@@ -28,7 +28,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:text="In order to retrieve the information for this recipe, you must be connected to the internet."/>
+            android:text="@string/recipe_detail_must_be_connected_to_the_internet"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/recipe_retry_con_button"
@@ -42,7 +42,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/not_connected_text_recipeItem"
-            android:text="Retry Connection"/>
+            android:text="@string/recipe_detail_retry_connection"/>
 
         <ProgressBar
             android:id="@+id/loading_detail"
@@ -108,7 +108,7 @@
             android:layout_marginStart="16dp"
             android:fontFamily="@font/roboto_condensed_regular"
             android:gravity="start"
-            android:text="0 Servings"
+            android:text="@string/recipe_detail_servings"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="14sp"
             app:layout_constraintTop_toBottomOf="@id/nutrition_underline"
@@ -123,7 +123,7 @@
             android:textColor="@android:color/black"
             android:textSize="16sp"
             android:translationZ="2dp"
-            android:text="0"
+            android:text="@string/recipe_detail_calories"
             android:layout_marginTop="12dp"
             app:layout_constraintHorizontal_chainStyle="spread"
             app:layout_constraintStart_toStartOf="@id/nutritionCard"
@@ -138,7 +138,7 @@
             android:textColor="@android:color/black"
             android:textSize="16sp"
             android:translationZ="2dp"
-            android:text="0g"
+            android:text="@string/recipe_detail_carbs"
             app:layout_constraintBottom_toBottomOf="@+id/calories_amount_detail"
             app:layout_constraintEnd_toStartOf="@id/fat_amount_detail"
             app:layout_constraintStart_toEndOf="@id/calories_amount_detail"
@@ -151,7 +151,7 @@
             android:fontFamily="@font/roboto_condensed_regular"
             android:textColor="@android:color/black"
             android:textSize="16sp"
-            android:text="0g"
+            android:text="@string/recipe_detail_fat"
             android:translationZ="2dp"
             app:layout_constraintEnd_toStartOf="@id/protein_amount_detail"
             app:layout_constraintStart_toEndOf="@id/carbs_amount_detail"
@@ -166,7 +166,7 @@
             android:textColor="@android:color/black"
             android:textSize="16sp"
             android:translationZ="2dp"
-            android:text="0g"
+            android:text="@string/recipe_detail_protein"
             app:layout_constraintTop_toTopOf="@id/calories_amount_detail"
             app:layout_constraintBottom_toBottomOf="@id/fat_amount_detail"
             app:layout_constraintStart_toEndOf="@id/fat_amount_detail"
@@ -321,7 +321,7 @@
             android:id="@+id/view_recipe_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="View Instructions"
+            android:text="@string/recipe_detail_view_instructions"
             app:cornerRadius="8dp"
             android:textAllCaps="false"
             android:textSize="16sp"
@@ -343,7 +343,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginStart="16dp"
             android:fontFamily="@font/roboto_medium"
-            android:text="Comments"
+            android:text="@string/recipe_detail_comments"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="18sp" />
 
@@ -356,7 +356,7 @@
             android:paddingEnd="12dp"
             android:paddingStart="12dp"
             android:layout_marginEnd="16dp"
-            android:contentDescription="add_comment"
+            android:contentDescription="@string/recipe_detail_add_comment"
             app:layout_constraintTop_toTopOf="@id/comments_main_title"
             app:layout_constraintBottom_toBottomOf="@id/comments_main_title"
             app:layout_constraintEnd_toEndOf="parent"

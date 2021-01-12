@@ -58,7 +58,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/groceryText"
-                android:contentDescription="list back"
+                android:contentDescription="@string/grocery_list_back"
                 android:visibility="invisible"
                 android:background="@drawable/ic_arrow_back_black_36dp"
                 android:layout_marginStart="8dp"/>
@@ -315,7 +315,7 @@
         android:paddingEnd="0dp"
         android:gravity="center_vertical"
         app:drawableStartCompat="@drawable/ic_baseline_add_circle_outline_24"
-        android:text="Add Custom Item"/>
+        android:text="@string/grocery_add_custom_item"/>
 
     <View
         android:id="@+id/horiz_bar"
