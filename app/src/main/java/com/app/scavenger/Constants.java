@@ -2,6 +2,9 @@ package com.app.scavenger;
 
 public class Constants {
 
+    // Spoonacular
+    public static final String apiKey = "1e479374e15a4bf2981d5a78098381b1";
+
     // Common String Information
     public static final String firebaseUser = "Users";
     public static final String firebaseLikes = "Likes";
@@ -34,7 +37,7 @@ public class Constants {
     public static final String nutritionInformationTitle = "Some information about our data";
     public static final String nutritionInformation = "Scavenger uses your search criteria to look throughout the Internet in order to bring you " +
             "the best information we can find. However, sometimes this information may not be 100% accurate. Using " +
-            "the View Recipe button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information, " +
+            "the View Instructions or View Recipe Website button to see the recipe on the actual website will give you the most accurate data. This includes Nutrition Information, " +
             "Number of Servings as well as the Steps for the recipe.";
 
     // Firebase Constants --------------------------------------------------------------

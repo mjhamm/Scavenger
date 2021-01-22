@@ -110,11 +110,11 @@ public class SendFeedback extends AppCompatActivity {
         int sdk = Build.VERSION.SDK_INT;
         String osVersion = Build.VERSION.RELEASE;
 
-        String userId = null;
+        /*String userId = null;
 
         if (mAuth.getCurrentUser() != null) {
             userId = mAuth.getCurrentUser().getUid();
-        }
+        }*/
 
         Calendar calendar = Calendar.getInstance();
 
@@ -148,7 +148,7 @@ public class SendFeedback extends AppCompatActivity {
         feedbackInfo.put("Product", product);
         feedbackInfo.put("SDK", sdk);
         feedbackInfo.put("OS", osVersion);
-        feedbackInfo.put("User Id", userId);
+        //feedbackInfo.put("User Id", userId);
 
 
         feedbackReference.document().set(feedbackInfo)

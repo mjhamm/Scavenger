@@ -112,11 +112,11 @@ public class ReportProblem extends AppCompatActivity {
         int sdk = Build.VERSION.SDK_INT;
         String osVersion = Build.VERSION.RELEASE;
 
-        String userId = null;
+        /*String userId = null;
 
         if (mAuth.getCurrentUser() != null) {
             userId = mAuth.getCurrentUser().getUid();
-        }
+        }*/
 
         Calendar calendar = Calendar.getInstance();
 
@@ -150,7 +150,7 @@ public class ReportProblem extends AppCompatActivity {
         reportInfo.put("Product", product);
         reportInfo.put("SDK", sdk);
         reportInfo.put("OS", osVersion);
-        reportInfo.put("User Id", userId);
+        //reportInfo.put("User Id", userId);
 
 
         reportingReference.document().set(reportInfo)

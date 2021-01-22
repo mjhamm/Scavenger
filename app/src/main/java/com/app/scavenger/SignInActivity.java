@@ -90,7 +90,7 @@ public class SignInActivity extends AppCompatActivity {
         }
 
         if (sharedPreferences.getBoolean("verify", false)) {
-            Toast.makeText(mContext, "A verification has been sent to your email. Please verify your email in order to Sign In", Toast.LENGTH_LONG).show();
+            toastMessage("A verification has been sent to your email. Please verify your email in order to Sign In");
 
             if (mResendVerificationButton != null) {
                 mResendVerificationButton.setVisibility(View.VISIBLE);
@@ -166,7 +166,7 @@ public class SignInActivity extends AppCompatActivity {
             if (mAuth.getCurrentUser() != null) {
                 Log.d(TAG, "current user: " + mAuth.getCurrentUser());
                 mAuth.getCurrentUser().sendEmailVerification();
-                Toast.makeText(this, "A verification has been sent to your email. Please verify your email in order to Sign In", Toast.LENGTH_LONG).show();
+                toastMessage("A verification has been sent to your email. Please verify your email in order to Sign In");
             }
         });
 
@@ -337,7 +337,7 @@ public class SignInActivity extends AppCompatActivity {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "signInWithCredential:success");
                         FirebaseUser user = mAuth.getCurrentUser();
-                        //toastMessage("Signed in successfully");
+                        toastMessage("Signed in successfully");
                         if (user != null) {
                             name = user.getDisplayName();
                             email = user.getEmail();
@@ -377,7 +377,7 @@ public class SignInActivity extends AppCompatActivity {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "signInWithCredential:success");
                         FirebaseUser user = mAuth.getCurrentUser();
-                        //toastMessage("Signed in successfully");
+                        toastMessage("Signed in successfully");
                         if (user != null) {
                             name = user.getDisplayName();
                             email = user.getEmail();
@@ -421,7 +421,7 @@ public class SignInActivity extends AppCompatActivity {
                 // token from Apple with authResult.getCredential().
                 Log.d(TAG, "appleSignIn");
                 FirebaseUser user = authResult.getUser();
-                //toastMessage("Signed in successfully");
+                toastMessage("Signed in successfully");
                 if (user != null) {
                     if (user.getDisplayName() == null) {
                         name = "Anonymous";
@@ -452,7 +452,7 @@ public class SignInActivity extends AppCompatActivity {
                 .addOnSuccessListener(authResult -> {
                     Log.d(TAG, "activitySignIn:onSuccess:" + authResult.getUser());
                     FirebaseUser user = authResult.getUser();
-                    //toastMessage("Signed in successfully");
+                    toastMessage("Signed in successfully");
                     if (user != null) {
                         if (user.getDisplayName() == null) {
                             name = "Anonymous";
@@ -525,7 +525,7 @@ public class SignInActivity extends AppCompatActivity {
 
     //method for creating a Toast
     private void toastMessage(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this.getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     private void checkFieldsForValid() {

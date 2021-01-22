@@ -135,6 +135,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     Picasso.get()
                             .load(item.getmImageUrl())
                             .fit()
+                            .placeholder(R.drawable.placeholder)
                             .config(Bitmap.Config.RGB_565)
                             .into(viewHolder1.recipeImage);
                     // show nothing if the url is null

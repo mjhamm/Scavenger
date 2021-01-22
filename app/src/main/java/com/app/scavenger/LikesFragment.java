@@ -203,6 +203,17 @@ public class LikesFragment extends Fragment {
         }
     }
 
+    public void clearList() {
+        if (adapter != null) {
+            adapter.clearList();
+        }
+        mLikesRecyclerView.setAdapter(adapter);
+
+        if (logged) {
+            checkingStatus();
+        }
+    }
+
     private void changeBGImage(int image) {
 
         mLikes_BG.setVisibility(View.VISIBLE);

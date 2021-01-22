@@ -183,13 +183,20 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         return true;
     }
 
+    // Refreshes both the Search and Like fragments when a user signs out
     @Override
     public void refreshSearch() {
-        //Refresh Search Fragment Here
+        //Refresh Search Fragment
         if (fragment1 != null) {
             SearchFragment searchFragment = (SearchFragment) fragment1;
             searchFragment.refreshFrag();
         }
+        // Refresh Like Fragment
+        if (fragment2 != null) {
+            LikesFragment likesFragment = (LikesFragment) fragment2;
+            likesFragment.clearList();
+        }
+
     }
 
     @Override
