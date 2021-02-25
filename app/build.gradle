@@ -2,17 +2,27 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 
 android {
+
+    signingConfigs {
+        config {
+            storeFile file('S:\\Scavenger Key Store\\upload-keystore.jks')
+            keyAlias 'upload'
+            storePassword '$94ScavKeystore394'
+            keyPassword '$94ScavKeyP@ss394'
+        }
+    }
     compileSdkVersion 29
 
     defaultConfig {
         applicationId "com.app.scavenger"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 3
+        versionCode 6
         versionName "1.1.0"
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resConfigs "en"
+        signingConfig signingConfigs.config
     }
 
     buildTypes {
@@ -28,6 +38,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
     compileOptions {
@@ -47,11 +58,11 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.browser:browser:1.3.0'
-    implementation 'com.google.android.material:material:1.2.1'
-    implementation 'com.google.firebase:firebase-firestore:22.0.1'
-    implementation 'com.google.firebase:firebase-auth:20.0.1'
+    implementation 'com.google.android.material:material:1.3.0'
+    implementation 'com.google.firebase:firebase-firestore:22.1.0'
+    implementation 'com.google.firebase:firebase-auth:20.0.2'
     implementation 'com.google.firebase:firebase-database:19.6.0'
-    implementation 'com.google.firebase:firebase-analytics:18.0.0'
+    implementation 'com.google.firebase:firebase-analytics:18.0.2'
     implementation 'com.google.android.gms:play-services-auth:19.0.0'
     annotationProcessor 'androidx.annotation:annotation:1.1.0'
     implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
