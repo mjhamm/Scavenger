@@ -52,6 +52,7 @@ public class Constants {
     public static final String COMMENT_NAME = "Comment Name";
     public static final String COMMENT_DETAIL = "Comment Text";
     public static final String COMMENT_USERID = "User Id";
+    public static final String COMMENTS = "comments";
 
     // Arraylists of diets and intolerances
     // added 2/15/2021

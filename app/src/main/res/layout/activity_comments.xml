@@ -7,7 +7,7 @@
     android:id="@+id/parent_layout"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    tools:context=".CommentsActivity">
+    tools:context=".v2.activities.Comments">
 
     <com.app.scavenger.TopToolbar
         android:id="@+id/comments_toolbar"

@@ -8,15 +8,15 @@ import android.net.NetworkInfo;
 // Class to check whether or not the device is connected to the internet
 // through Network or wifi and returns boolean depending on check
 
-class ConnectionDetector {
+public class ConnectionDetector {
 
     private final Context context;
 
-    ConnectionDetector(Context context){
+    public ConnectionDetector(Context context){
         this.context = context;
     }
 
-    boolean connectedToInternet(){
+    public boolean connectedToInternet(){
         ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivity != null) {
             Network[] networks = connectivity.getAllNetworks();

@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
+import com.app.scavenger.v2.activities.Comments;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -57,6 +58,7 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Comment;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -327,7 +329,7 @@ public class RecipeItemScreen extends AppCompatActivity {
         });
 
         commentButton.setOnClickListener(v -> {
-            Intent intent = new Intent(this, CommentsActivity.class);
+            Intent intent = new Intent(this, Comments.class);
             intent.putExtra("focus", true);
             intent.putExtra("recipe_name", name);
             intent.putExtra("recipe_source", source);
@@ -337,7 +339,7 @@ public class RecipeItemScreen extends AppCompatActivity {
         });
 
         viewComments.setOnClickListener(v -> {
-            Intent intent = new Intent(this, CommentsActivity.class);
+            Intent intent = new Intent(this, Comments.class);
             intent.putExtra("focus", false);
             intent.putExtra("recipe_name", name);
             intent.putExtra("recipe_source", source);

@@ -36,7 +36,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     // data is passed into the constructor
-    CommentsAdapter(Context context, List<CommentItem> commentArray, int recipeId, String recipeName, String recipeSource) {
+    public CommentsAdapter(Context context, List<CommentItem> commentArray, int recipeId, String recipeName, String recipeSource) {
         this.mInflater = LayoutInflater.from(context);
         this.mCommentArray = commentArray;
         this.recipeId = recipeId;

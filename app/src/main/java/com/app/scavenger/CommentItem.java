@@ -4,7 +4,7 @@ public class CommentItem {
 
     private String name, detail, userId;
 
-    CommentItem() {}
+    public CommentItem() {}
 
     public String getName() {
         return name;
