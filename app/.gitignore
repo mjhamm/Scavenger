@@ -1,1 +1,10 @@
 /build
+# Android Studio / IntelliJ IDEA
+*.iws
+*.iml
+/.idea
+local.properties
+/src/main/java/com.app.scavenger/Constants.java
+build.gradle
+credentials.json
+google-services.json

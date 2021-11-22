@@ -2,7 +2,6 @@
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -14,46 +13,34 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
-
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.app.scavenger.interfaces.ApiService;
 import com.facebook.shimmer.ShimmerFrameLayout;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Random;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.http.GET;
-import retrofit2.http.Query;
-
 import static android.app.Activity.RESULT_OK;
 import static com.app.scavenger.MainActivity.RECIPEITEMSCREENCALL;
 
 public class SearchFragment extends Fragment {
 
     private static final String TAG = "SEARCH_FRAGMENT: ";
-//    public static final int SEARCH_UPDATED = 104;
 
     private RecyclerView mSearchRecyclerView;
     private ArrayList<Integer> itemIds;
@@ -76,35 +63,6 @@ public class SearchFragment extends Fragment {
     private boolean searchingIngredients = false;
     private DatabaseHelper myDb;
 
-    // Diets and Intolerances
-    // Added 2/15/2021
-    // Version - 7 / 1.1.1
-    private Chip mRatingChip, mDietsChip, mIntolerancesChip;
-    private ArrayList<String> mDietsList;
-    private ArrayList<String> mIntolsList;
-    private int mRatingInt = -1;
-    private int previousRatingInt = -1;
-    private boolean rating = false;
-
-
-    interface ApiService {
-        // getting random recipes
-        // 7 / 1.1.1
-        // updated 2/15/2021 w/ 'tags' for diets and intolerances
-        @GET("random?")
-        Call<String> getRandomRecipeData(@Query("apiKey") String apiKey, @Query("number") int toIngr, @Query("tags") String dietIntolInfo);
-        // getting recipes based on recipe search
-        // 7 / 1.1.1
-        // updated 2/15/2021 w/ 'diet' and 'intolerances' for diets and intolerances
-        @GET("complexSearch?")
-        Call<String> getRecipeData(@Query("apiKey") String apiKey, @Query("query") String ingredients, @Query("addRecipeInformation") boolean addInfo, @Query("instructionsRequired") boolean instrRequired, @Query("offset") int fromIngr, @Query("number") int toIngr, @Query("diets") String diet, @Query("intolerances") String intolerances);
-        // getting recipes based on ingredients
-        // 7 / 1.1.1
-        // updated 2/15/2021 w/ 'diet' and 'intolerances' for diets and intolerances
-        @GET("complexSearch?")
-        Call<String> getRecipeDataIngr(@Query("apiKey") String apiKey, @Query("query") String ingredients, @Query("includeIngredients") String includeIngr, @Query("addRecipeInformation") boolean addInfo, @Query("instructionsRequired") boolean instrRequired, @Query("offset") int fromIngr, @Query("number") int toIngr, @Query("diets") String diet, @Query("intolerances") String intolerances);
-    }
-
     // Required empty public constructor
     public SearchFragment() {}
 
@@ -121,8 +79,6 @@ public class SearchFragment extends Fragment {
         myDb = DatabaseHelper.getInstance(mContext);
         recipeItemArrayList = new ArrayList<>();
         itemIds = new ArrayList<>();
-        mDietsList = new ArrayList<>();
-        mIntolsList = new ArrayList<>();
     }
 
     @Override
@@ -146,7 +102,7 @@ public class SearchFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) { 
         super.onSaveInstanceState(outState);
         outState.putString("query", queryString);
     }
@@ -170,9 +126,6 @@ public class SearchFragment extends Fragment {
         ProgressBar mProgressBar = view.findViewById(R.id.main_progressBar);
         mSearch_mainBG = view.findViewById(R.id.search_mainBG);
         mSearchRecyclerView = view.findViewById(R.id.search_recyclerView);
-        mRatingChip = view.findViewById(R.id.chip_rating);
-        mDietsChip = view.findViewById(R.id.chip_diets);
-        mIntolerancesChip = view.findViewById(R.id.chip_intol);
 
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         mSearchRecyclerView.setLayoutManager(mLayoutManager);
@@ -271,309 +224,7 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        // updated 2/15/2021 for diets and intolerances
-        // 7 / 1.1.1
-
-        // listener for rating chip
-        mRatingChip.setOnClickListener(v -> {
-            BottomSheetDialog mBottomDialogRating = new BottomSheetDialog(mContext);
-
-            if (getActivity() != null) {
-                View sheetView = getActivity().getLayoutInflater().inflate(R.layout.bottom_sheet_ratings_dialog, container, false);
-                MaterialButton retrieveButton = sheetView.findViewById(R.id.retrieve_recipes_rating);
-                Button resetButton = sheetView.findViewById(R.id.reset_button);
-                Chip chipHL = sheetView.findViewById(R.id.chip_high_low);
-                Chip chipLH = sheetView.findViewById(R.id.chip_low_high);
-                ChipGroup ratings_chipGroup = sheetView.findViewById(R.id.rating_chip_group);
-
-                for (int i = 0; i < ratings_chipGroup.getChildCount(); i++) {
-                    Chip chip = (Chip) ratings_chipGroup.getChildAt(i);
-                    chip.setId(i);
-
-                    if (mRatingInt == chip.getId()) {
-                        chip.setSelected(true);
-                        chip.setChecked(true);
-                        resetButton.setVisibility(View.VISIBLE);
-                        resetButton.setEnabled(true);
-                    }
-                }
-
-                chipHL.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        chipHL.setSelected(!chipHL.isSelected());
-                        if (chipHL.isSelected()) {
-                            mRatingInt = 0;
-                        }
-                        if (chipLH.isSelected()) {
-                            chipLH.setSelected(false);
-                        }
-                        hideShowReset(chipHL, resetButton);
-                    }
-                });
-
-                chipLH.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        chipLH.setSelected(!chipLH.isSelected());
-                        if (chipLH.isSelected()) {
-                            mRatingInt = 1;
-                        }
-                        if (chipHL.isSelected()) {
-                            chipHL.setSelected(false);
-                        }
-                        hideShowReset(chipLH, resetButton);
-                    }
-                });
-
-                resetButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        ratings_chipGroup.clearCheck();
-                        for (int k = 0; k < ratings_chipGroup.getChildCount(); k++) {
-                            Chip chip = (Chip) ratings_chipGroup.getChildAt(k);
-                            chip.setSelected(false);
-                        }
-                        mRatingInt = -1;
-                        resetButton.setVisibility(View.INVISIBLE);
-                        resetButton.setEnabled(false);
-                    }
-                });
-
-                // retrieve button for rating
-                retrieveButton.setOnClickListener(retrieveClick -> {
-                    cycleThroughChipGroup(ratings_chipGroup);
-                    mBottomDialogRating.dismiss();
-                });
-
-                // dismiss listener for rating
-                mBottomDialogRating.setOnDismissListener(dialog -> {
-                    cycleThroughChipGroup(ratings_chipGroup);
-                });
-
-
-                mBottomDialogRating.setContentView(sheetView);
-                mBottomDialogRating.show();
-            }
-        });
-
-        // listener for diets chip
-        mDietsChip.setOnClickListener(v -> {
-            BottomSheetDialog mBottomDialogDiets = new BottomSheetDialog(mContext);
-
-            if (getActivity() != null) {
-                View sheetView = getActivity().getLayoutInflater().inflate(R.layout.bottom_sheet_diets_dialog, container, false);
-                TextView group_textView = sheetView.findViewById(R.id.bottom_sheet_label);
-                MaterialButton retrieveButton = sheetView.findViewById(R.id.retrieve_recipes_diets);
-                ChipGroup diets_chipGroup = sheetView.findViewById(R.id.chip_group_diets_search);
-
-                group_textView.setText("Diets");
-
-                for (String dietString : Constants.DIETS_LIST) {
-                    Chip chip = (Chip) getLayoutInflater().inflate(R.layout.custom_filter_chip, diets_chipGroup, false);
-                    chip.setText(dietString);
-                    chip.setTextSize(14);
-                    chip.setCheckable(true);
-                    chip.setCheckedIcon(ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_check_24));
-
-                    if (mDietsList.contains(chip.getText().toString())) {
-                        chip.setChecked(true);
-                    }
-
-                    chip.setOnClickListener(clickChip1 -> {
-                        if (chip.isChecked()) {
-                            mDietsList.add(chip.getText().toString());
-                        } else {
-                            mDietsList.remove(chip.getText().toString());
-                        }
-                    });
-
-                    diets_chipGroup.addView(chip);
-                }
-
-                retrieveButton.setOnClickListener(vDiets -> {
-
-                    if (mDietsList.isEmpty()) {
-                        updateChip(mDietsChip,
-                                android.R.color.white,
-                                android.R.color.darker_gray,
-                                ContextCompat.getColor(mContext, android.R.color.black),
-                                "Diets");
-                    } else {
-                        updateChip(mDietsChip,
-                                R.color.colorPrimaryDark,
-                                R.color.colorPrimaryDark,
-                                ContextCompat.getColor(mContext, android.R.color.white),
-                                String.format(Locale.getDefault(), "%s Selected", mDietsList.size()));
-                    }
-
-                    mBottomDialogDiets.dismiss();
-                });
-
-                mBottomDialogDiets.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        if (mDietsList.isEmpty()) {
-                            updateChip(mDietsChip,
-                                    android.R.color.white,
-                                    android.R.color.darker_gray,
-                                    ContextCompat.getColor(mContext, android.R.color.black),
-                                    "Diets");
-                        } else {
-                            updateChip(mDietsChip,
-                                    R.color.colorPrimaryDark,
-                                    R.color.colorPrimaryDark,
-                                    ContextCompat.getColor(mContext, android.R.color.white),
-                                    String.format(Locale.getDefault(), "%s Selected", mDietsList.size()));
-                        }
-                    }
-                });
-
-                mBottomDialogDiets.setContentView(sheetView);
-                mBottomDialogDiets.show();
-            }
-
-        });
-
-        // listener for intolerances chip
-        mIntolerancesChip.setOnClickListener(v -> {
-            BottomSheetDialog mBottomDialogIntols = new BottomSheetDialog(mContext);
-
-            if (getActivity() != null) {
-                View intolsSheetView = getActivity().getLayoutInflater().inflate(R.layout.bottom_sheet_diets_dialog, container, false);
-                TextView intols_textView = intolsSheetView.findViewById(R.id.bottom_sheet_label);
-                MaterialButton intolsRetrieve = intolsSheetView.findViewById(R.id.retrieve_recipes_diets);
-                ChipGroup intols_chipGroup = intolsSheetView.findViewById(R.id.chip_group_diets_search);
-
-                intols_textView.setText("Intolerances");
-
-                for(String intolsString : Constants.INTOLS_LIST) {
-                    Chip chip = (Chip) getLayoutInflater().inflate(R.layout.custom_filter_chip, intols_chipGroup, false);
-                    chip.setText(intolsString);
-                    chip.setTextSize(14);
-                    chip.setCheckable(true);
-                    chip.setCheckedIcon(ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_check_24));
-
-                    if (mIntolsList.contains(chip.getText().toString())) {
-                        chip.setChecked(true);
-                    }
-
-                    chip.setOnClickListener(v1 -> {
-                        if (chip.isChecked()) {
-                            mIntolsList.add(chip.getText().toString());
-                        } else {
-                            mIntolsList.remove(chip.getText().toString());
-                        }
-                    });
-
-                    intols_chipGroup.addView(chip);
-
-                    intolsRetrieve.setOnClickListener(vIntols -> {
-
-                        if (mIntolsList.isEmpty()) {
-                            updateChip(mIntolerancesChip,
-                                    android.R.color.white,
-                                    android.R.color.darker_gray,
-                                    ContextCompat.getColor(mContext, android.R.color.black),
-                                    "Intolerances");
-                        } else {
-                            updateChip(mIntolerancesChip,
-                                    R.color.colorPrimaryDark,
-                                    R.color.colorPrimaryDark,
-                                    ContextCompat.getColor(mContext, android.R.color.white),
-                                    String.format(Locale.getDefault(), "%s Selected", mIntolsList.size()));
-                        }
-
-                        mBottomDialogIntols.dismiss();
-                    });
-                }
-
-                mBottomDialogIntols.setOnDismissListener(dialog -> {
-                    if (mIntolsList.isEmpty()) {
-                        updateChip(mIntolerancesChip,
-                                android.R.color.white,
-                                android.R.color.darker_gray,
-                                ContextCompat.getColor(mContext, android.R.color.black),
-                                "Intolerances");
-                    } else {
-                        updateChip(mIntolerancesChip,
-                                R.color.colorPrimaryDark,
-                                R.color.colorPrimaryDark,
-                                ContextCompat.getColor(mContext, android.R.color.white),
-                                String.format(Locale.getDefault(), "%s Selected", mIntolsList.size()));
-                    }
-                });
-
-                mBottomDialogIntols.setContentView(intolsSheetView);
-                mBottomDialogIntols.show();
-            }
-        });
-
         return view;
-    }
-
-    private void hideShowReset(Chip chip, Button resetButton) {
-        if (chip.isSelected()) {
-            resetButton.setVisibility(View.VISIBLE);
-            resetButton.setEnabled(true);
-        } else {
-            resetButton.setVisibility(View.INVISIBLE);
-            resetButton.setEnabled(false);
-        }
-    }
-
-    private void cycleThroughChipGroup(ChipGroup chipGroup) {
-
-        boolean ratingBool = false;
-
-        for (int j = 0; j < chipGroup.getChildCount(); j++) {
-            Chip chip = (Chip) chipGroup.getChildAt(j);
-
-            if (chip.isSelected()) {
-                ratingBool = true;
-            }
-        }
-
-        if (!ratingBool) {
-            mRatingInt = -1;
-            mRatingChip.setText("Rating");
-            mRatingChip.setChipBackgroundColorResource(android.R.color.white);
-            mRatingChip.setChipStrokeColorResource(android.R.color.darker_gray);
-            mRatingChip.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
-        }
-
-        if (mRatingInt == 0) {
-            mRatingChip.setText("Highest to Lowest");
-            mRatingChip.setChipBackgroundColorResource(R.color.colorPrimaryDark);
-            mRatingChip.setChipStrokeColorResource(R.color.colorPrimaryDark);
-            mRatingChip.setTextColor(ContextCompat.getColor(mContext, android.R.color.white));
-        } else if (mRatingInt == 1) {
-            mRatingChip.setText("Lowest to Highest");
-            mRatingChip.setChipBackgroundColorResource(R.color.colorPrimaryDark);
-            mRatingChip.setChipStrokeColorResource(R.color.colorPrimaryDark);
-            mRatingChip.setTextColor(ContextCompat.getColor(mContext, android.R.color.white));
-        }
-
-        if (previousRatingInt != mRatingInt) {
-            // SEARCH
-            Log.d(TAG, "Previous Int = " + previousRatingInt + " mRatingInt = " + mRatingInt + " : SEARCH");
-            previousRatingInt = mRatingInt;
-        }
-    }
-
-    private void updateChip(Chip chip, int backgroundColor, int strokeColor, int textColor, String text) {
-        chip.setChipBackgroundColorResource(backgroundColor);
-        chip.setChipStrokeColorResource(strokeColor);
-        chip.setTextColor(textColor);
-        chip.setText(text);
-    }
-
-    private String convertListToString(ArrayList<String> stringArrayList) {
-        return TextUtils.join(",", stringArrayList);
-    }
-
-    private String combineLists(ArrayList<String> dietsList, ArrayList<String> intolsList) {
-        return TextUtils.join(",", dietsList) + TextUtils.join(",", intolsList);
     }
 
     private void changeBGImage(int image) {
@@ -635,7 +286,6 @@ public class SearchFragment extends Fragment {
         Log.d(TAG, "checkSearchForLikeChange: " + recipeItemArrayList.size());
         if (adapter != null) {
             adapter.updateItemByItemId(itemId, liked);
-            //adapter.updateItem(position, liked);
         }
     }
 
@@ -762,10 +412,13 @@ public class SearchFragment extends Fragment {
     private void writeRecyclerRandomAsync(String response) {
         new Thread(() -> {
             writeRecyclerRandom(response);
+            Log.d(TAG, "1");
             try {
                 if (isAdded()) {
                     getActivity().runOnUiThread(() -> {
+                        Log.d(TAG, "2");
                         if (adapter == null) {
+                            Log.d(TAG, "3");
                             adapter = new SearchAdapter(mContext, this, recipeItemArrayList, logged);
                         }
 
@@ -796,7 +449,6 @@ public class SearchFragment extends Fragment {
 
                 // Image
                 item.setmImageUrl(hits.getString("image"));
-                //Log.d(TAG, "image: " + hits.get("image"));
                 // Name
                 item.setmRecipeName(hits.getString("title"));
                 // Source
@@ -806,28 +458,20 @@ public class SearchFragment extends Fragment {
                     item.setmRecipeURL("https://www.thescavengerapp.com/recipe-not-found");
                 } else {
                     item.setmRecipeURL(hits.getString("sourceUrl"));
-                    //Log.d(TAG, "sourceUrl: " + hits.get("sourceUrl"));
                 }
-                // Rating
-                item.setItemRating(itemRating(hits.getDouble("spoonacularScore")));
-                //Log.d(TAG, "rating: " + hits.getDouble("spoonacularScore"));
-                //Log.d(TAG, "New Rating: " + itemRating(hits.getDouble("spoonacularScore")));
                 // Unique ID
                 item.setItemId(hits.getInt("id"));
-                //Log.d(TAG, "id: " + hits.get("id"));
 
                 // checks if item in contained in db liked items to set as liked
                 if (itemIds.contains(item.getItemId())) {
                     item.setLiked(true);
                 }
 
-                //Log.d(TAG, "RecipeName: " + item.getmRecipeName());
-                //Log.d(TAG, "sourceName: " + item.getmSourceName());
-
                 // remove items with null source
                 if (!item.getmSourceName().equalsIgnoreCase("null")) {
                     recipeItemArrayList.add(item);
                 }
+
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -860,23 +504,14 @@ public class SearchFragment extends Fragment {
                     item.setmRecipeURL("https://www.thescavengerapp.com/recipe-not-found");
                 } else {
                     item.setmRecipeURL(hits.getString("sourceUrl"));
-                    //Log.d(TAG, "sourceUrl: " + hits.get("sourceUrl"));
                 }
-                // Rating
-                item.setItemRating(itemRating(hits.getDouble("spoonacularScore")));
-                //Log.d(TAG, "rating: " + hits.getDouble("spoonacularScore"));
-                //Log.d(TAG, "New Rating: " + itemRating(hits.getDouble("spoonacularScore")));
                 // Unique ID
                 item.setItemId(hits.getInt("id"));
-                //Log.d(TAG, "id: " + hits.get("id"));
 
                 // checks if item in contained in db liked items to set as liked
                 if (itemIds.contains(item.getItemId())) {
                     item.setLiked(true);
                 }
-
-                //Log.d(TAG, "RecipeName: " + item.getmRecipeName());
-                //Log.d(TAG, "sourceName: " + item.getmSourceName());
 
                 // remove items with null source
                 if (!item.getmSourceName().equalsIgnoreCase("null")) {
@@ -902,44 +537,42 @@ public class SearchFragment extends Fragment {
         fromIngr = 0;
         toIngr = 10;
 
-        // 7 / 1.1.1
-        // updated 2/15/2021 w/ 'diet' and 'intolerances' for diets and intolerances
-        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(),true, false, fromIngr ,toIngr, convertListToString(mDietsList), convertListToString(mIntolsList));
+        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(),true, false, fromIngr ,toIngr, true);
 
-        Log.d(TAG, getIngredientsSearch());
         queryString = mSearchView.getQuery().toString();
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
-                Log.d(TAG, "response: " + response.code());
-                if (response.isSuccessful()) {
-                    Log.d(TAG, "success: ");
-                    if (response.body() != null) {
-                        String result = response.body();
-
-                        writeRecyclerRecipeAsync(result);
+        if (call != null) {
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                    Log.d(TAG, "response: " + response.code());
+                    if (response.isSuccessful()) {
+                        Log.d(TAG, "success: ");
+                        if (response.body() != null) {
+                            String result = response.body();
+                            writeRecyclerRecipeAsync(result);
+                        } else {
+                            Log.i("onEmptyResponse", "Returned Empty Response");
+                            Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                            shimmer.stopShimmer();
+                            shimmer.setVisibility(View.GONE);
+                            changeBGImage(0);
+                            toastMessage("Something went wrong. Please try again");
+                        }
                     } else {
-                        Log.i("onEmptyResponse", "Returned Empty Response");
                         Log.d(TAG, "something went wrong. Call: " + response.errorBody());
                         shimmer.stopShimmer();
                         shimmer.setVisibility(View.GONE);
                         changeBGImage(0);
                         toastMessage("Something went wrong. Please try again");
                     }
-                } else {
-                    Log.d(TAG, "something went wrong. Call: " + response.errorBody());
-                    shimmer.stopShimmer();
-                    shimmer.setVisibility(View.GONE);
-                    changeBGImage(0);
-                    toastMessage("Something went wrong. Please try again");
                 }
-            }
 
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull Throwable t) {
-                Log.d(TAG, "failure: " + "throwable: " + t.toString() + " call: " + call.toString());
-            }
-        });
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull Throwable t) {
+                    Log.d(TAG, "failure: " + "throwable: " + t.toString() + " call: " + call.toString());
+                }
+            });
+        }
     }
 
     // initial api call to spoonacular checking for an ingredients query ------------------------------------------------------------------------------------------------
@@ -956,42 +589,42 @@ public class SearchFragment extends Fragment {
         fromIngr = 0;
         toIngr = 10;
 
-        // 7 / 1.1.1
-        // updated 2/15/2021 w/ 'diet' and 'intolerances' for diets and intolerances
-        Call<String> call = apiService.getRecipeDataIngr(Constants.apiKey, getIngredientsSearch(), ingredientsComma(), true, false, fromIngr ,toIngr, convertListToString(mDietsList), convertListToString(mIntolsList));
+        Call<String> call = apiService.getRecipeDataIngr(Constants.apiKey, getIngredientsSearch(), ingredientsComma(), true, false, fromIngr ,toIngr, true);
 
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
-                Log.d(TAG, "response: " + response.code());
-                if (response.isSuccessful()) {
-                    Log.d(TAG, "success: ");
-                    if (response.body() != null) {
-                        String result = response.body();
+        if (call != null) {
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                    Log.d(TAG, "response: " + response.code());
+                    if (response.isSuccessful()) {
+                        Log.d(TAG, "success: ");
+                        if (response.body() != null) {
+                            String result = response.body();
 
-                        writeRecyclerIngrAsync(result);
+                            writeRecyclerIngrAsync(result);
+                        } else {
+                            Log.i("onEmptyResponse", "Returned Empty Response");
+                            Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                            shimmer.stopShimmer();
+                            shimmer.setVisibility(View.GONE);
+                            changeBGImage(0);
+                            toastMessage("Something went wrong. Please try again");
+                        }
                     } else {
-                        Log.i("onEmptyResponse", "Returned Empty Response");
                         Log.d(TAG, "something went wrong. Call: " + response.errorBody());
                         shimmer.stopShimmer();
                         shimmer.setVisibility(View.GONE);
                         changeBGImage(0);
                         toastMessage("Something went wrong. Please try again");
                     }
-                } else {
-                    Log.d(TAG, "something went wrong. Call: " + response.errorBody());
-                    shimmer.stopShimmer();
-                    shimmer.setVisibility(View.GONE);
-                    changeBGImage(0);
-                    toastMessage("Something went wrong. Please try again");
                 }
-            }
 
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull Throwable t) {
-                Log.d(TAG, "failure: " + "throwable: " + t.toString() + " call: " + call.toString());
-            }
-        });
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull Throwable t) {
+                    Log.d(TAG, "failure: " + "throwable: " + t.toString() + " call: " + call.toString());
+                }
+            });
+        }
     }
 
     private void getMoreIngrAsync() {
@@ -1011,30 +644,30 @@ public class SearchFragment extends Fragment {
 
         ApiService apiService = retrofit.create(ApiService.class);
 
-        // 7 / 1.1.1
-        // updated 2/15/2021 w/ 'diet' and 'intolerances' for diets and intolerances
-        Call<String> call = apiService.getRecipeDataIngr(Constants.apiKey, getIngredientsSearch(), ingredientsComma(), true, false, fromIngr, toIngr, convertListToString(mDietsList), convertListToString(mIntolsList));
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
-                if (response.isSuccessful()) {
+        Call<String> call = apiService.getRecipeDataIngr(Constants.apiKey, getIngredientsSearch(), ingredientsComma(), true, false, fromIngr, toIngr, true);
+        if (call != null) {
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                    if (response.isSuccessful()) {
 
-                    if (response.body() != null) {
-                        String result = response.body();
-                        writeRecycler(result);
-                    } else {
-                        Log.i("onEmptyResponse", "Returned Empty Response");
-                        Log.d(TAG, "something went wrong. Call: " + response.errorBody());
-                        shimmer.stopShimmer();
-                        shimmer.setVisibility(View.GONE);
-                        changeBGImage(0);
-                        toastMessage("Something went wrong. Please try again");
+                        if (response.body() != null) {
+                            String result = response.body();
+                            writeRecycler(result);
+                        } else {
+                            Log.i("onEmptyResponse", "Returned Empty Response");
+                            Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                            shimmer.stopShimmer();
+                            shimmer.setVisibility(View.GONE);
+                            changeBGImage(0);
+                            toastMessage("Something went wrong. Please try again");
+                        }
                     }
                 }
-            }
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
-        });
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
+            });
+        }
     }
 
     // Load more Recipes - Recipe -----------------------------------------------------------------------------------------------------------------------
@@ -1057,32 +690,36 @@ public class SearchFragment extends Fragment {
 
         // 7 / 1.1.1
         // updated 2/15/2021 w/ 'diet' and 'intolerances' for diets and intolerances
-        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(), true, false, fromIngr, toIngr, convertListToString(mDietsList), convertListToString(mIntolsList));
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
-                if (response.isSuccessful()) {
+        Call<String> call = apiService.getRecipeData(Constants.apiKey, getIngredientsSearch(), true, false, fromIngr, toIngr, true);
+        if (call != null) {
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                    if (response.isSuccessful()) {
 
-                    if (response.body() != null) {
-                        String result = response.body();
-                        writeRecycler(result);
-                    } else {
-                        Log.i("onEmptyResponse", "Returned Empty Response");
-                        Log.d(TAG, "something went wrong. Call: " + response.errorBody());
-                        shimmer.stopShimmer();
-                        shimmer.setVisibility(View.GONE);
-                        changeBGImage(0);
-                        toastMessage("Something went wrong. Please try again");
+                        if (response.body() != null) {
+                            String result = response.body();
+                            writeRecycler(result);
+                        } else {
+                            Log.i("onEmptyResponse", "Returned Empty Response");
+                            Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                            shimmer.stopShimmer();
+                            shimmer.setVisibility(View.GONE);
+                            changeBGImage(0);
+                            toastMessage("Something went wrong. Please try again");
+                        }
                     }
                 }
-            }
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
-        });
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull Throwable t) {}
+            });
+        }
     }
 
     // Get random recipes -----------------------------------------------------------------------------------------------
     private void getRandomRecipes(int randomNumberInt) {
+
+        Log.d(TAG, "GET RANDOM RECIPES");
 
         searchingRecipes = false;
         searchingIngredients = false;
@@ -1092,52 +729,49 @@ public class SearchFragment extends Fragment {
         RecipeItem headerItem = new RecipeItem(RecipeItem.TYPE_HEADER);
         recipeItemArrayList.add(headerItem);
 
-        // reach out to Spoonacular API to get randomNumberInt random recipes to add into recipeItemArrayList
-
         Retrofit retrofit = NetworkClient.getRetrofitClient();
         ApiService apiService = retrofit.create(ApiService.class);
 
-        // 7 / 1.1.1
-        // updated 2/15/2021 w/ 'tags' for diets and intolerances
-        Call<String> call = apiService.getRandomRecipeData(Constants.apiKey, randomNumberInt, combineLists(mDietsList, mIntolsList));
+        Call<String> call = apiService.getRandomRecipeData(Constants.apiKey, randomNumberInt);
+        if (call != null) {
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                    //Log.d(TAG, "random recipes response: " + response.code());
+                    if (response.isSuccessful()) {
+                        Log.d(TAG, "random recipes success: ");
+                        if (response.body() != null) {
+                            String result = response.body();
 
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
-                //Log.d(TAG, "random recipes response: " + response.code());
-                if (response.isSuccessful()) {
-                    Log.d(TAG, "random recipes success: ");
-                    if (response.body() != null) {
-                        String result = response.body();
+                            writeRecyclerRandomAsync(result);
 
-                        writeRecyclerRandomAsync(result);
-
+                        } else {
+                            recipeItemArrayList.clear();
+                            adapter.notifyDataSetChanged();
+                            Log.i("onEmptyResponse", "Returned Empty Response");
+                            Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                            shimmer.stopShimmer();
+                            shimmer.setVisibility(View.GONE);
+                            changeBGImage(0);
+                            toastMessage("Something went wrong. Please try again");
+                        }
                     } else {
                         recipeItemArrayList.clear();
                         adapter.notifyDataSetChanged();
-                        Log.i("onEmptyResponse", "Returned Empty Response");
                         Log.d(TAG, "something went wrong. Call: " + response.errorBody());
                         shimmer.stopShimmer();
                         shimmer.setVisibility(View.GONE);
                         changeBGImage(0);
                         toastMessage("Something went wrong. Please try again");
                     }
-                } else {
-                    recipeItemArrayList.clear();
-                    adapter.notifyDataSetChanged();
-                    Log.d(TAG, "something went wrong. Call: " + response.errorBody());
-                    shimmer.stopShimmer();
-                    shimmer.setVisibility(View.GONE);
-                    changeBGImage(0);
-                    toastMessage("Something went wrong. Please try again");
                 }
-            }
 
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull Throwable t) {
-                Log.d(TAG, "failure: " + "throwable: " + t.toString() + " call: " + call.toString());
-            }
-        });
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull Throwable t) {
+                    Log.d(TAG, "failure: " + "throwable: " + t.toString() + " call: " + call.toString());
+                }
+            });
+        }
     }
 
     private void getMoreRandomAsync() {
@@ -1155,60 +789,48 @@ public class SearchFragment extends Fragment {
         Retrofit retrofit = NetworkClient.getRetrofitClient();
         ApiService apiService = retrofit.create(ApiService.class);
 
-        // 7 / 1.1.1
-        // updated 2/15/2021 w/ 'diet' and 'intolerances' for diets and intolerances
-        Call<String> call = apiService.getRandomRecipeData(Constants.apiKey, 10, combineLists(mDietsList, mIntolsList));
+        Call<String> call = apiService.getRandomRecipeData(Constants.apiKey, 10);
 
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
-                //Log.d(TAG, "random recipes response: " + response.code());
-                if (response.isSuccessful()) {
-                    Log.d(TAG, "random recipes success: ");
-                    if (response.body() != null) {
-                        String result = response.body();
+        if (call != null) {
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                    if (response.isSuccessful()) {
+                        Log.d(TAG, "random recipes success: ");
+                        if (response.body() != null) {
+                            String result = response.body();
 
-                        writeRecyclerRandom(result);
+                            writeRecyclerRandom(result);
 
-                        adapter.notifyDataSetChanged();
-                        shimmer.stopShimmer();
-                        shimmer.setVisibility(View.GONE);
+                            adapter.notifyDataSetChanged();
+                            shimmer.stopShimmer();
+                            shimmer.setVisibility(View.GONE);
+                        } else {
+                            recipeItemArrayList.clear();
+                            adapter.notifyDataSetChanged();
+                            Log.i("onEmptyResponse", "Returned Empty Response");
+                            Log.d(TAG, "something went wrong. Call: " + response.errorBody());
+                            shimmer.stopShimmer();
+                            shimmer.setVisibility(View.GONE);
+                            changeBGImage(0);
+                            toastMessage("Something went wrong. Please try again");
+                        }
                     } else {
                         recipeItemArrayList.clear();
                         adapter.notifyDataSetChanged();
-                        Log.i("onEmptyResponse", "Returned Empty Response");
                         Log.d(TAG, "something went wrong. Call: " + response.errorBody());
                         shimmer.stopShimmer();
                         shimmer.setVisibility(View.GONE);
                         changeBGImage(0);
                         toastMessage("Something went wrong. Please try again");
                     }
-                } else {
-                    recipeItemArrayList.clear();
-                    adapter.notifyDataSetChanged();
-                    Log.d(TAG, "something went wrong. Call: " + response.errorBody());
-                    shimmer.stopShimmer();
-                    shimmer.setVisibility(View.GONE);
-                    changeBGImage(0);
-                    toastMessage("Something went wrong. Please try again");
                 }
-            }
 
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull Throwable t) {
-                Log.d(TAG, "failure: " + "throwable: " + t.toString() + " call: " + call.toString());
-            }
-        });
-    }
-
-    private float itemRating(double rating) {
-        float newRating = (float) rating / 20;
-        if (newRating <= 0) {
-            return (float) 0.1;
-        } else if (newRating > 5) {
-            return 5;
-        } else {
-            return newRating;
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull Throwable t) {
+                    Log.d(TAG, "failure: " + "throwable: " + t.toString() + " call: " + call.toString());
+                }
+            });
         }
     }
 

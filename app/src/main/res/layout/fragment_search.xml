@@ -70,7 +70,6 @@
                     app:chipBackgroundColor="@android:color/white"
                     app:chipStrokeWidth="1dp"
                     app:chipStrokeColor="@android:color/darker_gray"
-                    app:rippleColor="@color/colorPrimaryDark"
                     android:textColor="@android:color/black"
                     android:textSize="14sp"
                     android:text="Rating"/>
@@ -82,7 +81,6 @@
                     style="@style/Widget.MaterialComponents.Chip.Action"
                     app:chipStrokeWidth="1dp"
                     app:chipStrokeColor="@android:color/darker_gray"
-                    app:rippleColor="@color/colorPrimaryDark"
                     android:textColor="@android:color/black"
                     app:chipBackgroundColor="@android:color/white"
                     android:text="Diets"
@@ -95,7 +93,6 @@
                     style="@style/Widget.MaterialComponents.Chip.Action"
                     app:chipStrokeWidth="1dp"
                     app:chipStrokeColor="@android:color/darker_gray"
-                    app:rippleColor="@color/colorPrimaryDark"
                     app:chipBackgroundColor="@android:color/white"
                     android:textSize="14sp"
                     android:textColor="@android:color/black"
