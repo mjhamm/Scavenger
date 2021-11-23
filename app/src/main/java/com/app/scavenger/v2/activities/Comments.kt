@@ -12,7 +12,11 @@ import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.app.scavenger.*
+import com.app.scavenger.BaseApplication
+import com.app.scavenger.CommentItem
+import com.app.scavenger.CommentsAdapter
+import com.app.scavenger.R
+import com.app.scavenger.utils.Constants
 import com.app.scavenger.databinding.ActivityCommentsBinding
 import com.app.scavenger.dialog.DialogBuilder
 import com.app.scavenger.utils.ConnectionDetector

@@ -7,12 +7,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.app.scavenger.AboutAdapter
-import com.app.scavenger.Constants
+import com.app.scavenger.utils.Constants
 import com.app.scavenger.OpenSourceLibraries
 import com.app.scavenger.R
 import com.app.scavenger.databinding.ActivityAboutBinding

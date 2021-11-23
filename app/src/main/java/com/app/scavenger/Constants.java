@@ -53,47 +53,4 @@ public class Constants {
     public static final String COMMENT_DETAIL = "Comment Text";
     public static final String COMMENT_USERID = "User Id";
     public static final String COMMENTS = "comments";
-
-    // Arraylists of diets and intolerances
-    // added 2/15/2021
-    // 7 / 1.1.1
-
-    public static final ArrayList<String> RATINGS_LIST = new ArrayList<String>() {
-        {
-            add("Highest to Lowest");
-            add("Lowest to Highest");
-        }
-    };
-
-    public static final ArrayList<String> DIETS_LIST = new ArrayList<String>() {
-        {
-            add("Gluten Free");
-            add("Ketogenic");
-            add("Vegetarian");
-            add("Lacto-Vegetarian");
-            add("Ovo-Vegetarian");
-            add("Vegan");
-            add("Pescatarian");
-            add("Paleo");
-            add("Primal");
-            add("Whole30");
-        }
-    };
-
-    public static final ArrayList<String> INTOLS_LIST = new ArrayList<String>() {
-        {
-            add("Diary");
-            add("Peanut");
-            add("Soy");
-            add("Egg");
-            add("Seafood");
-            add("Sulfite");
-            add("Gluten");
-            add("Sesame");
-            add("Tree Nut");
-            add("Grain");
-            add("Shellfish");
-            add("Wheat");
-        }
-    };
 }
