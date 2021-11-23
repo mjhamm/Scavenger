@@ -26,6 +26,10 @@ class BaseApplication: Application(), LifecycleObserver {
         return firebaseDB
     }
 
+    fun getFirebaseAuth(): FirebaseAuth {
+        return mAuth
+    }
+
     fun getCurrentUser(): FirebaseUser? {
         return mAuth.currentUser
     }
