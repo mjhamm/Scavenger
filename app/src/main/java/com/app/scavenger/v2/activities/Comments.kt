@@ -15,9 +15,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.app.scavenger.*
 import com.app.scavenger.databinding.ActivityCommentsBinding
 import com.app.scavenger.dialog.DialogBuilder
+import com.app.scavenger.utils.ConnectionDetector
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.Query
-import java.util.*
+import java.util.Date
+import java.util.Calendar
 import kotlin.collections.HashMap
 
 class Comments: AppCompatActivity() {
