@@ -1,11 +1,9 @@
 package com.app.scavenger.v2.activities
 
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,11 +18,12 @@ class About: AppCompatActivity(), AboutAdapter.ItemClickListener {
 
     private lateinit var binding: ActivityAboutBinding
 
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onCreate(savedInstanceState, persistentState)
-        setContentView(R.layout.activity_about)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
         binding = ActivityAboutBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         binding.aboutToolbar.setTitle("About")
 
         val options = ArrayList<String>()
@@ -43,11 +42,11 @@ class About: AppCompatActivity(), AboutAdapter.ItemClickListener {
     override fun onItemClick(position: Int) {
 
         when (position) {
-            0 -> open(this, Constants.scavengerTermsURL)
-            1 -> open(this, Constants.scavengerPrivacyURL)
+            0 -> open(Constants.scavengerTermsURL)
+            1 -> open(Constants.scavengerPrivacyURL)
             2 -> openOSL()
-            3 -> open(this, Constants.scavengerBaseURL)
-            else -> open(this, Constants.scavengerBaseURL)
+            3 -> open(Constants.scavengerBaseURL)
+            else -> open(Constants.scavengerBaseURL)
         }
     }
 
@@ -56,10 +55,11 @@ class About: AppCompatActivity(), AboutAdapter.ItemClickListener {
         startActivity(intent)
     }
 
-    private fun open(context: Context, url: String) {
+    private fun open(url: String) {
         try {
-            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            context.startActivity(browserIntent)
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse(url)
+            startActivity(intent)
         } catch (e : ActivityNotFoundException) {
             e.printStackTrace()
         }

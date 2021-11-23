@@ -42,68 +42,6 @@
             android:layout_height="1dp"
             android:background="@color/bg_gray"/>
 
-        <!-- ///////////////////////////////////////////////////////////////// -->
-        <!-- Added 2/15/2021 - 7 / 1.1.1 -->
-        <HorizontalScrollView
-            android:id="@+id/sorting_layout"
-            android:gravity="start"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            app:layout_constraintTop_toBottomOf="@id/search_searchView"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chip_group_search"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                app:chipSpacingHorizontal="14dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_rating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/Widget.MaterialComponents.Chip.Action"
-                    app:chipBackgroundColor="@android:color/white"
-                    app:chipStrokeWidth="1dp"
-                    app:chipStrokeColor="@android:color/darker_gray"
-                    android:textColor="@android:color/black"
-                    android:textSize="14sp"
-                    android:text="Rating"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_diets"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/Widget.MaterialComponents.Chip.Action"
-                    app:chipStrokeWidth="1dp"
-                    app:chipStrokeColor="@android:color/darker_gray"
-                    android:textColor="@android:color/black"
-                    app:chipBackgroundColor="@android:color/white"
-                    android:text="Diets"
-                    android:textSize="14sp"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_intol"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/Widget.MaterialComponents.Chip.Action"
-                    app:chipStrokeWidth="1dp"
-                    app:chipStrokeColor="@android:color/darker_gray"
-                    app:chipBackgroundColor="@android:color/white"
-                    android:textSize="14sp"
-                    android:textColor="@android:color/black"
-                    android:text="Intolerances"/>
-
-            </com.google.android.material.chip.ChipGroup>
-
-        </HorizontalScrollView>
-
-        <!-- ///////////////////////////////////////////////////////////////// -->
-
     </LinearLayout>
 
     <ImageView

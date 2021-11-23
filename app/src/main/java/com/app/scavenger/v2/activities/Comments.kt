@@ -40,11 +40,11 @@ class Comments: AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_comments)
 
         binding = ActivityCommentsBinding.inflate(layoutInflater)
+        setContentView(binding.root
+        )
         connection = ConnectionDetector(this)
-
         recipeName = intent.extras?.getString("recipe_name").toString()
         recipeSource = intent.extras?.getString("recipe_source").toString()
         recipeId = intent.extras?.getInt("recipe_id") ?: 0
@@ -98,6 +98,7 @@ class Comments: AppCompatActivity() {
                     postComment()
                 } else {
                     DialogBuilder.showInformationDialog(this,
+                        null,
                     Constants.noInternetTitle,
                     Constants.noInternetMessage)
                 }

@@ -67,7 +67,7 @@ public class SearchFragment extends Fragment {
     public SearchFragment() {}
 
     // Create a new instance of Search Fragment
-    static SearchFragment newInstance() {
+    public static SearchFragment newInstance() {
         return new SearchFragment();
     }
 

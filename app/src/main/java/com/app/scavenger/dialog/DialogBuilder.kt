@@ -19,7 +19,7 @@ class DialogBuilder: MaterialAlertDialogBuilder {
     }
 
     companion object {
-        fun showInformationDialog(context: Context, theme: Int?, title: String, message: String) {
+        fun showInformationDialog(context: Context, title: String, message: String) {
             DialogBuilder(context)
                 .setTitle(title)
                 .setMessage(message)
@@ -28,8 +28,8 @@ class DialogBuilder: MaterialAlertDialogBuilder {
                 .show()
         }
 
-        fun showErrorDialog(context: Context, theme: Int?, title: String, message: String, function: (dialog: DialogInterface, which: Int) -> Unit) {
-            DialogBuilder(context)
+        fun showErrorDialog(context: Context, theme: Int, title: String, message: String, function: (dialog: DialogInterface, which: Int) -> Unit) {
+            DialogBuilder(context, theme)
                 .setTitle(title)
                 .setMessage(message)
                 .setCancelable(false)

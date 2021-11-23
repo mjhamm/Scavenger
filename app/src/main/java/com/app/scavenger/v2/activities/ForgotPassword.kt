@@ -19,11 +19,10 @@ class ForgotPassword: AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_forgot_password)
-
         binding = ActivityForgotPasswordBinding.inflate(layoutInflater)
-        connection = ConnectionDetector(this)
+        setContentView(binding.root)
 
+        connection = ConnectionDetector(this)
         binding.forgotToolbar.setTitle("Forgot Password")
         binding.forgotPassButton.isEnabled = false
 

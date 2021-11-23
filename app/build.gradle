@@ -4,8 +4,8 @@ apply plugin: 'com.google.gms.google-services'
 
 android {
 
-    buildFeatures {
-        viewBinding true
+    viewBinding {
+        enabled = true
     }
 
     signingConfigs {
@@ -16,12 +16,12 @@ android {
             keyPassword '$94ScavKeyP@ss394'
         }
     }
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     defaultConfig {
         applicationId "com.app.scavenger"
-        minSdkVersion 23
-        targetSdkVersion 30
+        minSdkVersion 26
+        targetSdkVersion 31
         versionCode 6
         versionName "1.1.0"
         vectorDrawables.useSupportLibrary = true

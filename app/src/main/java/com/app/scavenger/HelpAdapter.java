@@ -18,7 +18,7 @@ public class HelpAdapter extends RecyclerView.Adapter<HelpAdapter.ViewHolder> {
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    HelpAdapter(Context context, List<String> data) {
+    public HelpAdapter(Context context, List<String> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
     }

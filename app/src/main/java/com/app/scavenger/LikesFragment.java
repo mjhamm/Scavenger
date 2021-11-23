@@ -74,7 +74,7 @@ public class LikesFragment extends Fragment {
 
     // Create a new instance of Likes Fragment
     // Add a bundle if you want to pass through variables on creation
-    static LikesFragment newInstance() {
+    public static LikesFragment newInstance() {
         return new LikesFragment();
     }
 
