@@ -1,5 +1,7 @@
 # Scavenger is an application that makes it easy to find all the recipes you need with the ingredients at your fingertips.
 
+**This application is old work that is not refactored in Kotlin. A Fully working application that has been on both Google Play and Apple App Store**
+
 You can search by recipe name, ingredients and diet type
 
 Recipes that include your ingredients will appear and give you information related to that specific recipe such as:
